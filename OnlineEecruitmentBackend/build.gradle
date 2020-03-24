@@ -1,0 +1,18 @@
+plugins {
+    id 'java'
+}
+
+group 'org.rayfalling'
+version '1.0-SNAPSHOT'
+
+vertx_version = '3.8.5'
+sourceCompatibility = '1.8'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "io.vertx:vertx-core:$vertx_version"
+    compile "io.vertx:vertx-mysql-postgresql-client:$vertx_version"
+}
