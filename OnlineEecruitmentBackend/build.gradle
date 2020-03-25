@@ -4,15 +4,39 @@ plugins {
 
 group 'org.rayfalling'
 version '1.0-SNAPSHOT'
-
-vertx_version = '3.8.5'
 sourceCompatibility = '1.8'
+
+ext {
+    vertx_version = '3.8.5'
+    log4j_version = '2.13.1'
+    rx_pgclient_version = '0.11.4'
+    mainClassName = 'io.vertx.core.Launcher'
+
+}
+
+jar {
+    manifest {
+        //改为Launcher
+        attributes "Main-Class": "io.vertx.core.Launcher"
+        //新增Main Verticle属性，对应MainVerticle类
+        attributes "Main-Verticle": "io.rayfalling.com.rayfalling.verticle.MainVerticle"
+    }
+
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    compile "io.vertx:vertx-core:$vertx_version"
-    compile "io.vertx:vertx-mysql-postgresql-client:$vertx_version"
+    implementation "io.vertx:vertx-core:$vertx_version"
+    implementation "io.vertx:vertx-web:$vertx_version"
+    implementation "io.reactiverse:reactive-pg-client:$rx_pgclient_version"
+    implementation group: "io.vertx", name: "vertx-rx-java", version: "$vertx_version"
+    implementation group: "org.apache.logging.log4j", name: "log4j-api", version: "$log4j_version"
+    implementation group: "org.apache.logging.log4j", name: "log4j-core", version: "$log4j_version"
+    testCompile group: 'junit', name: 'junit', version: '4.12'
 }
