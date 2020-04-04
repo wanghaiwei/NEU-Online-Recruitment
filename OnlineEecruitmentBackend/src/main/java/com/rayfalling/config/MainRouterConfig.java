@@ -18,6 +18,8 @@ public class MainRouterConfig extends DeploymentOptions {
      */
     String tokenSalt;
 
+    JsonObject config;
+
     private static MainRouterConfig instance;
 
     static {
@@ -33,7 +35,7 @@ public class MainRouterConfig extends DeploymentOptions {
     }
 
     public MainRouterConfig() throws IOException {
-        JsonObject config = ConfigLoader.configObject().getJsonObject("mainRouter");
+        config = ConfigLoader.configObject().getJsonObject("mainRouter");
         setConfig(config);
         logRequests = config.getBoolean("logRequests");
         sessionKey = config.getString("sessionKey");
@@ -50,5 +52,9 @@ public class MainRouterConfig extends DeploymentOptions {
 
     public String getTokenSalt() {
         return tokenSalt;
+    }
+
+    public JsonObject getInstanceConfig() {
+        return config;
     }
 }

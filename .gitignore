@@ -30,3 +30,10 @@ hs_err_pid*
 gradle/
 gradlew
 gradlew.bat
+
+#generate conf
+conf/
+
+#build generate
+build/
+out/

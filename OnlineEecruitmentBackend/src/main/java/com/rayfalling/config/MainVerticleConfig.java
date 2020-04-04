@@ -1,13 +1,14 @@
 package com.rayfalling.config;
 
 import com.rayfalling.middleware.ConfigLoader;
-import com.rayfalling.verticle.MainVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.json.JsonObject;
 
 import java.io.IOException;
 
 public class MainVerticleConfig extends DeploymentOptions {
+    JsonObject config;
+
     private static MainVerticleConfig instance;
 
     static {
@@ -23,8 +24,12 @@ public class MainVerticleConfig extends DeploymentOptions {
     }
 
     private MainVerticleConfig() throws IOException {
-        JsonObject config = ConfigLoader.configObject().getJsonObject("server");
+        config = ConfigLoader.configObject().getJsonObject("server");
         setInstances(config.getInteger("instance"));
         setConfig(config.getJsonObject("listen"));
+    }
+
+    public JsonObject getInstanceConfig() {
+        return config;
     }
 }
