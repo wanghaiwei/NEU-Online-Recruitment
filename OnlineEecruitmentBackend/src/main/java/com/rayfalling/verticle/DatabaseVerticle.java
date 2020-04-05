@@ -1,22 +1,25 @@
-package com.rayfalling.verticle;
+package com.Rayfalling.verticle;
 
-import com.rayfalling.Shared;
+import com.Rayfalling.Shared;
 import io.reactiverse.pgclient.PgPoolOptions;
-import io.reactiverse.rxjava.pgclient.PgPool;
+import io.reactiverse.reactivex.pgclient.PgPool;
+import io.reactivex.Single;
 import io.vertx.core.Future;
-import io.vertx.rxjava.core.AbstractVerticle;
-import io.vertx.rxjava.core.Promise;
+import io.vertx.reactivex.core.AbstractVerticle;
+import io.vertx.reactivex.core.Promise;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import rx.Completable;
-import rx.Single;
 
+/**
+ * 数据库实例
+ * */
+@SuppressWarnings("ResultOfMethodCallIgnored")
 public class DatabaseVerticle extends AbstractVerticle {
     private Logger logger = LogManager.getLogger(this);
 
     @Override
     public void start(Future<Void> startFuture) {
-        Single.just(config()).map(config -> {
+       Single.just(config()).map(config -> {
             PgPoolOptions options = new PgPoolOptions();
             options.setHost(config.getString("host"))
                    .setPort(config.getInteger("port"))
@@ -28,27 +31,31 @@ public class DatabaseVerticle extends AbstractVerticle {
             Shared.getInstance().setPgPool(db);
 
             return null;
-        }).doOnSubscribe(() -> {
-            logger.info("Creating PostgreSQL connection pool...");
+        }).doOnSubscribe(res -> {
+            logger.info("Creating Postgresql connection pool...");
         }).doOnSuccess(res -> {
             logger.info("Pool creation successful.");
         }).subscribe(res -> {
-            Promise.promise().complete();
-        }, Completable::error);
+            Promise.promise().complete(res);
+        }, failure -> {
+            Promise.promise().fail(failure);
+        });
     }
 
     @Override
     public void stop(Future<Void> stopFuture) throws Exception {
-        Single.just(Shared.getInstance().getPgPool()).map(pool ->{
+        Single.just(Shared.getInstance().getPgPool()).map(pool -> {
             pool.close();
 
             return null;
-        }).doOnSubscribe(() -> {
+        }).doOnSubscribe(res -> {
             logger.info("Starting close PgPool...");
         }).doOnSuccess(res -> {
             logger.info("Pool closed successful.");
         }).subscribe(res -> {
-            Promise.promise().complete();
-        }, Completable::error);
+            Promise.promise().complete(res);
+        }, failure -> {
+            Promise.promise().fail(failure);
+        });
     }
 }

@@ -1,24 +1,25 @@
-package com.rayfalling;
+package com.Rayfalling;
 
 
-import com.rayfalling.config.DatabaseVerticleConfig;
-import com.rayfalling.config.MainVerticleConfig;
-import com.rayfalling.verticle.DatabaseVerticle;
-import com.rayfalling.verticle.MainVerticle;
+import com.Rayfalling.config.DatabaseVerticleConfig;
+import com.Rayfalling.config.MainVerticleConfig;
+import com.Rayfalling.verticle.DatabaseVerticle;
+import com.Rayfalling.verticle.MainVerticle;
+import io.reactivex.Single;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import rx.Single;
 
-import java.util.List;
 import java.util.Scanner;
 
+@SuppressWarnings("ResultOfMethodCallIgnored")
 public class StartUp {
     private static String MainVerticleDeploymentID;
     private static String DatabaseVerticleDeploymentID;
-
+    
+    
     public static void main(String[] args) {
         Logger logger = LogManager.getLogger("Startup");
-
+        
         Single.just(Shared.getInstance()).map(shared -> {
             shared.getVertx()
                   .rxDeployVerticle(MainVerticle::new, MainVerticleConfig.getInstance())
@@ -30,7 +31,7 @@ public class StartUp {
                       MainVerticleDeploymentID = res;
                       logger.info("MainVerticle instances startup succeeded. Now starting DatabaseVerticle...");
                   });
-
+            
             return shared;
         }).map(shared -> {
             shared.getVertx()
@@ -43,7 +44,7 @@ public class StartUp {
                       DatabaseVerticleDeploymentID = res;
                       logger.info("DatabaseVerticle instances startup succeeded.");
                   });
-
+            
             return shared;
         }).subscribe(res -> {
             logger.info("Startup operation finished successfully.");
@@ -52,43 +53,43 @@ public class StartUp {
             logger.fatal("Startup operation finished with error(s). Exiting server...");
             System.exit(-1);
         });
-
+        
         Scanner sc = new Scanner(System.in);
         System.out.println(sc.nextLine());
-
-        while (sc.hasNext()){
-            String input  = sc.next();
-            if(input.toLowerCase().equals("exit")){
+        
+        while (sc.hasNext()) {
+            String input = sc.next();
+            if (input.toLowerCase().equals("exit")) {
                 stop();
             }
         }
-
+        
     }
-
+    
     private static void stop() {
         Logger logger = LogManager.getLogger("Shutdown");
-
+        
         Single.just(Shared.getInstance()).map(shared -> {
             shared.getVertx()
-                  .undeploy(MainVerticleDeploymentID, res ->{
-                      if(res.succeeded()){
+                  .undeploy(MainVerticleDeploymentID, res -> {
+                      if (res.succeeded()) {
                           logger.info("MainVerticle instances stop succeeded. Now stopping DatabaseVerticle...");
-                      }else{
+                      } else {
                           logger.fatal("Failed to stop MainVerticle instances.");
                       }
                   });
-
+            
             return shared;
         }).map(shared -> {
             shared.getVertx()
-                  .undeploy(DatabaseVerticleDeploymentID, res ->{
-                      if(res.succeeded()){
+                  .undeploy(DatabaseVerticleDeploymentID, res -> {
+                      if (res.succeeded()) {
                           logger.info("DatabaseVerticle instances stop succeeded.");
-                      }else{
+                      } else {
                           logger.fatal("Failed to stop DatabaseVerticle instances.");
                       }
                   });
-
+            
             return shared;
         }).subscribe(res -> {
             logger.info("Stop operation finished successfully.");

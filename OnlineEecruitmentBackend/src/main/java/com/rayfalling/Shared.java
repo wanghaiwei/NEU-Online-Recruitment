@@ -1,12 +1,14 @@
-package com.rayfalling;
+package com.Rayfalling;
 
-import io.vertx.rxjava.core.Vertx;
-import io.reactiverse.rxjava.pgclient.PgPool;
-import io.vertx.rxjava.core.http.HttpServer;
+import io.reactiverse.reactivex.pgclient.PgPool;
+import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.http.HttpServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class Shared {
+    private static Logger RouterLogger;
+    private static Logger DatabaseLogger;
     private static Logger logger;
     private static Vertx vertx;
     private static HttpServer httpServer;
@@ -20,7 +22,9 @@ public class Shared {
 
     //让构造函数为 private，这样该类就不会被实例化
     private Shared() {
-        logger = LogManager.getLogger();
+        logger = LogManager.getLogger("Main");
+        DatabaseLogger = LogManager.getLogger("Database");
+        RouterLogger = LogManager.getLogger("Router");
         vertx = Vertx.vertx();
     }
 
@@ -29,8 +33,16 @@ public class Shared {
         return instance;
     }
 
+    public Logger getDatabaseLogger() {
+        return DatabaseLogger;
+    }
+
     public Logger getLogger() {
         return logger;
+    }
+
+    public Logger getRouterLogger() {
+        return RouterLogger;
     }
 
     public Vertx getVertx() {

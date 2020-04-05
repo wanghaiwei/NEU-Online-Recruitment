@@ -15,7 +15,7 @@ plugins {
 
 group 'org.rayfalling'
 version '1.0A'
-sourceCompatibility = '1.8'
+sourceCompatibility = '13'
 
 ext {
     vertx_version = '3.8.5'
@@ -42,7 +42,7 @@ dependencies {
     implementation "io.vertx:vertx-core:$vertx_version"
     implementation "io.vertx:vertx-web:$vertx_version"
     implementation "io.reactiverse:reactive-pg-client:$rx_pgclient_version"
-    implementation group: "io.vertx", name: "vertx-rx-java", version: "$vertx_version"
+    implementation group: "io.vertx", name: "vertx-rx-java2", version: "$vertx_version"
     implementation group: "org.apache.logging.log4j", name: "log4j-api", version: "$log4j_version"
     implementation group: "org.apache.logging.log4j", name: "log4j-core", version: "$log4j_version"
     testCompile group: 'junit', name: 'junit', version: '4.12'

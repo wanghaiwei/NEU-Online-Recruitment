@@ -1,18 +1,21 @@
-package com.rayfalling.router;
+package com.Rayfalling.router;
 
-import com.rayfalling.Shared;
-import com.rayfalling.config.MainRouterConfig;
-import io.vertx.core.Vertx;
+import com.Rayfalling.Shared;
+import com.Rayfalling.config.MainRouterConfig;
+import com.Rayfalling.router.Admin.AdminRouter;
+import com.Rayfalling.router.Group.GroupRouter;
+import com.Rayfalling.router.Post.PostRouter;
+import com.Rayfalling.router.Postion.PositionRouter;
+import com.Rayfalling.router.User.UserRouter;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.rxjava.ext.web.Router;
-import io.vertx.rxjava.ext.web.RoutingContext;
-import io.vertx.rxjava.ext.web.handler.CorsHandler;
+import io.vertx.reactivex.ext.web.Router;
+import io.vertx.reactivex.ext.web.RoutingContext;
+import io.vertx.reactivex.ext.web.handler.CorsHandler;
 
 public class MainRouter {
 
     private static Router router;
     private static MainRouter instance = new MainRouter();
-    private static Vertx vertx;
 
     //让构造函数为 private，这样该类就不会被实例化
     private MainRouter() {
@@ -27,7 +30,7 @@ public class MainRouter {
         if (MainRouterConfig.getInstance().getLogRequests()) {
             router.route().handler(
                     router -> {
-                        Shared.getInstance().getLogger().info(router.normalisedPath());
+                        Shared.getInstance().getRouterLogger().info(router.normalisedPath());
                         router.next();
                     });
         }
@@ -35,6 +38,15 @@ public class MainRouter {
         //mount subRouters
         Router subRouter = Router.router(Shared.getInstance().getVertx());
         subRouter.get("/").handler(this::pageMainIndex);
+
+        //挂载用户相关url
+        subRouter.mountSubRouter("/user", UserRouter.getInstance().getRouter());
+        subRouter.mountSubRouter("/position", PositionRouter.getInstance().getRouter());
+        subRouter.mountSubRouter("/post", PostRouter.getInstance().getRouter());
+        subRouter.mountSubRouter("/group", GroupRouter.getInstance().getRouter());
+        subRouter.mountSubRouter("/admin", AdminRouter.getInstance().getRouter());
+
+        //挂载主路由
         router.mountSubRouter("/api", subRouter);
     }
 
@@ -49,8 +61,6 @@ public class MainRouter {
 
 
     private void pageMainIndex(RoutingContext context) {
-        context.response().end(("This is the index page of main router.\n" +
-                                "Normally you should not see this, unless you are the maintainer of the webservice.\n")
-                .trim());
+        context.response().end(("This is the index page of api router.").trim());
     }
 }
