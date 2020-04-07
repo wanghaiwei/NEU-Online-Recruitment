@@ -29,18 +29,7 @@ public class ConfigLoader {
             Shared.getInstance().getLogger()
                   .info("Configuration file does not exist. Creating from default configuration.");
             //判定是jar运行还是IDE运行
-            URL test = StartUp.class.getResource("");
-            InputStream stream = null;
-            if (test.getProtocol().equals("jar")) {
-                stream = StartUp.class.getClassLoader().getResourceAsStream("/resource/config.json");
-            } else if (test.getProtocol().equals("file")) {
-                URL resource = StartUp.class.getClassLoader().getResource("config.json");
-                if (resource != null) {
-                    stream = resource.openConnection().getInputStream();
-                } else {
-                    throw new IOException("Open inner config failed");
-                }
-            }
+            InputStream stream = Utils.LoadResource("config.json");
 
             //创建外部配置项
             if (!configFileExternal.exists()) {
@@ -52,7 +41,6 @@ public class ConfigLoader {
                         int read = stream.read(buffer);
                         if (read != available)
                             throw new IOException("Copy inner config failed");
-                        System.out.println(Arrays.toString(buffer));
                         fileOutputStream.write(buffer);
                         fileOutputStream.flush();
                         fileOutputStream.close();

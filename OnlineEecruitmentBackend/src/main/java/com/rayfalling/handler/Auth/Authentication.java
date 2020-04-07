@@ -1,7 +1,13 @@
 package com.Rayfalling.handler.Auth;
 
 import com.Rayfalling.Shared;
+import com.Rayfalling.middleware.DataBaseExt;
+import com.Rayfalling.middleware.SqlQuery;
 import io.reactiverse.reactivex.pgclient.PgConnection;
+import io.reactiverse.reactivex.pgclient.PgRowSet;
+import io.reactiverse.reactivex.pgclient.Row;
+import io.reactiverse.reactivex.pgclient.Tuple;
+import io.reactivex.Observable;
 import io.vertx.core.json.JsonObject;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -21,18 +27,21 @@ public class Authentication {
                   err.printStackTrace();
               })
               .doAfterSuccess(PgConnection::close)
-              .flatMap(conn -> {
-                  conn.rxPreparedQuery();
-                  return null;
-              })
+              .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("Register"), Tuple.of(data.getString("phone"), data.getString("password"))))
               .map(res -> {
+                  Row row = DataBaseExt.oneOrNull(res);
+                  if (row == null)
+                      return -2;
+                  else if (row.getInteger(0) == 0)
+                      return 0;
+                  else if (row.getInteger(0) == -1)
+                      return -1;
                   return 0;
               })
               .doOnError(err -> {
                   Shared.getInstance().getDatabaseLogger().error(err);
                   err.printStackTrace();
               });
-        
         
         return 0;
     }

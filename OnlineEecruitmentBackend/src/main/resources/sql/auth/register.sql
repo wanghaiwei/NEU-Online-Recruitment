@@ -1,0 +1,1 @@
+select register($1, $2);

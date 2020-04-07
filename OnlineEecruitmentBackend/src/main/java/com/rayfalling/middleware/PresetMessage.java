@@ -10,14 +10,14 @@ public enum PresetMessage {
     ERROR_UNKNOWN(),
     ERROR_UNIMPLEMENTED(-101, "unimplemented", "尚未实现"),
     SUCCESS(0, "ok", "操作成功"),
-
+    
     //Router Check Message
     // 请求消息
     ERROR_REQUEST_PARAM(-201, "post param error", "参数错误"),
     ERROR_REQUEST_GET_PARAM(-202, "get param error", "参数错误"),
     ERROR_REQUEST_JSON(-203, "invalid json", "非法请求"),
     ERROR_REQUEST_JSON_PARAM(-204, "invalid json param", "参数错误"),
-
+    
     //Defined Message
     PHONE_REGISTERED_ERROR(50001, "phone number registered", "手机号已注册"),
     PASSWORD_FORMAT_ERROR(50002, "bad password format", "密码格式错误，密码需由8-16个字符组成，必须包含字母和数字"),
@@ -37,28 +37,29 @@ public enum PresetMessage {
     USER_NOT_MEET_CREATE_LIMIT_ERROR(50016, "not meeting the criteria for creating circles", "用户不满足创建圈子条件"),
     DESCRIPTION_OVER_100_LIMIT_ERROR(50017, "description no more than 100 words", "描述不能多于100字"),
     OVER_MANAGE_ERROR(50018, "over management", "超额管理"),
-    PHONE_FORMAT_ERROR(50019, "phone format incorrect", "手机号格式错误"),;
-
+    PHONE_FORMAT_ERROR(50019, "phone format incorrect", "手机号格式错误"),
+    ;
+    
     int code;
     String message, description;
-
+    
     PresetMessage(int code, String message, String description) {
         this.code = code;
         this.message = message;
         this.description = description;
     }
-
+    
     PresetMessage() {
         this.code = -1;
         this.message = "unknown error";
         this.description = "未知错误";
     }
-
+    
     public void apply(Callable<PresetMessage> fun) throws Exception {
         Utils.apply(fun);
     }
-
-
+    
+    
     @Override
     public String toString() {
         return new JsonObject().put("code", this.code)
