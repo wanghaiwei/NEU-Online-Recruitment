@@ -6,6 +6,7 @@ import com.Rayfalling.config.MainVerticleConfig;
 import com.Rayfalling.verticle.DatabaseVerticle;
 import com.Rayfalling.verticle.MainVerticle;
 import io.reactivex.Single;
+import io.vertx.reactivex.core.Promise;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,6 +31,11 @@ public class StartUp {
                   .doOnSuccess(res -> {
                       MainVerticleDeploymentID = res;
                       logger.info("MainVerticle instances startup succeeded. Now starting DatabaseVerticle...");
+                  })
+                  .subscribe(res -> {
+                      Promise.promise().complete(res);
+                  }, failure -> {
+                      Promise.promise().fail(failure);
                   });
             
             return shared;
@@ -43,27 +49,37 @@ public class StartUp {
                   .doOnSuccess(res -> {
                       DatabaseVerticleDeploymentID = res;
                       logger.info("DatabaseVerticle instances startup succeeded.");
+                  })
+                  .subscribe(res -> {
+                      Promise.promise().complete(res);
+                  }, failure -> {
+                      Promise.promise().fail(failure);
                   });
             
             return shared;
         }).subscribe(res -> {
             logger.info("Startup operation finished successfully.");
+            Promise.promise().complete(res);
         }, err -> {
             logger.error(err.getMessage());
             logger.fatal("Startup operation finished with error(s). Exiting server...");
+            Promise.promise().fail(err);
             System.exit(-1);
         });
         
-        Scanner sc = new Scanner(System.in);
-        System.out.println(sc.nextLine());
-        
-        while (sc.hasNext()) {
-            String input = sc.next();
-            if (input.toLowerCase().equals("exit")) {
-                stop();
+        //启动接收器等待退出信号
+        Runnable thread = () -> {
+            Scanner sc = new Scanner(System.in);
+            System.out.println(sc.nextLine());
+            
+            while (sc.hasNext()) {
+                String input = sc.next();
+                if (input.toLowerCase().equals("exit")) {
+                    stop();
+                }
             }
-        }
-        
+        };
+        thread.run();
     }
     
     private static void stop() {
@@ -93,9 +109,11 @@ public class StartUp {
             return shared;
         }).subscribe(res -> {
             logger.info("Stop operation finished successfully.");
+            Promise.promise().complete(res);
         }, err -> {
             logger.error(err.getMessage());
             logger.fatal("Stop operation finished with error(s). Please check task manager and kill it manually...");
+            Promise.promise().fail(err);
             System.exit(-1);
         });
     }

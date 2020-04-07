@@ -27,11 +27,11 @@ public class MainVerticle extends AbstractVerticle {
         server.requestHandler(MainRouter.getInstance().getRouter())
               .rxListen(listenPort, listenHost)
               .doOnError(error -> {
-                  logger.fatal("Failed to listen at host `$listenHost` port $listenPort");
+                  logger.fatal("Failed to listen at host `$listenHost` port " + listenPort);
                   error.printStackTrace();
               })
               .doOnSuccess(res -> {
-                  logger.debug("Listen succeeded at host `$listenHost` port $listenPort.");
+                  logger.debug("Listen succeeded at host `$listenHost` port " + listenPort);
               })
               .subscribe(res -> {
                   Promise.promise().complete(res);

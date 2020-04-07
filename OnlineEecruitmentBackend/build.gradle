@@ -15,7 +15,7 @@ plugins {
 
 group 'org.rayfalling'
 version '1.0A'
-sourceCompatibility = '13'
+sourceCompatibility = '1.8'
 
 ext {
     vertx_version = '3.8.5'
@@ -46,4 +46,5 @@ dependencies {
     implementation group: "org.apache.logging.log4j", name: "log4j-api", version: "$log4j_version"
     implementation group: "org.apache.logging.log4j", name: "log4j-core", version: "$log4j_version"
     testCompile group: 'junit', name: 'junit', version: '4.12'
+    implementation 'org.jetbrains:annotations:15.0'
 }

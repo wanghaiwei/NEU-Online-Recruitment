@@ -42,9 +42,11 @@ public class UserRouter {
     }
     
     private void UserRegister(RoutingContext context) {
-        Disposable disposable = Single.just(context).map(RoutingContext::getBodyAsJson).doOnError(err -> {
-            JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON);
-            Shared.getInstance().getRouterLogger().warn(PresetMessage.ERROR_REQUEST_JSON.toString());
+        Disposable disposable = Single.just(context).map(res -> res.getBody().toJsonObject()).doOnError(err -> {
+            if (!context.response().ended()) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON);
+                Shared.getInstance().getRouterLogger().error(PresetMessage.ERROR_REQUEST_JSON.toString());
+            }
         }).map(params -> {
             //check param is null
             String phone = params.getString("phone", "");
@@ -52,12 +54,12 @@ public class UserRouter {
             
             if (password.equals("") || phone.equals("")) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON_PARAM);
-                Shared.getInstance().getRouterLogger().warn(PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
+                Shared.getInstance().getRouterLogger().error(PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
             }
             
             if (Utils.isMobile(phone)) {
                 JsonResponse.RespondPreset(context, PresetMessage.PHONE_FORMAT_ERROR);
-                Shared.getInstance().getRouterLogger().warn(PresetMessage.PHONE_FORMAT_ERROR.toString());
+                Shared.getInstance().getRouterLogger().error(PresetMessage.PHONE_FORMAT_ERROR.toString());
             }
             
             return new JsonObject().put("phone", phone).put("password", password);
@@ -67,16 +69,19 @@ public class UserRouter {
                 JsonResponse.RespondPreset(context, PresetMessage.SUCCESS);
             } else if (result == -1) {
                 JsonResponse.RespondPreset(context, PresetMessage.PHONE_REGISTERED_ERROR);
-                Shared.getInstance().getRouterLogger().warn(PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
+                Shared.getInstance().getRouterLogger().error(PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
             } else if (result == -2) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_UNKNOWN);
-                Shared.getInstance().getRouterLogger().warn(PresetMessage.ERROR_UNKNOWN.toString());
+                Shared.getInstance().getRouterLogger().error(PresetMessage.ERROR_UNKNOWN.toString());
             }
             
             return null;
         }).doOnError(err -> {
-            JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON_PARAM);
-            Shared.getInstance().getRouterLogger().warn(PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
+            if (!context.response().ended()) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON_PARAM);
+                Shared.getInstance().getRouterLogger().error(PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
+            }
+            
         }).subscribe(res -> {
             Promise.promise().complete(res);
         }, failure -> {
