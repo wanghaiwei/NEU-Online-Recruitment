@@ -20,7 +20,7 @@ public class MainRouter {
     
     //让构造函数为 private，这样该类就不会被实例化
     private MainRouter() {
-        router = Router.router(Shared.getInstance().getVertx());
+        router = Router.router(Shared.getVertx());
         router.route().handler(CorsHandler.create("*")
                                           .allowedMethod(HttpMethod.GET)
                                           .allowedMethod(HttpMethod.POST)
@@ -32,13 +32,13 @@ public class MainRouter {
         if (MainRouterConfig.getInstance().getLogRequests()) {
             router.route().handler(
                     router -> {
-                        Shared.getInstance().getRouterLogger().info(router.normalisedPath());
+                        Shared.getRouterLogger().info(router.normalisedPath());
                         router.next();
                     });
         }
         
         //mount subRouters
-        Router subRouter = Router.router(Shared.getInstance().getVertx());
+        Router subRouter = Router.router(Shared.getVertx());
         subRouter.get("/").handler(this::pageMainIndex);
         
         //挂载用户相关url

@@ -6,9 +6,8 @@ import com.Rayfalling.middleware.JsonResponse;
 import com.Rayfalling.middleware.PresetMessage;
 import com.Rayfalling.middleware.Utils;
 import io.reactivex.Single;
-import io.reactivex.disposables.Disposable;
 import io.vertx.core.json.JsonObject;
-import io.vertx.reactivex.core.Promise;
+
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
 
@@ -23,7 +22,7 @@ public class UserRouter {
     
     //让构造函数为 private，这样该类就不会被实例化
     private UserRouter() {
-        router = Router.router(Shared.getInstance().getVertx());
+        router = Router.router(Shared.getVertx());
         router.get("/").handler(this::UserIndex);
         router.post("/register").handler(this::UserRegister);
     }
@@ -41,11 +40,12 @@ public class UserRouter {
         context.response().end(("This is the index page of user router.").trim());
     }
     
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     private void UserRegister(RoutingContext context) {
-        Disposable disposable = Single.just(context).map(res -> res.getBody().toJsonObject()).doOnError(err -> {
+        Single.just(context).map(res -> res.getBody().toJsonObject()).doOnError(err -> {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON);
-                Shared.getInstance().getRouterLogger().error(PresetMessage.ERROR_REQUEST_JSON.toString());
+                Shared.getRouterLogger().error(PresetMessage.ERROR_REQUEST_JSON.toString());
             }
         }).map(params -> {
             //check param is null
@@ -54,38 +54,37 @@ public class UserRouter {
             
             if (password.equals("") || phone.equals("")) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON_PARAM);
-                Shared.getInstance().getRouterLogger().error(PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
+                Shared.getRouterLogger().error(PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
             }
             
-            if (Utils.isMobile(phone)) {
+            if (!Utils.isMobile(phone)) {
                 JsonResponse.RespondPreset(context, PresetMessage.PHONE_FORMAT_ERROR);
-                Shared.getInstance().getRouterLogger().error(PresetMessage.PHONE_FORMAT_ERROR.toString());
+                Shared.getRouterLogger().error(PresetMessage.PHONE_FORMAT_ERROR.toString());
             }
             
             return new JsonObject().put("phone", phone).put("password", password);
-        }).flatMap(params -> {
-            int result = Authentication.DatabaseRegister(params);
+        }).flatMap(params -> Authentication.DatabaseRegister(params).flatMap(result -> {
             if (result == 0) {
                 JsonResponse.RespondPreset(context, PresetMessage.SUCCESS);
             } else if (result == -1) {
                 JsonResponse.RespondPreset(context, PresetMessage.PHONE_REGISTERED_ERROR);
-                Shared.getInstance().getRouterLogger().error(PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
+                Shared.getRouterLogger().error(PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
             } else if (result == -2) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_UNKNOWN);
-                Shared.getInstance().getRouterLogger().error(PresetMessage.ERROR_UNKNOWN.toString());
+                Shared.getRouterLogger().error(PresetMessage.ERROR_UNKNOWN.toString());
             }
             
             return null;
-        }).doOnError(err -> {
+        })).doOnError(err -> {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON_PARAM);
-                Shared.getInstance().getRouterLogger().error(PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
+                Shared.getRouterLogger().error(PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
             }
             
         }).subscribe(res -> {
-            Promise.promise().complete(res);
+        
         }, failure -> {
-            Promise.promise().fail(failure);
+        
         });
     }
 }

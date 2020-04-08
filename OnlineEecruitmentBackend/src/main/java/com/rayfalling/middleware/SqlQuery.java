@@ -23,7 +23,7 @@ public class SqlQuery {
             try {
                 if ((length = inputStream.read(buffer)) == -1) break;
             } catch (IOException e) {
-                Shared.getInstance()
+                Shared
                       .getLogger()
                       .error(e.getMessage());
                 e.printStackTrace();
@@ -31,7 +31,15 @@ public class SqlQuery {
             result.write(buffer, 0, length);
         }
         // StandardCharsets.UTF_8.name() > JDK 7
-        return result.toString(StandardCharsets.UTF_8);
+        try {
+            return result.toString(StandardCharsets.UTF_8.name());
+        } catch (Exception e) {
+            Shared
+                  .getLogger()
+                  .error(e.getMessage());
+            e.printStackTrace();
+            return result.toString();
+        }
     }
     
     //映射表

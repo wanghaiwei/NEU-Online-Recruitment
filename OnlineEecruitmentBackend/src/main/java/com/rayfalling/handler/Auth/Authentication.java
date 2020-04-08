@@ -8,6 +8,7 @@ import io.reactiverse.reactivex.pgclient.PgRowSet;
 import io.reactiverse.reactivex.pgclient.Row;
 import io.reactiverse.reactivex.pgclient.Tuple;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -18,31 +19,28 @@ public class Authentication {
      * -1  数据库执行失败，手机号已存在
      * -2  数据库执行失败，未知错误
      */
-    public static int DatabaseRegister(JsonObject data) {
-        Shared.getInstance()
-              .getPgPool()
-              .rxGetConnection()
-              .doOnError(err -> {
-                  Shared.getInstance().getDatabaseLogger().error(err);
-                  err.printStackTrace();
-              })
-              .doAfterSuccess(PgConnection::close)
-              .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("Register"), Tuple.of(data.getString("phone"), data.getString("password"))))
-              .map(res -> {
-                  Row row = DataBaseExt.oneOrNull(res);
-                  if (row == null)
-                      return -2;
-                  else if (row.getInteger(0) == 0)
-                      return 0;
-                  else if (row.getInteger(0) == -1)
-                      return -1;
-                  return 0;
-              })
-              .doOnError(err -> {
-                  Shared.getInstance().getDatabaseLogger().error(err);
-                  err.printStackTrace();
-              });
-        
-        return 0;
+    public static Single<Integer> DatabaseRegister(JsonObject data) {
+        return Shared.getPgPool()
+                     .rxGetConnection()
+                     .doOnError(err -> {
+                         Shared.getDatabaseLogger().error(err);
+                         err.printStackTrace();
+                     })
+                     .doAfterSuccess(PgConnection::close)
+                     .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("Register"), Tuple.of(data.getString("phone"), data.getString("password"))))
+                     .map(res -> {
+                         Row row = DataBaseExt.oneOrNull(res);
+                         if (row == null)
+                             return -2;
+                         else if (row.getInteger(0) == 0)
+                             return 0;
+                         else if (row.getInteger(0) == -1)
+                             return -1;
+                         return null;
+                     })
+                     .doOnError(err -> {
+                         Shared.getDatabaseLogger().error(err);
+                         err.printStackTrace();
+                     });
     }
 }

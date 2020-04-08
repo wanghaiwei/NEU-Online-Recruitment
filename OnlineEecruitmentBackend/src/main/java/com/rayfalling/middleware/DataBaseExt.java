@@ -28,7 +28,7 @@ public class DataBaseExt {
             try {
                 jsonArray.add((JsonObject) method.invoke(row));
             } catch (Exception e) {
-                Shared.getInstance().getLogger().error(e.getMessage());
+                Shared.getLogger().error(e.getMessage());
                 e.printStackTrace();
             }
         }

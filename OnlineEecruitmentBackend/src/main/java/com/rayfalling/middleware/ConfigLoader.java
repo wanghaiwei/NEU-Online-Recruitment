@@ -17,20 +17,21 @@ public class ConfigLoader {
      * 外部配置文件。
      */
     private static File configFileExternal = new File("conf/config.json");
-
+    
     /**
      * 外部配置文件不存在时，复制并使用内部配置文件；
      * 外部配置文件存在时，优先使用外部配置文件。
-     * @throws IOException 文件不存在
+     *
      * @return 配置文件实例
+     * @throws IOException 文件不存在
      */
     private static File configFile() throws IOException {
         if (!configFileExternal.exists()) {
-            Shared.getInstance().getLogger()
+            Shared.getLogger()
                   .info("Configuration file does not exist. Creating from default configuration.");
             //判定是jar运行还是IDE运行
             InputStream stream = Utils.LoadResource("config.json");
-
+            
             //创建外部配置项
             if (!configFileExternal.exists()) {
                 if (FileExt.CreateFileWithParentDir(configFileExternal)) {
@@ -44,6 +45,8 @@ public class ConfigLoader {
                         fileOutputStream.write(buffer);
                         fileOutputStream.flush();
                         fileOutputStream.close();
+                    } else {
+                        throw new IOException("Copy inner config failed");
                     }
                 } else {
                     throw new IOException("Copy inner config failed");
@@ -52,9 +55,10 @@ public class ConfigLoader {
         }
         return configFileExternal;
     }
-
+    
     /**
      * 从配置文件中加载的配置对象。
+     *
      * @return JsonObject 配置项json对象
      */
     public static JsonObject configObject() throws IOException {

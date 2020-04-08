@@ -24,7 +24,7 @@ public class Utils {
         try {
             return callable.call();
         } catch (Exception e) {
-            Shared.getInstance().getLogger().error(e.getMessage());
+            Shared.getLogger().error(e.getMessage());
             e.printStackTrace();
         }
         return null;
@@ -53,14 +53,14 @@ public class Utils {
         URL test = StartUp.class.getResource("");
         InputStream stream = null;
         if (test.getProtocol().equals("jar")) {
-            stream = StartUp.class.getClassLoader().getResourceAsStream("/resource/" + path);
+            stream = StartUp.class.getResourceAsStream("/resources/" + path);
         } else if (test.getProtocol().equals("file")) {
             URL resource = StartUp.class.getClassLoader().getResource(path);
             if (resource != null) {
                 try {
                     stream = resource.openConnection().getInputStream();
                 } catch (Exception e) {
-                    Shared.getInstance().getLogger().error(e.getMessage());
+                    Shared.getLogger().error(e.getMessage());
                     e.printStackTrace();
                 }
             }

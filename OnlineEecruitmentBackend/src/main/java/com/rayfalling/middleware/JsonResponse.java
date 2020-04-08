@@ -69,7 +69,7 @@ public class JsonResponse {
                 return presetMessage;
             });
         } catch (Exception e) {
-            Shared.getInstance().getRouterLogger().error(e.getMessage());
+            Shared.getRouterLogger().error(e.getMessage());
             e.printStackTrace();
         }
 

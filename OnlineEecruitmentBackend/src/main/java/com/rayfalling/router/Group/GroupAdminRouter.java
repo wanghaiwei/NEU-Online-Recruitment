@@ -14,7 +14,7 @@ public class GroupAdminRouter {
 
     //让构造函数为 private，这样该类就不会被实例化
     private GroupAdminRouter() {
-        router = Router.router(Shared.getInstance().getVertx());
+        router = Router.router(Shared.getVertx());
         router.get("/").handler(this::GroupIndex);
     }
 
