@@ -34,7 +34,7 @@ public class MainVerticle extends AbstractVerticle {
         final Integer listenPort = config().getInteger("port");
         HttpServer server = vertx.createHttpServer();
         Shared.setHttpServer(server);
-        server.requestHandler(MainRouter.getInstance().getRouter())
+        server.requestHandler(MainRouter.getRouter())
               .rxListen(listenPort, listenHost)
               .doOnError(error -> {
                   logger.fatal("Failed to listen at host " + listenHost + " port " + listenPort);

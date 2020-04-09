@@ -8,6 +8,7 @@ import com.Rayfalling.router.Post.PostRouter;
 import com.Rayfalling.router.Postion.PositionRouter;
 import com.Rayfalling.router.User.UserRouter;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.reactivex.ext.web.Route;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
 import io.vertx.reactivex.ext.web.handler.BodyHandler;
@@ -16,12 +17,12 @@ import org.jetbrains.annotations.NotNull;
 
 public class MainRouter {
     
-    private static Router router;
-    private static MainRouter instance = new MainRouter();
+    private static Router router = Router.router(Shared.getVertx());
     
-    //让构造函数为 private，这样该类就不会被实例化
-    private MainRouter() {
-        router = Router.router(Shared.getVertx());
+    //静态初始化块
+    static  {
+        String prefix = "";
+        
         router.route().handler(CorsHandler.create("*")
                                           .allowedMethod(HttpMethod.GET)
                                           .allowedMethod(HttpMethod.POST)
@@ -29,6 +30,7 @@ public class MainRouter {
                                           .allowedHeader("content-type"));
         //创建bodyHandler
         router.route().handler(BodyHandler.create());
+        
         //依据配置开始路由记录
         if (MainRouterConfig.getInstance().getLogRequests()) {
             router.route().handler(
@@ -40,30 +42,30 @@ public class MainRouter {
         
         //mount subRouters
         Router subRouter = Router.router(Shared.getVertx());
-        subRouter.get("/").handler(this::pageMainIndex);
+        subRouter.get("/").handler(MainRouter::pageMainIndex);
         
         //挂载用户相关url
-        subRouter.mountSubRouter("/user", UserRouter.getInstance().getRouter());
-        subRouter.mountSubRouter("/position", PositionRouter.getInstance().getRouter());
-        subRouter.mountSubRouter("/post", PostRouter.getInstance().getRouter());
-        subRouter.mountSubRouter("/group", GroupRouter.getInstance().getRouter());
-        subRouter.mountSubRouter("/admin", AdminRouter.getInstance().getRouter());
+        subRouter.mountSubRouter("/user", UserRouter.getRouter());
+        subRouter.mountSubRouter("/position", PositionRouter.getRouter());
+        subRouter.mountSubRouter("/post", PostRouter.getRouter());
+        subRouter.mountSubRouter("/group", GroupRouter.getRouter());
+        subRouter.mountSubRouter("/admin", AdminRouter.getRouter());
         
         //挂载主路由
         router.mountSubRouter("/api", subRouter);
+    
+        for (Route route : router.getRoutes()) {
+            if (route.getPath() != null) {
+                Shared.getRouterLogger().info(prefix + route.getPath() + " mounted succeed");
+            }
+        }
     }
     
-    //获取唯一可用的对象
-    public static MainRouter getInstance() {
-        return instance;
-    }
-    
-    public Router getRouter() {
+    public static Router getRouter() {
         return router;
     }
     
-    
-    private void pageMainIndex(@NotNull RoutingContext context) {
+    private static void pageMainIndex(@NotNull RoutingContext context) {
         context.response().end(("This is the index page of api router.").trim());
     }
 }

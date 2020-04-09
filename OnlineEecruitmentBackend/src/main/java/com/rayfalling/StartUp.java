@@ -47,6 +47,7 @@ public class StartUp {
                   .doOnError(err -> {
                       logger.error(err.getMessage());
                       logger.fatal("Failed to start MainVerticle instances.");
+                      err.printStackTrace();
                   })
                   .subscribe(res -> {
                 
@@ -61,6 +62,7 @@ public class StartUp {
                   .doOnError(err -> {
                       logger.error(err.getMessage());
                       logger.fatal("Failed to start DatabaseVerticle instances.");
+                      err.printStackTrace();
                   })
                   .doOnSubscribe(disposable -> logger.info("Starting DatabaseVerticle..."))
                   .doOnSuccess(res -> {

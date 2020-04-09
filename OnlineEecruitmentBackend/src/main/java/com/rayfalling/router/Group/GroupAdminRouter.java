@@ -1,6 +1,7 @@
 package com.Rayfalling.router.Group;
 
 import com.Rayfalling.Shared;
+import io.vertx.reactivex.ext.web.Route;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
 import org.jetbrains.annotations.NotNull;
@@ -10,25 +11,26 @@ import org.jetbrains.annotations.NotNull;
  * @author rayfalling
  * */
 public class GroupAdminRouter {
-    private static Router router;
-    private static GroupAdminRouter instance = new GroupAdminRouter();
-
-    //让构造函数为 private，这样该类就不会被实例化
-    private GroupAdminRouter() {
-        router = Router.router(Shared.getVertx());
-        router.get("/").handler(this::GroupIndex);
-    }
-
-    //获取唯一可用的对象
-    public static GroupAdminRouter getInstance() {
-        return instance;
-    }
-
-    public Router getRouter() {
+    private static Router router = Router.router(Shared.getVertx());
+    
+    public static Router getRouter() {
         return router;
     }
+    
+    //静态初始化块
+    static {
+        String prefix = "/api/group/admin";
+    
+        router.get("/").handler(GroupAdminRouter::GroupIndex);
+    
+        for (Route route : router.getRoutes()) {
+            if (route.getPath() != null) {
+                Shared.getRouterLogger().info(prefix + route.getPath() + " mounted succeed");
+            }
+        }
+    }
 
-    private void GroupIndex(@NotNull RoutingContext context) {
+    private static void GroupIndex(@NotNull RoutingContext context) {
         context.response().end(("This is the index page of group admin router.").trim());
     }
 }
