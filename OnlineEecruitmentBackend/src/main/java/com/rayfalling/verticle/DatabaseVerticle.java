@@ -10,6 +10,7 @@ import io.vertx.reactivex.core.AbstractVerticle;
 import io.vertx.reactivex.core.Promise;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * 数据库实例
@@ -28,7 +29,7 @@ public class DatabaseVerticle extends AbstractVerticle {
         InnerStart(Promise.promise());
     }
     
-    private void InnerStart(Promise<Void> startPromise) {
+    private void InnerStart(@NotNull Promise<Void> startPromise) {
         Single.just(config()).flatMap(config -> {
             PgPoolOptions options = new PgPoolOptions();
             options.setHost(config.getString("host"))
@@ -50,7 +51,7 @@ public class DatabaseVerticle extends AbstractVerticle {
         }, startPromise::fail);
     }
     
-    private void InnerStop(Promise<Void> stopPromise) {
+    private void InnerStop(@NotNull Promise<Void> stopPromise) {
         Single.just(Shared.getPgPool()).map(pool -> {
             pool.close();
             

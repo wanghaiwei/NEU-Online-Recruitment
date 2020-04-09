@@ -12,6 +12,7 @@ import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
 import io.vertx.reactivex.ext.web.handler.BodyHandler;
 import io.vertx.reactivex.ext.web.handler.CorsHandler;
+import org.jetbrains.annotations.NotNull;
 
 public class MainRouter {
     
@@ -62,7 +63,7 @@ public class MainRouter {
     }
     
     
-    private void pageMainIndex(RoutingContext context) {
+    private void pageMainIndex(@NotNull RoutingContext context) {
         context.response().end(("This is the index page of api router.").trim());
     }
 }

@@ -1,6 +1,6 @@
 package com.Rayfalling.config;
 
-import com.Rayfalling.middleware.ConfigLoader;
+import com.Rayfalling.middleware.Utils.ConfigLoader;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.json.JsonObject;
 

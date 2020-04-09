@@ -1,16 +1,17 @@
-package com.Rayfalling.middleware;
+package com.Rayfalling.middleware.Utils;
 
 import com.Rayfalling.Shared;
-import com.Rayfalling.StartUp;
+import com.Rayfalling.middleware.Extensions.FileExt;
+import com.Rayfalling.middleware.Utils.Utils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.json.JsonObject;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.util.Arrays;
 
 public class ConfigLoader {
     /**
@@ -61,6 +62,8 @@ public class ConfigLoader {
      *
      * @return JsonObject 配置项json对象
      */
+    @NotNull
+    @Contract(" -> new")
     public static JsonObject configObject() throws IOException {
         return new JsonObject(new ObjectMapper().readTree(configFile()).toString());
     }

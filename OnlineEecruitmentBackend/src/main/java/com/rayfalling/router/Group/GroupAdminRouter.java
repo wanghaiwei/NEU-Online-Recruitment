@@ -3,6 +3,7 @@ package com.Rayfalling.router.Group;
 import com.Rayfalling.Shared;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * 圈子管理相关路由
@@ -27,7 +28,7 @@ public class GroupAdminRouter {
         return router;
     }
 
-    private void GroupIndex(RoutingContext context) {
+    private void GroupIndex(@NotNull RoutingContext context) {
         context.response().end(("This is the index page of group admin router.").trim());
     }
 }

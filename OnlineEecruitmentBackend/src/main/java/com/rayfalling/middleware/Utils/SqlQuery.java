@@ -1,6 +1,7 @@
-package com.Rayfalling.middleware;
+package com.Rayfalling.middleware.Utils;
 
 import com.Rayfalling.Shared;
+import com.Rayfalling.middleware.Utils.Utils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

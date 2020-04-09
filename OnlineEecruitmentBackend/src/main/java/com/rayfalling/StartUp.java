@@ -3,11 +3,10 @@ package com.Rayfalling;
 
 import com.Rayfalling.config.DatabaseVerticleConfig;
 import com.Rayfalling.config.MainVerticleConfig;
-import com.Rayfalling.middleware.Utils;
+import com.Rayfalling.middleware.Utils.Utils;
 import com.Rayfalling.verticle.DatabaseVerticle;
 import com.Rayfalling.verticle.MainVerticle;
 import io.reactivex.Single;
-import io.reactivex.SingleEmitter;
 
 import io.vertx.reactivex.core.Vertx;
 import org.apache.logging.log4j.LogManager;
@@ -16,7 +15,6 @@ import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.Configurator;
 
 import java.util.Scanner;
-import java.util.function.Consumer;
 
 
 @SuppressWarnings("ResultOfMethodCallIgnored")

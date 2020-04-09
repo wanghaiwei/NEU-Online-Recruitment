@@ -1,4 +1,6 @@
-package com.Rayfalling.middleware;
+package com.Rayfalling.middleware.Extensions;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,7 +13,7 @@ public class FileExt {
      * @return 仅当创建成功时返回true, 否则返回false
      * @throws IOException 创建文件失败
      */
-    public static boolean CreateFileWithParentDir(File file) throws IOException {
+    public static boolean CreateFileWithParentDir(@NotNull File file) throws IOException {
         if (!file.exists()) {
             File fileParent = file.getParentFile();
             if (!fileParent.exists()) {

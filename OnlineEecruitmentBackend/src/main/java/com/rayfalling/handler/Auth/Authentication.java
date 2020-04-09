@@ -1,17 +1,14 @@
 package com.Rayfalling.handler.Auth;
 
 import com.Rayfalling.Shared;
-import com.Rayfalling.middleware.DataBaseExt;
-import com.Rayfalling.middleware.SqlQuery;
+import com.Rayfalling.middleware.Extensions.DataBaseExt;
+import com.Rayfalling.middleware.Utils.SqlQuery;
 import io.reactiverse.reactivex.pgclient.PgConnection;
-import io.reactiverse.reactivex.pgclient.PgRowSet;
 import io.reactiverse.reactivex.pgclient.Row;
 import io.reactiverse.reactivex.pgclient.Tuple;
-import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 
-@SuppressWarnings("ResultOfMethodCallIgnored")
 public class Authentication {
     /**
      * @param data 传入参数，包含"phone"和"password"的JsonObject

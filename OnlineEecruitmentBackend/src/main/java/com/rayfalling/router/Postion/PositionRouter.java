@@ -3,6 +3,7 @@ package com.Rayfalling.router.Postion;
 import com.Rayfalling.Shared;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * 职位相关路由
@@ -27,7 +28,7 @@ public class PositionRouter {
         return router;
     }
 
-    private void PositionIndex(RoutingContext context) {
+    private void PositionIndex(@NotNull RoutingContext context) {
         context.response().end(("This is the index page of position router.").trim());
     }
 }

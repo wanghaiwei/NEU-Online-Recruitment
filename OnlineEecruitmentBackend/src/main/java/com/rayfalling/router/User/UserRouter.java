@@ -2,14 +2,15 @@ package com.Rayfalling.router.User;
 
 import com.Rayfalling.Shared;
 import com.Rayfalling.handler.Auth.Authentication;
-import com.Rayfalling.middleware.JsonResponse;
-import com.Rayfalling.middleware.PresetMessage;
-import com.Rayfalling.middleware.Utils;
+import com.Rayfalling.middleware.Response.JsonResponse;
+import com.Rayfalling.middleware.Response.PresetMessage;
+import com.Rayfalling.middleware.Utils.Utils;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * 用户相关路由
@@ -36,12 +37,12 @@ public class UserRouter {
         return router;
     }
     
-    private void UserIndex(RoutingContext context) {
+    private void UserIndex(@NotNull RoutingContext context) {
         context.response().end(("This is the index page of user router.").trim());
     }
     
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    private void UserRegister(RoutingContext context) {
+    private void UserRegister(@NotNull RoutingContext context) {
         Single.just(context).map(res -> res.getBody().toJsonObject()).doOnError(err -> {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON);
@@ -68,7 +69,7 @@ public class UserRouter {
                 JsonResponse.RespondPreset(context, PresetMessage.SUCCESS);
             } else if (result == -1) {
                 JsonResponse.RespondPreset(context, PresetMessage.PHONE_REGISTERED_ERROR);
-                Shared.getRouterLogger().error(PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
+                Shared.getRouterLogger().error(PresetMessage.PHONE_REGISTERED_ERROR.toString());
             } else if (result == -2) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_UNKNOWN);
                 Shared.getRouterLogger().error(PresetMessage.ERROR_UNKNOWN.toString());

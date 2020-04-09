@@ -1,4 +1,4 @@
-package com.Rayfalling.middleware;
+package com.Rayfalling.middleware.Extensions;
 
 import com.Rayfalling.Shared;
 import io.reactiverse.reactivex.pgclient.PgRowSet;
@@ -19,7 +19,7 @@ public class DataBaseExt {
      * 将结果集映射为 JSON 数组对象。
      *
      * @param pgRowSet Postgresql查询结果
-     * @param method   mapper方法，需要返回{@code JsonObject}
+     * @param method   mapper方法，需要返回{@link JsonObject}
      * @author Rayfalling
      */
     public static JsonArray mapJsonArray(PgRowSet pgRowSet, Method method) {
@@ -68,7 +68,7 @@ public class DataBaseExt {
     }
     
     /**
-     * 将 {@code Long} 型的 Timestamp 转为 {@code LocalDateTime}。
+     * 将 {@link Long} 型的 Timestamp 转为 {@link LocalDateTime}。
      *
      * @param timestamp timestamp
      * @author Rayfalling
@@ -78,7 +78,7 @@ public class DataBaseExt {
     }
     
     /**
-     * 将 {@code Long} 型的 Timestamp 转为 {@code LocalDate}。
+     * 将 {@link Long} 型的 Timestamp 转为 {@link LocalDate}。
      *
      * @param timestamp timestamp
      * @author Rayfalling
@@ -88,7 +88,7 @@ public class DataBaseExt {
     }
     
     /**
-     * 设置 {@code JsonObject} 中给定key的默认值。
+     * 设置 {@link JsonObject} 中给定key的默认值。
      *
      * @param jsonObject timestamp
      * @param key        key的名字
@@ -102,7 +102,7 @@ public class DataBaseExt {
     }
     
     /**
-     * 获取 {@code JsonObject} 中给定key的默认值。
+     * 获取 {@link JsonObject} 中给定key的默认值。
      *
      * @param jsonObject timestamp
      * @param key        key的名字

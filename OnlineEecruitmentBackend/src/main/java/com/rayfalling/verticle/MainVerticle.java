@@ -8,6 +8,7 @@ import io.vertx.reactivex.core.Promise;
 import io.vertx.reactivex.core.http.HttpServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 
 /**
@@ -28,7 +29,7 @@ public class MainVerticle extends AbstractVerticle {
     }
     
     // Called when verticle is deployed
-    private void InnerStart(Promise<Void> startPromise) {
+    private void InnerStart(@NotNull Promise<Void> startPromise) {
         final String listenHost = config().getString("host");
         final Integer listenPort = config().getInteger("port");
         HttpServer server = vertx.createHttpServer();
@@ -55,7 +56,7 @@ public class MainVerticle extends AbstractVerticle {
     }
     
     // Called when verticle is undeploy
-    private void InnerStop(Promise<Void> stopPromise) {
+    private void InnerStop(@NotNull Promise<Void> stopPromise) {
         Single.just(Shared.getHttpServer()).map(httpServer -> {
             httpServer.close();
             

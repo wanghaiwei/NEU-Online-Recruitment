@@ -3,6 +3,7 @@ package com.Rayfalling.router.Post;
 import com.Rayfalling.Shared;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * 动态相关路由
@@ -27,7 +28,7 @@ public class PostRouter {
         return router;
     }
 
-    private void PostIndex(RoutingContext context) {
+    private void PostIndex(@NotNull RoutingContext context) {
         context.response().end(("This is the index page of post router.").trim());
     }
 }

@@ -3,6 +3,7 @@ package com.Rayfalling.router.Admin;
 import com.Rayfalling.Shared;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * 管理员相关路由
@@ -27,7 +28,7 @@ public class AdminRouter {
         return router;
     }
 
-    private void PostIndex(RoutingContext context) {
+    private void PostIndex(@NotNull RoutingContext context) {
         context.response().end(("This is the index page of admin router.").trim());
     }
 }
