@@ -40,12 +40,12 @@ public class Shared {
         return pgPool;
     }
     
-    public static HttpServer getHttpServer() {
-        return httpServer;
-    }
-    
     public static void setPgPool(PgPool pgPool) {
         Shared.pgPool = pgPool;
+    }
+    
+    public static HttpServer getHttpServer() {
+        return httpServer;
     }
     
     public static void setHttpServer(HttpServer httpServer) {

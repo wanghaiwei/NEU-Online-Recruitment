@@ -6,12 +6,12 @@ import io.vertx.core.json.JsonObject;
 
 import java.io.IOException;
 
-public class MainVerticleConfig extends DeploymentOptions {
-    private static MainVerticleConfig instance;
+public class SmsVerticleConfig extends DeploymentOptions {
+    private static SmsVerticleConfig instance;
     
     static {
         try {
-            instance = new MainVerticleConfig();
+            instance = new SmsVerticleConfig();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -19,13 +19,13 @@ public class MainVerticleConfig extends DeploymentOptions {
     
     JsonObject config;
     
-    private MainVerticleConfig() throws IOException {
-        config = ConfigLoader.configObject().getJsonObject("server");
-        setInstances(config.getInteger("instance"));
-        setConfig(config.getJsonObject("listen"));
+    public SmsVerticleConfig() throws IOException {
+        config = ConfigLoader.configObject().getJsonObject("sms");
+        setInstances(1);
+        setConfig(config);
     }
     
-    public static MainVerticleConfig getInstance() {
+    public static SmsVerticleConfig getInstance() {
         return instance;
     }
     

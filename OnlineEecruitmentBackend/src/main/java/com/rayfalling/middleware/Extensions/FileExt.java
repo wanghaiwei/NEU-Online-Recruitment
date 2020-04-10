@@ -6,12 +6,14 @@ import java.io.File;
 import java.io.IOException;
 
 public class FileExt {
-
+    
     /**
      * 创建文件和父目录
+     *
      * @param file 需要创建的文件对象
      * @return 仅当创建成功时返回true, 否则返回false
      * @throws IOException 创建文件失败
+     * @author Rayfalling
      */
     public static boolean CreateFileWithParentDir(@NotNull File file) throws IOException {
         if (!file.exists()) {

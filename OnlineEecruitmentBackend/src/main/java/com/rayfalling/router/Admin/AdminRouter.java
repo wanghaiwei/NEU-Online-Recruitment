@@ -9,26 +9,26 @@ import org.jetbrains.annotations.NotNull;
 /**
  * 管理员相关路由
  *
- * @author rayfalling
+ * @author Rayfalling
  */
 public class AdminRouter {
     private static Router router = Router.router(Shared.getVertx());
-    
-    public static Router getRouter() {
-        return router;
-    }
     
     //静态初始化块
     static {
         String prefix = "/api/admin";
         
         router.get("/").handler(AdminRouter::PostIndex);
-    
+        
         for (Route route : router.getRoutes()) {
             if (route.getPath() != null) {
                 Shared.getRouterLogger().info(prefix + route.getPath() + " mounted succeed");
             }
         }
+    }
+    
+    public static Router getRouter() {
+        return router;
     }
     
     private static void PostIndex(@NotNull RoutingContext context) {

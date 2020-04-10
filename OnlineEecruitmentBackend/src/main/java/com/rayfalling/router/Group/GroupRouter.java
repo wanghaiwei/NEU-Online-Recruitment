@@ -9,27 +9,27 @@ import org.jetbrains.annotations.NotNull;
 /**
  * 圈子相关路由
  *
- * @author rayfalling
+ * @author Rayfalling
  */
 public class GroupRouter {
     private static Router router = Router.router(Shared.getVertx());
     
-    public static Router getRouter() {
-        return router;
-    }
-    
     //静态初始化块
     static {
         String prefix = "/api/group";
-    
+        
         router.mountSubRouter("/admin", GroupAdminRouter.getRouter());
         router.get("/").handler(GroupRouter::GroupIndex);
-    
+        
         for (Route route : router.getRoutes()) {
             if (route.getPath() != null) {
                 Shared.getRouterLogger().info(prefix + route.getPath() + " mounted succeed");
             }
         }
+    }
+    
+    public static Router getRouter() {
+        return router;
     }
     
     private static void GroupIndex(@NotNull RoutingContext context) {

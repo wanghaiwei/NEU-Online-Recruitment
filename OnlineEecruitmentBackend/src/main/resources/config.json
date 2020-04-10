@@ -18,5 +18,11 @@
       "port": 8188,
       "host": "0.0.0.0"
     }
+  },
+  "sms": {
+    "accessKey": "LTAI4FwUAVpxuzywSnS79sCC",
+    "accessKeySecret": "grRiJrO3KxBYytnjywIQv57pvgXIAf",
+    "SignName": "职中小筑",
+    "expireTime": 300000
   }
 }

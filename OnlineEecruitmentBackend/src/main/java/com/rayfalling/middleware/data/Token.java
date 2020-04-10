@@ -18,7 +18,7 @@ public class Token {
      * 通过username生成Token
      *
      * @param string username or token string
-     *
+     * @author Rayfalling
      */
     public Token(@NotNull String string) {
         if (string.startsWith("NEU")) {
@@ -32,13 +32,14 @@ public class Token {
             this.expireTime = new Timestamp(1800000).getTime();
         }
     }
-
+    
     /**
      * 通过username生成Token，
      * 可以自定义过期时间
      *
      * @param username   用户名
      * @param expireTime 过期时间, {@link Long}类型Timestamp
+     * @author Rayfalling
      */
     public Token(String username, Long expireTime) {
         this.username = username;
@@ -51,6 +52,7 @@ public class Token {
      * 可以自定义过期时间
      *
      * @param jsonObject Token对应String
+     * @author Rayfalling
      */
     public Token(JsonObject jsonObject) {
         this.username = jsonObject.getString("username");

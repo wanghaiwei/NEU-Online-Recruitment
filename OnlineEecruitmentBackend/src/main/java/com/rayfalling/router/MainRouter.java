@@ -7,12 +7,16 @@ import com.Rayfalling.router.Group.GroupRouter;
 import com.Rayfalling.router.Post.PostRouter;
 import com.Rayfalling.router.Postion.PositionRouter;
 import com.Rayfalling.router.User.UserRouter;
+import com.Rayfalling.router.Verify.VerityRouter;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.web.Route;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
 import io.vertx.reactivex.ext.web.handler.BodyHandler;
 import io.vertx.reactivex.ext.web.handler.CorsHandler;
+import io.vertx.reactivex.ext.web.handler.SessionHandler;
+import io.vertx.reactivex.ext.web.sstore.LocalSessionStore;
 import org.jetbrains.annotations.NotNull;
 
 public class MainRouter {
@@ -20,7 +24,7 @@ public class MainRouter {
     private static Router router = Router.router(Shared.getVertx());
     
     //静态初始化块
-    static  {
+    static {
         String prefix = "";
         
         router.route().handler(CorsHandler.create("*")
@@ -30,6 +34,7 @@ public class MainRouter {
                                           .allowedHeader("content-type"));
         //创建bodyHandler
         router.route().handler(BodyHandler.create());
+        router.route().handler(SessionHandler.create(LocalSessionStore.create(Shared.getVertx())));
         
         //依据配置开始路由记录
         if (MainRouterConfig.getInstance().getLogRequests()) {
@@ -50,10 +55,11 @@ public class MainRouter {
         subRouter.mountSubRouter("/post", PostRouter.getRouter());
         subRouter.mountSubRouter("/group", GroupRouter.getRouter());
         subRouter.mountSubRouter("/admin", AdminRouter.getRouter());
+        subRouter.mountSubRouter("/verify", VerityRouter.getRouter());
         
         //挂载主路由
         router.mountSubRouter("/api", subRouter);
-    
+        
         for (Route route : router.getRoutes()) {
             if (route.getPath() != null) {
                 Shared.getRouterLogger().info(prefix + route.getPath() + " mounted succeed");

@@ -3,8 +3,8 @@ package com.Rayfalling.verticle;
 import com.Rayfalling.Shared;
 import com.Rayfalling.router.MainRouter;
 import io.reactivex.Single;
+import io.vertx.core.Promise;
 import io.vertx.reactivex.core.AbstractVerticle;
-import io.vertx.reactivex.core.Promise;
 import io.vertx.reactivex.core.http.HttpServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,17 +19,7 @@ public class MainVerticle extends AbstractVerticle {
     private Logger logger = LogManager.getLogger("MainVerticle");
     
     @Override
-    public void stop() {
-        InnerStop(Promise.promise());
-    }
-    
-    @Override
-    public void start() {
-        InnerStart(Promise.promise());
-    }
-    
-    // Called when verticle is deployed
-    private void InnerStart(@NotNull Promise<Void> startPromise) {
+    public void start(@NotNull Promise<Void> startPromise) throws Exception {
         final String listenHost = config().getString("host");
         final Integer listenPort = config().getInteger("port");
         HttpServer server = vertx.createHttpServer();
@@ -55,8 +45,8 @@ public class MainVerticle extends AbstractVerticle {
               }, startPromise::fail);
     }
     
-    // Called when verticle is undeploy
-    private void InnerStop(@NotNull Promise<Void> stopPromise) {
+    @Override
+    public void stop(@NotNull Promise<Void> stopPromise) throws Exception {
         Single.just(Shared.getHttpServer()).map(httpServer -> {
             httpServer.close();
             

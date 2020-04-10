@@ -3,11 +3,12 @@ package com.Rayfalling;
 
 import com.Rayfalling.config.DatabaseVerticleConfig;
 import com.Rayfalling.config.MainVerticleConfig;
+import com.Rayfalling.config.SmsVerticleConfig;
 import com.Rayfalling.middleware.Utils.Utils;
 import com.Rayfalling.verticle.DatabaseVerticle;
 import com.Rayfalling.verticle.MainVerticle;
+import com.Rayfalling.verticle.SmsVerticle;
 import io.reactivex.Single;
-
 import io.vertx.reactivex.core.Vertx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,6 +22,7 @@ import java.util.Scanner;
 public class StartUp {
     private static String MainVerticleDeploymentID;
     private static String DatabaseVerticleDeploymentID;
+    private static String SmsVerticleDeploymentID;
     
     
     public static void main(String[] args) {
@@ -36,7 +38,7 @@ public class StartUp {
         
         final Logger logger = LogManager.getLogger("StartUp");
         
-        Single.just(Vertx.vertx()).flatMap(resource -> {
+        Single.just(Shared.getVertx()).flatMap(resource -> {
             Shared.getVertx()
                   .rxDeployVerticle(MainVerticle::new, MainVerticleConfig.getInstance())
                   .doOnSuccess(res -> {
@@ -68,6 +70,26 @@ public class StartUp {
                   .doOnSuccess(res -> {
                       DatabaseVerticleDeploymentID = res;
                       logger.info("DatabaseVerticle instances startup succeeded.");
+                  })
+                  .subscribe(res -> {
+                
+                  }, failure -> {
+                
+                  });
+            
+            return Single.just(resource);
+        }).flatMap(resource -> {
+            Shared.getVertx()
+                  .rxDeployVerticle(SmsVerticle::new, SmsVerticleConfig.getInstance())
+                  .doOnError(err -> {
+                      logger.error(err.getMessage());
+                      logger.fatal("Failed to start SmsVerticle instances.");
+                      err.printStackTrace();
+                  })
+                  .doOnSubscribe(disposable -> logger.info("Starting SmsVerticle..."))
+                  .doOnSuccess(res -> {
+                      SmsVerticleDeploymentID = res;
+                      logger.info("SmsVerticle instances startup succeeded.");
                   })
                   .subscribe(res -> {
                 
@@ -119,6 +141,17 @@ public class StartUp {
                     logger.info("DatabaseVerticle instances stop succeeded.");
                 } else {
                     logger.fatal("Failed to stop DatabaseVerticle instances.");
+                    logger.fatal(res.cause());
+                }
+            });
+            
+            return shared;
+        }).map(shared -> {
+            shared.undeploy(SmsVerticleDeploymentID, res -> {
+                if (res.succeeded()) {
+                    logger.info("SmsVerticle instances stop succeeded.");
+                } else {
+                    logger.fatal("Failed to stop SmsVerticle instances.");
                     logger.fatal(res.cause());
                 }
             });

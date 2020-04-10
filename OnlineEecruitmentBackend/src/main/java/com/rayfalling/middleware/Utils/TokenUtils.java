@@ -21,6 +21,7 @@ public class TokenUtils {
      * @param key    salt for encrypt
      * @param source source string to encrypt
      * @return 加密后的Token
+     * @author Rayfalling
      */
     @Nullable
     public static String EncryptFromString(String source, String key) {
@@ -43,6 +44,7 @@ public class TokenUtils {
      * @param key   salt for encrypt
      * @param token token to encrypt
      * @return 加密后的Token
+     * @author Rayfalling
      */
     public static String EncryptFromToken(@NotNull Token token, String key) {
         return EncryptFromString(token.toString(), key);
@@ -54,6 +56,7 @@ public class TokenUtils {
      * @param key    salt for decrypt
      * @param source source string to decrypt
      * @return 解密后的Token String
+     * @author Rayfalling
      */
     @Nullable
     public static String Decrypt2String(String source, String key) {
@@ -76,6 +79,7 @@ public class TokenUtils {
      * @param key    salt for decrypt
      * @param source source string to decrypt
      * @return 解密后的Token
+     * @author Rayfalling
      */
     @NotNull
     @Contract("_, _ -> new")

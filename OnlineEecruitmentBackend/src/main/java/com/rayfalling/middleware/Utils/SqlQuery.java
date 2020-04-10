@@ -1,7 +1,6 @@
 package com.Rayfalling.middleware.Utils;
 
 import com.Rayfalling.Shared;
-import com.Rayfalling.middleware.Utils.Utils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -11,6 +10,14 @@ import java.util.HashMap;
 
 
 public class SqlQuery {
+    //映射表
+    static HashMap<String, String> SqlMap = new HashMap<String, String>();
+    
+    static {
+        //todo add map for sql file
+        SqlMap.put("Register", "auth/register.sql");
+    }
+    
     /**
      * 从本地资源加载sql查询语句
      */
@@ -25,8 +32,8 @@ public class SqlQuery {
                 if ((length = inputStream.read(buffer)) == -1) break;
             } catch (IOException e) {
                 Shared
-                      .getLogger()
-                      .error(e.getMessage());
+                        .getLogger()
+                        .error(e.getMessage());
                 e.printStackTrace();
             }
             result.write(buffer, 0, length);
@@ -36,18 +43,10 @@ public class SqlQuery {
             return result.toString(StandardCharsets.UTF_8.name());
         } catch (Exception e) {
             Shared
-                  .getLogger()
-                  .error(e.getMessage());
+                    .getLogger()
+                    .error(e.getMessage());
             e.printStackTrace();
             return result.toString();
         }
-    }
-    
-    //映射表
-    static HashMap<String, String> SqlMap = new HashMap<String, String>();
-    
-    static {
-        //todo add map for sql file
-        SqlMap.put("Register", "auth/register.sql");
     }
 }

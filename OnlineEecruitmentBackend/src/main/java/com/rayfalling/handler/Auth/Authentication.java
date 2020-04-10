@@ -15,6 +15,7 @@ public class Authentication {
      * @return 0   数据库成功执行
      * -1  数据库执行失败，手机号已存在
      * -2  数据库执行失败，未知错误
+     * @author Rayfalling
      */
     public static Single<Integer> DatabaseRegister(JsonObject data) {
         return Shared.getPgPool()

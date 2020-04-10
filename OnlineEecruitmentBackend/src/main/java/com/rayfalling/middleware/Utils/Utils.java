@@ -44,6 +44,7 @@ public class Utils {
      *
      * @param path 读取文件的路径
      * @return 返回文件的 {@link InputStream}
+     * @author Rayfalling
      */
     public static InputStream LoadResource(String path) {
         URL test = StartUp.class.getResource("");

@@ -9,14 +9,10 @@ import org.jetbrains.annotations.NotNull;
 /**
  * 职位相关路由
  *
- * @author rayfalling
+ * @author Rayfalling
  */
 public class PositionRouter {
     private static Router router = Router.router(Shared.getVertx());
-    
-    public static Router getRouter() {
-        return router;
-    }
     
     //让构造函数为 private，这样该类就不会被实例化
     static {
@@ -29,6 +25,10 @@ public class PositionRouter {
                 Shared.getRouterLogger().info(prefix + route.getPath() + " mounted succeed");
             }
         }
+    }
+    
+    public static Router getRouter() {
+        return router;
     }
     
     private static void PositionIndex(@NotNull RoutingContext context) {

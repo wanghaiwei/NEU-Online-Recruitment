@@ -4,10 +4,8 @@ import com.Rayfalling.Shared;
 import io.reactiverse.pgclient.PgPoolOptions;
 import io.reactiverse.reactivex.pgclient.PgPool;
 import io.reactivex.Single;
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.reactivex.core.AbstractVerticle;
-
-import io.vertx.reactivex.core.Promise;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -20,16 +18,7 @@ public class DatabaseVerticle extends AbstractVerticle {
     private final Logger logger = LogManager.getLogger("Database");
     
     @Override
-    public void stop() {
-        InnerStop(Promise.promise());
-    }
-    
-    @Override
-    public void start() {
-        InnerStart(Promise.promise());
-    }
-    
-    private void InnerStart(@NotNull Promise<Void> startPromise) {
+    public void start(@NotNull Promise<Void> startPromise) throws Exception {
         Single.just(config()).flatMap(config -> {
             PgPoolOptions options = new PgPoolOptions();
             options.setHost(config.getString("host"))
@@ -51,7 +40,8 @@ public class DatabaseVerticle extends AbstractVerticle {
         }, startPromise::fail);
     }
     
-    private void InnerStop(@NotNull Promise<Void> stopPromise) {
+    @Override
+    public void stop(@NotNull Promise<Void> stopPromise) throws Exception {
         Single.just(Shared.getPgPool()).map(pool -> {
             pool.close();
             

@@ -7,7 +7,6 @@ import com.Rayfalling.middleware.Response.PresetMessage;
 import com.Rayfalling.middleware.Utils.Utils;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
-
 import io.vertx.reactivex.ext.web.Route;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
@@ -16,14 +15,10 @@ import org.jetbrains.annotations.NotNull;
 /**
  * 用户相关路由
  *
- * @author rayfalling
+ * @author Rayfalling
  */
 public class UserRouter {
     private static Router router = Router.router(Shared.getVertx());
-    
-    public static Router getRouter() {
-        return router;
-    }
     
     //静态初始化块
     static {
@@ -40,6 +35,9 @@ public class UserRouter {
         }
     }
     
+    public static Router getRouter() {
+        return router;
+    }
     
     private static void UserIndex(@NotNull RoutingContext context) {
         context.response().end(("This is the index page of user router.").trim());

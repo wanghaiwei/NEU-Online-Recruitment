@@ -21,6 +21,7 @@ ext {
     vertx_version = '3.9.0'
     log4j_version = '2.13.1'
     rx_pgclient_version = '0.11.4'
+    aliyun_sms_version = '4.0.3'
 }
 
 jar {
@@ -39,10 +40,11 @@ repositories {
 }
 
 dependencies {
-    implementation "io.vertx:vertx-core:$vertx_version"
-    implementation "io.vertx:vertx-web:$vertx_version"
-    implementation "io.reactiverse:reactive-pg-client:$rx_pgclient_version"
+    implementation group: "io.vertx", name: "vertx-core", version: "$vertx_version"
+    implementation group: "io.vertx", name: "vertx-web", version: "$vertx_version"
     implementation group: "io.vertx", name: "vertx-rx-java2", version: "$vertx_version"
+    implementation group: "io.reactiverse", name: "reactive-pg-client", version: "$rx_pgclient_version"
+    implementation group: "com.aliyun", name: "aliyun-java-sdk-core", version: "$aliyun_sms_version"
     implementation group: "org.apache.logging.log4j", name: "log4j-api", version: "$log4j_version"
     implementation group: "org.apache.logging.log4j", name: "log4j-core", version: "$log4j_version"
     testCompile group: 'junit', name: 'junit', version: '4.12'

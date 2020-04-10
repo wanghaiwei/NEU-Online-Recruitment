@@ -7,10 +7,8 @@ import io.vertx.core.json.JsonObject;
 import java.io.IOException;
 
 public class DatabaseVerticleConfig extends DeploymentOptions {
-    JsonObject config;
-
     private static DatabaseVerticleConfig instance;
-
+    
     static {
         try {
             instance = new DatabaseVerticleConfig();
@@ -18,17 +16,19 @@ public class DatabaseVerticleConfig extends DeploymentOptions {
             e.printStackTrace();
         }
     }
-
-    public static DatabaseVerticleConfig getInstance() {
-        return instance;
-    }
-
+    
+    JsonObject config;
+    
     public DatabaseVerticleConfig() throws IOException {
         config = ConfigLoader.configObject().getJsonObject("database");
         setInstances(1);
         setConfig(config);
     }
-
+    
+    public static DatabaseVerticleConfig getInstance() {
+        return instance;
+    }
+    
     public JsonObject getInstanceConfig() {
         return config;
     }
