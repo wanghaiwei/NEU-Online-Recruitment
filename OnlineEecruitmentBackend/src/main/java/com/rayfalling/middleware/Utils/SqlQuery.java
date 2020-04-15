@@ -16,6 +16,8 @@ public class SqlQuery {
     static {
         //todo add map for sql file
         SqlMap.put("Register", "auth/register.sql");
+        SqlMap.put("Login", "auth/login.sql");
+        SqlMap.put("SelectId", "auth/select_id.sql");
     }
     
     /**
@@ -31,9 +33,7 @@ public class SqlQuery {
             try {
                 if ((length = inputStream.read(buffer)) == -1) break;
             } catch (IOException e) {
-                Shared
-                        .getLogger()
-                        .error(e.getMessage());
+                Shared.getLogger().error(e.getMessage());
                 e.printStackTrace();
             }
             result.write(buffer, 0, length);
@@ -42,9 +42,7 @@ public class SqlQuery {
         try {
             return result.toString(StandardCharsets.UTF_8.name());
         } catch (Exception e) {
-            Shared
-                    .getLogger()
-                    .error(e.getMessage());
+            Shared.getLogger().error(e.getMessage());
             e.printStackTrace();
             return result.toString();
         }

@@ -15,6 +15,16 @@ import java.util.Base64;
 import java.util.Objects;
 
 public class TokenUtils {
+    
+    static String key;
+    
+    /**
+     * @param key key
+     */
+    public static void setKey(String key) {
+        TokenUtils.key = key;
+    }
+    
     /**
      * 加密Token, 用于认证用户身份
      *
@@ -41,12 +51,22 @@ public class TokenUtils {
     /**
      * 加密Token, 用于认证用户身份
      *
-     * @param key   salt for encrypt
+     * @param source source string to encrypt
+     * @return 加密后的Token
+     * @author Rayfalling
+     */
+    public static String EncryptFromString(String source) {
+        return EncryptFromString(source, key);
+    }
+    
+    /**
+     * 加密Token, 用于认证用户身份
+     *
      * @param token token to encrypt
      * @return 加密后的Token
      * @author Rayfalling
      */
-    public static String EncryptFromToken(@NotNull Token token, String key) {
+    public static String EncryptFromToken(@NotNull Token token) {
         return EncryptFromString(token.toString(), key);
     }
     
@@ -73,6 +93,11 @@ public class TokenUtils {
         return null;
     }
     
+    @Nullable
+    public static String Decrypt2String(String source) {
+        return Decrypt2String(source, key);
+    }
+    
     /**
      * 解密Token, 用于认证用户身份
      *
@@ -87,6 +112,23 @@ public class TokenUtils {
         return new Token(Objects.requireNonNull(Decrypt2String(source, key)));
     }
     
+    
+    /**
+     * 解密Token, 用于认证用户身份
+     *
+     * @param source source string to decrypt
+     * @return 解密后的Token
+     * @author Rayfalling
+     */
+    @NotNull
+    @Contract("_ -> new")
+    public static Token Decrypt2Token(String source) {
+        return new Token(Objects.requireNonNull(Decrypt2String(source, key)));
+    }
+    
+    /**
+     * @param key 需要创建的key
+     * */
     @Nullable
     private static Key getKey(String key) {
         try {

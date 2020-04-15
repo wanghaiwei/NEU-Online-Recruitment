@@ -1,0 +1,1 @@
+select id from "user" where phone = $1

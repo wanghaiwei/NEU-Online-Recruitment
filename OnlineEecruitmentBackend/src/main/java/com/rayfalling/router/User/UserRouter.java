@@ -4,12 +4,19 @@ import com.Rayfalling.Shared;
 import com.Rayfalling.handler.Auth.Authentication;
 import com.Rayfalling.middleware.Response.JsonResponse;
 import com.Rayfalling.middleware.Response.PresetMessage;
+import com.Rayfalling.middleware.Utils.TokenUtils;
 import com.Rayfalling.middleware.Utils.Utils;
+import com.Rayfalling.middleware.data.Token;
+import com.Rayfalling.middleware.data.TokenStorage;
+import com.Rayfalling.middleware.data.VerifyCode;
+import io.reactiverse.pgclient.Tuple;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
+import io.vertx.reactivex.core.http.Cookie;
 import io.vertx.reactivex.ext.web.Route;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
+import io.vertx.reactivex.ext.web.Session;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -27,6 +34,7 @@ public class UserRouter {
         router.get("/").handler(UserRouter::UserIndex);
         router.post("/register").handler(UserRouter::UserRegister);
         router.post("/login").handler(UserRouter::UserLogin);
+        router.post("/logout").handler(UserRouter::UserLogout);
         
         for (Route route : router.getRoutes()) {
             if (route.getPath() != null) {
@@ -43,6 +51,9 @@ public class UserRouter {
         context.response().end(("This is the index page of user router.").trim());
     }
     
+    /**
+     * 用户注册路由
+     * */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void UserRegister(@NotNull RoutingContext context) {
         Single.just(context).map(res -> res.getBody().toJsonObject()).doOnError(err -> {
@@ -95,6 +106,9 @@ public class UserRouter {
         });
     }
     
+    /**
+     * 用户登录路由
+     * */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void UserLogin(@NotNull RoutingContext context) {
         Single.just(context).map(res -> res.getBody().toJsonObject()).doOnError(err -> {
@@ -106,13 +120,14 @@ public class UserRouter {
         }).map(params -> {
             //check param is null
             String type = params.getString("type", "password");
-            String phone = params.getString("phone", "");
-            String VerifyCode = "", password = "";
-            if (type.equals("password")) {
-                password = params.getString("password", "");
-            } else if (type.equals("code")) {
-                VerifyCode = params.getString("code", "");
+            
+            if (type.equals("")) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON_PARAM);
+                Shared.getRouterLogger()
+                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
             }
+            
+            String phone = params.getString("phone", "");
             
             if (!Utils.isMobile(phone)) {
                 JsonResponse.RespondPreset(context, PresetMessage.PHONE_FORMAT_ERROR);
@@ -120,31 +135,117 @@ public class UserRouter {
                       .error(context.normalisedPath() + " " + PresetMessage.PHONE_FORMAT_ERROR.toString());
             }
             
-            if (phone.equals("")) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON_PARAM);
-                Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
-            }
-            
-            if ((password.equals("") && type.equals("password")) || (VerifyCode.equals("") && type.equals("code"))) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON_PARAM);
-                Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
-            }
             if (type.equals("password")) {
+                String password = params.getString("password", "");
+                if (password.equals("")) {
+                    JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON_PARAM);
+                    Shared.getRouterLogger()
+                          .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
+                }
                 return new JsonObject().put("phone", phone).put("password", password);
             } else if (type.equals("code")) {
+                String VerifyCode = params.getString("code", "");
+                if (VerifyCode.equals("")) {
+                    JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON_PARAM);
+                    Shared.getRouterLogger()
+                          .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
+                }
                 return new JsonObject().put("phone", phone).put("VerifyCode", VerifyCode);
             }
             
             //default return
             return new JsonObject();
+        }).flatMap(param -> {
+            String phone = param.getString("phone");
+            
+            Session session = context.session();
+            
+            final Integer user_id = 0;
+            if (session.data().containsKey("Code")) {
+                VerifyCode.Code code = session.get("Code");
+                VerifyCode.Code storageCode = VerifyCode.getInstance().find(phone);
+                //防止劫持
+                if (storageCode.equals(code)) {
+                    if (code.isExpired()) {
+                        JsonResponse.RespondFailure(context, 40001, "Verify code is expired");
+                        Shared.getRouterLogger().warn(context.normalisedPath() + " Verify code is expired");
+                    }
+                    if (!code.getCode().equals(param.getString("VerifyCode", ""))) {
+                        JsonResponse.RespondFailure(context, 40001, "Verify code incorrect");
+                        Shared.getRouterLogger().warn(context.normalisedPath() + " Verify code incorrect");
+                    }
+                    return Authentication.DatabaseSelectId(phone).map(result -> {
+                        if (result == -1) {
+                            return -1;
+                        }
+                        return Tuple.of(result, phone);
+                    });
+                } else {
+                    JsonResponse.RespondPreset(context, PresetMessage.ERROR_UNKNOWN);
+                    Shared.getRouterLogger().warn(context.normalisedPath() + PresetMessage.ERROR_UNKNOWN.toString());
+                }
+            } else {
+                return Authentication.DatabaseLogin(param).map(result -> {
+                    if (result == -1) {
+                        return -1;
+                    }
+                    return Tuple.of(result, phone);
+                    
+                });
+            }
+            return Single.just(Tuple.of(0, phone));
+        }).flatMap(param -> {
+            Tuple token_param = (Tuple) param;
+            if (token_param.getInteger(0) == -1) {
+                JsonResponse.RespondPreset(context, PresetMessage.PHONE_UNREGISTER_ERROR);
+                Shared.getRouterLogger().warn(context.normalisedPath() + PresetMessage.PHONE_UNREGISTER_ERROR);
+            }
+            Token token = new Token(token_param.getInteger(0), token_param.getString(1));
+            TokenStorage.getInstance().add(token);
+            context.session().put("token", token);
+            context.addCookie(Cookie.cookie("token", TokenUtils.EncryptFromToken(token)));
+            JsonResponse.RespondSuccess(context, "Login successful");
+            Shared.getRouterLogger()
+                  .info(context.normalisedPath() + " " + token_param.getString(1) + " Login");
+            return Single.just(token);
         }).doOnError(err -> {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON_PARAM);
                 Shared.getRouterLogger()
                       .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
             }
+        }).subscribe(res -> {
+            Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
+        }, failure -> {
+            Shared.getRouterLogger().error(failure.getMessage());
+        });
+    }
+    
+    
+    /**
+     * 用户登出路由
+     * */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private static void UserLogout(@NotNull RoutingContext context) {
+        Single.just(context).map(res -> res.getBody().toJsonObject()).doOnError(err -> {
+            if (!context.response().ended()) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON);
+                Shared.getRouterLogger()
+                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON.toString());
+            }
+        }).flatMap(params -> {
+            Token token = context.session().get("token");
+            token.setExpired();
+            
+            TokenStorage.getInstance().remove(token.getUsername());
+            
+            context.session().remove("token");
+            context.removeCookie("token");
+            
+            JsonResponse.RespondSuccess(context, "Logout success.");
+            Shared.getRouterLogger().info("User " + token.getUsername() + " Logout");
+            
+            return Single.just(token);
         }).subscribe(res -> {
             Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
         }, failure -> {

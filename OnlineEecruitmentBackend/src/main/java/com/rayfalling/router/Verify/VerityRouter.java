@@ -19,7 +19,7 @@ import org.jetbrains.annotations.NotNull;
  * @author Rayfalling
  */
 public class VerityRouter {
-    private static Router router = Router.router(Shared.getVertx());
+    private static final Router router = Router.router(Shared.getVertx());
     
     //静态初始化块
     static {
@@ -43,6 +43,9 @@ public class VerityRouter {
         context.response().end(("This is the index page of verify router.").trim());
     }
     
+    /**
+     * 短信发送路由
+     * */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void VerifyPhone(@NotNull RoutingContext context) {
         Single.just(context).map(res -> res.getBody().toJsonObject()).doOnError(err -> {

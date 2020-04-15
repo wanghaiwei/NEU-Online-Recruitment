@@ -5,6 +5,8 @@ import io.reactiverse.reactivex.pgclient.PgRowSet;
 import io.reactiverse.reactivex.pgclient.Row;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
@@ -41,7 +43,7 @@ public class DataBaseExt {
      * @param pgRowSet Postgresql查询结果
      * @author Rayfalling
      */
-    public static Row oneOrNull(PgRowSet pgRowSet) {
+    public static @Nullable Row oneOrNull(@NotNull PgRowSet pgRowSet) {
         return pgRowSet.size() == 1 ? pgRowSet.iterator().next() : null;
     }
     

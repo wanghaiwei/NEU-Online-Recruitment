@@ -18,7 +18,7 @@ public class DatabaseVerticle extends AbstractVerticle {
     private final Logger logger = LogManager.getLogger("Database");
     
     @Override
-    public void start(@NotNull Promise<Void> startPromise) throws Exception {
+    public void start(@NotNull Promise<Void> startPromise) {
         Single.just(config()).flatMap(config -> {
             PgPoolOptions options = new PgPoolOptions();
             options.setHost(config.getString("host"))
@@ -41,7 +41,7 @@ public class DatabaseVerticle extends AbstractVerticle {
     }
     
     @Override
-    public void stop(@NotNull Promise<Void> stopPromise) throws Exception {
+    public void stop(@NotNull Promise<Void> stopPromise) {
         Single.just(Shared.getPgPool()).map(pool -> {
             pool.close();
             

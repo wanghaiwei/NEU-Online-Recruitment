@@ -9,7 +9,6 @@ import com.Rayfalling.router.Postion.PositionRouter;
 import com.Rayfalling.router.User.UserRouter;
 import com.Rayfalling.router.Verify.VerityRouter;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.web.Route;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
@@ -21,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class MainRouter {
     
-    private static Router router = Router.router(Shared.getVertx());
+    private static final Router router = Router.router(Shared.getVertx());
     
     //静态初始化块
     static {
@@ -40,7 +39,7 @@ public class MainRouter {
         if (MainRouterConfig.getInstance().getLogRequests()) {
             router.route().handler(
                     router -> {
-                        Shared.getRouterLogger().info(router.normalisedPath());
+                        Shared.getRouterLogger().info("Hit " + router.normalisedPath());
                         router.next();
                     });
         }

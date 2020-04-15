@@ -34,7 +34,55 @@ public class Authentication {
                              return 0;
                          else if (row.getInteger(0) == -1)
                              return -1;
-                         return null;
+                         return -2;
+                     })
+                     .doOnError(err -> {
+                         Shared.getDatabaseLogger().error(err);
+                         err.printStackTrace();
+                     });
+    }
+    
+    /**
+     * @param data 传入参数，包含"phone"和"password"的JsonObject
+     * @return id 数据库用户id
+     * @author Rayfalling
+     */
+    public static Single<Integer> DatabaseLogin(JsonObject data) {
+        return Shared.getPgPool()
+                     .rxGetConnection()
+                     .doOnError(err -> {
+                         Shared.getDatabaseLogger().error(err);
+                         err.printStackTrace();
+                     })
+                     .doAfterSuccess(PgConnection::close)
+                     .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("Login"), Tuple.of(data.getString("phone"), data.getString("password"))))
+                     .map(res -> {
+                         Row row = DataBaseExt.oneOrNull(res);
+                         return row != null ? row.getInteger("id") : -1;
+                     })
+                     .doOnError(err -> {
+                         Shared.getDatabaseLogger().error(err);
+                         err.printStackTrace();
+                     });
+    }
+    
+    /**
+     * @param username 传入参数，包含"phone"和"password"的JsonObject
+     * @return id 数据库用户id
+     * @author Rayfalling
+     */
+    public static Single<Integer> DatabaseSelectId(String username) {
+        return Shared.getPgPool()
+                     .rxGetConnection()
+                     .doOnError(err -> {
+                         Shared.getDatabaseLogger().error(err);
+                         err.printStackTrace();
+                     })
+                     .doAfterSuccess(PgConnection::close)
+                     .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("SelectId"), Tuple.of(username)))
+                     .map(res -> {
+                         Row row = DataBaseExt.oneOrNull(res);
+                         return row != null ? row.getInteger("id") : -1;
                      })
                      .doOnError(err -> {
                          Shared.getDatabaseLogger().error(err);

@@ -1,6 +1,8 @@
 package com.Rayfalling.verticle;
 
 import com.Rayfalling.Shared;
+import com.Rayfalling.config.MainRouterConfig;
+import com.Rayfalling.middleware.Utils.TokenUtils;
 import com.Rayfalling.router.MainRouter;
 import io.reactivex.Single;
 import io.vertx.core.Promise;
@@ -16,13 +18,14 @@ import org.jetbrains.annotations.NotNull;
  */
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class MainVerticle extends AbstractVerticle {
-    private Logger logger = LogManager.getLogger("MainVerticle");
+    private final Logger logger = LogManager.getLogger("MainVerticle");
     
     @Override
-    public void start(@NotNull Promise<Void> startPromise) throws Exception {
+    public void start(@NotNull Promise<Void> startPromise) {
         final String listenHost = config().getString("host");
         final Integer listenPort = config().getInteger("port");
         HttpServer server = vertx.createHttpServer();
+        TokenUtils.setKey(MainRouterConfig.getInstance().getTokenSalt());
         Shared.setHttpServer(server);
         server.requestHandler(MainRouter.getRouter())
               .rxListen(listenPort, listenHost)
@@ -46,7 +49,7 @@ public class MainVerticle extends AbstractVerticle {
     }
     
     @Override
-    public void stop(@NotNull Promise<Void> stopPromise) throws Exception {
+    public void stop(@NotNull Promise<Void> stopPromise) {
         Single.just(Shared.getHttpServer()).map(httpServer -> {
             httpServer.close();
             

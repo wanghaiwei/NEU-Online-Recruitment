@@ -3,6 +3,7 @@ package com.Rayfalling.middleware.data;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Random;
 
 public class VerifyCode {
@@ -133,6 +134,10 @@ public class VerifyCode {
             this.createTime = Timestamp.valueOf(LocalDateTime.now());
         }
         
+        public static Timestamp getExpireTime() {
+            return expireTime;
+        }
+        
         /**
          * 设置验证码过期时间
          *
@@ -149,6 +154,28 @@ public class VerifyCode {
          */
         public boolean isExpired() {
             return Timestamp.valueOf(LocalDateTime.now()).getTime() > createTime.getTime() + expireTime.getTime();
+        }
+        
+        public String getCode() {
+            return code;
+        }
+        
+        public Timestamp getCreateTime() {
+            return createTime;
+        }
+    
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Code)) return false;
+            Code code1 = (Code) o;
+            return getCreateTime().equals(code1.getCreateTime()) &&
+                   getCode().equals(code1.getCode());
+        }
+    
+        @Override
+        public int hashCode() {
+            return Objects.hash(getCreateTime(), getCode());
         }
     }
 }

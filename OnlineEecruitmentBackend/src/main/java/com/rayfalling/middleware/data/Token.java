@@ -10,9 +10,11 @@ import java.util.Objects;
 
 public class Token {
     
-    private String username;
+    private final String username;
+    private int id;
     private Long createTime;
     private Long expireTime;
+    private boolean isExpired = false;
     
     /**
      * 通过username生成Token
@@ -23,14 +25,29 @@ public class Token {
     public Token(@NotNull String string) {
         if (string.startsWith("NEU")) {
             JsonObject jsonObject = JsonObject.mapFrom(Json.decodeValue(string.replace("NEU", "")));
+            this.id = jsonObject.getInteger("id");
             this.username = jsonObject.getString("username");
             this.createTime = jsonObject.getLong("createTime");
             this.expireTime = jsonObject.getLong("expireTime");
         } else {
+            this.id = -1;
             this.username = string;
             this.createTime = Timestamp.valueOf(LocalDateTime.now()).getTime();
             this.expireTime = new Timestamp(1800000).getTime();
         }
+    }
+    
+    /**
+     * 通过username生成Token
+     *
+     * @param string username or token string
+     * @author Rayfalling
+     */
+    public Token(Integer id, @NotNull String string) {
+        this.id = id;
+        this.username = string;
+        this.createTime = Timestamp.valueOf(LocalDateTime.now()).getTime();
+        this.expireTime = new Timestamp(1800000).getTime();
     }
     
     /**
@@ -55,6 +72,7 @@ public class Token {
      * @author Rayfalling
      */
     public Token(JsonObject jsonObject) {
+        this.id = jsonObject.getInteger("username");
         this.username = jsonObject.getString("username");
         this.createTime = jsonObject.getLong("createTime");
         this.expireTime = jsonObject.getLong("expireTime");
@@ -74,15 +92,26 @@ public class Token {
         return expireTime;
     }
     
+    public int getId() {
+        return id;
+    }
+    
     public void setExpireTime(Long expireTime) {
         this.expireTime = expireTime;
+    }
+    
+    /**
+     * 设置Token直接过期
+     * */
+    public void setExpired() {
+        isExpired = true;
     }
     
     /**
      * 判定Token是否过期
      */
     public boolean isExpired() {
-        return Timestamp.valueOf(LocalDateTime.now()).getTime() > createTime + expireTime;
+        return isExpired || Timestamp.valueOf(LocalDateTime.now()).getTime() > createTime + expireTime;
     }
     
     /**
