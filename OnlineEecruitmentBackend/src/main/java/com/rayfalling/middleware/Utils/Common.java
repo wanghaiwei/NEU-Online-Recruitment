@@ -9,7 +9,7 @@ import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Utils {
+public class Common {
     static String Reg4Phone = "^[1](([3][0-9])|([4][5-9])|([5][0-3,5-9])|([6][5,6])|([7][0-8])|([8][0-9])|([9][1,8,9]))[0-9]{8}$";
     
     /**
@@ -31,11 +31,11 @@ public class Utils {
      * @return 是否匹配
      * @author Rayfalling
      */
-    public static boolean isMobile(final String phone) {
+    public static boolean isNotMobile(final String phone) {
         //来源手机号正则匹配
         Pattern pattern = Pattern.compile(Reg4Phone);
         Matcher m = pattern.matcher(phone);
-        return m.matches();
+        return !m.matches();
     }
     
     

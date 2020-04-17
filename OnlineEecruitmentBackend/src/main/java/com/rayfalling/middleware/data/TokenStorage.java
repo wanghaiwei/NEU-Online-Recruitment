@@ -4,15 +4,10 @@ import java.util.LinkedList;
 import java.util.Optional;
 
 public class TokenStorage {
-    static TokenStorage instance = new TokenStorage();
-    LinkedList<Token> tokenList;
+    static LinkedList<Token> tokenList;
     
-    private TokenStorage() {
+    static {
         tokenList = new LinkedList<>();
-    }
-    
-    public static TokenStorage getInstance() {
-        return instance;
     }
     
     /**
@@ -20,7 +15,7 @@ public class TokenStorage {
      *
      * @param username 用户名
      */
-    public Token find(String username) {
+    public static Token find(String username) {
         Optional<Token> result = tokenList.stream()
                                           .filter(obj -> obj.getUsername().equals(username))
                                           .findFirst();
@@ -28,11 +23,42 @@ public class TokenStorage {
     }
     
     /**
-     * 移除过期或登出的用户{@link Token}
+     * 查找的用户{@link Token}
      *
      * @param token 用户Token
      */
-    public void add(Token token) {
+    
+    public static Token find(Token token) {
+        Optional<Token> result = tokenList.stream()
+                                          .filter(obj -> obj.equals(token))
+                                          .findFirst();
+        return result.orElse(null);
+    }
+    
+    /**
+     * 判定Token是否存在
+     *
+     * @param token 用户Token
+     */
+    public static boolean exist(Token token) {
+        return tokenList.stream().anyMatch(item -> item.equals(token));
+    }
+    
+    /**
+     * 判定Token是否存在
+     *
+     * @param username 用户名
+     */
+    public static boolean exist(String username) {
+        return tokenList.stream().anyMatch(item -> item.getUsername().equals(username));
+    }
+    
+    /**
+     * 添加新用户的{@link Token}
+     *
+     * @param token 用户Token
+     */
+    public static void add(Token token) {
         tokenList.add(token);
     }
     
@@ -41,7 +67,7 @@ public class TokenStorage {
      *
      * @param username 用户名
      */
-    public void remove(String username) {
+    public static void remove(String username) {
         tokenList.stream()
                  .filter(obj -> obj.getUsername().equals(username))
                  .findFirst()

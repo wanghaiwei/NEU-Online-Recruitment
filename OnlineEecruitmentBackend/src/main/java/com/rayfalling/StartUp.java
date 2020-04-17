@@ -4,12 +4,11 @@ package com.Rayfalling;
 import com.Rayfalling.config.DatabaseVerticleConfig;
 import com.Rayfalling.config.MainVerticleConfig;
 import com.Rayfalling.config.SmsVerticleConfig;
-import com.Rayfalling.middleware.Utils.Utils;
+import com.Rayfalling.middleware.Utils.Common;
 import com.Rayfalling.verticle.DatabaseVerticle;
 import com.Rayfalling.verticle.MainVerticle;
 import com.Rayfalling.verticle.SmsVerticle;
 import io.reactivex.Single;
-import io.vertx.reactivex.core.Vertx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
@@ -29,7 +28,7 @@ public class StartUp {
         //load log4j2 config
         try {
             ConfigurationSource source;
-            source = new ConfigurationSource(Utils.LoadResource("log4j2.xml"));
+            source = new ConfigurationSource(Common.LoadResource("log4j2.xml"));
             Configurator.initialize(ClassLoader.getSystemClassLoader(), source);
         } catch (Exception e) {
             Shared.getLogger().fatal(e.getMessage());

@@ -30,7 +30,7 @@ public class ConfigLoader {
             Shared.getLogger()
                   .info("Configuration file does not exist. Creating from default configuration.");
             //判定是jar运行还是IDE运行
-            InputStream stream = Utils.LoadResource("config.json");
+            InputStream stream = Common.LoadResource("config.json");
             
             //创建外部配置项
             if (!configFileExternal.exists()) {

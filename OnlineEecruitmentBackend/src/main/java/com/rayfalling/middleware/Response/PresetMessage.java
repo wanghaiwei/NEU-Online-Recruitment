@@ -1,25 +1,33 @@
 package com.Rayfalling.middleware.Response;
 
-import com.Rayfalling.middleware.Utils.Utils;
+import com.Rayfalling.middleware.Utils.Common;
 import io.vertx.core.json.JsonObject;
 
 import java.util.concurrent.Callable;
 
 public enum PresetMessage {
-    // 通用消息
+    /* 通用消息 */
     ERROR_FAILED(-100, "failed", "操作失败"),
     ERROR_UNKNOWN(),
     ERROR_UNIMPLEMENTED(-101, "unimplemented", "尚未实现"),
     SUCCESS(0, "ok", "操作成功"),
     
-    //Router Check Message
-    // 请求消息
+    /* 请求消息 */
     ERROR_REQUEST_PARAM(-201, "post param error", "参数错误"),
     ERROR_REQUEST_GET_PARAM(-202, "get param error", "参数错误"),
     ERROR_REQUEST_JSON(-203, "invalid json", "非法请求"),
     ERROR_REQUEST_JSON_PARAM(-204, "invalid json param", "参数错误"),
     
-    //Defined Message
+    /* 文件请求 */
+    ERROR_FILE_NOT_FOUND(-501, "file not found", "文件未找到"),
+    ERROR_UPLOAD_FAILED(-502, "upload error", "上传失败"),
+    ERROR_FILE_ILLEGAL(-503, "illegal file", "非法文件类型"),
+    
+    /* Auth Message */
+    ERROR_TOKEN_EXPIRED(-301,"token is expired","会话过期"),
+    ERROR_TOKEN_FAKED(-301,"token is faked","无效会话"),
+    
+    /* Defined Message */
     PHONE_REGISTERED_ERROR(50001, "phone number registered", "手机号已注册"),
     PASSWORD_FORMAT_ERROR(50002, "bad password format", "密码格式错误，密码需由8-16个字符组成，必须包含字母和数字"),
     PHONE_UNREGISTER_ERROR(50003, "phone number not registered", "手机号未注册"),
@@ -57,7 +65,7 @@ public enum PresetMessage {
     }
     
     public void apply(Callable<PresetMessage> fun) throws Exception {
-        Utils.apply(fun);
+        Common.apply(fun);
     }
     
     

@@ -64,8 +64,9 @@ public class JsonResponse {
     public static void RespondPreset(final RoutingContext routingContext, final PresetMessage presetMessage) {
         try {
             presetMessage.apply(() -> {
-                RespondJson(routingContext, presetMessage.code, presetMessage.code == 0 ? 200 : 400, new JsonObject()
-                                                                                                             .put("msg", presetMessage.description));
+                RespondJson(routingContext, presetMessage.code,
+                        presetMessage.code == 0 ? 200 : 400,
+                        new JsonObject().put("msg", presetMessage.description));
                 return presetMessage;
             });
         } catch (Exception e) {

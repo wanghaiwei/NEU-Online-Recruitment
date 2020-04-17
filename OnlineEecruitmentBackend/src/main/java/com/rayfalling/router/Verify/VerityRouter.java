@@ -3,14 +3,13 @@ package com.Rayfalling.router.Verify;
 import com.Rayfalling.Shared;
 import com.Rayfalling.middleware.Response.JsonResponse;
 import com.Rayfalling.middleware.Response.PresetMessage;
-import com.Rayfalling.middleware.Utils.Utils;
+import com.Rayfalling.middleware.Utils.Common;
 import com.Rayfalling.middleware.data.VerifyCode;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.ext.web.Route;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
-import io.vertx.reactivex.ext.web.Session;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -58,7 +57,7 @@ public class VerityRouter {
             //check param is null
             String phone = params.getString("phone", "");
             
-            if (!Utils.isMobile(phone)) {
+            if (Common.isNotMobile(phone)) {
                 JsonResponse.RespondPreset(context, PresetMessage.PHONE_FORMAT_ERROR);
                 Shared.getRouterLogger()
                       .error(context.normalisedPath() + " " + PresetMessage.PHONE_FORMAT_ERROR.toString());

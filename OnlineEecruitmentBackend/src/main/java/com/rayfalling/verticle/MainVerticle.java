@@ -2,7 +2,7 @@ package com.Rayfalling.verticle;
 
 import com.Rayfalling.Shared;
 import com.Rayfalling.config.MainRouterConfig;
-import com.Rayfalling.middleware.Utils.TokenUtils;
+import com.Rayfalling.middleware.Utils.Security.EncryptUtils;
 import com.Rayfalling.router.MainRouter;
 import io.reactivex.Single;
 import io.vertx.core.Promise;
@@ -25,7 +25,7 @@ public class MainVerticle extends AbstractVerticle {
         final String listenHost = config().getString("host");
         final Integer listenPort = config().getInteger("port");
         HttpServer server = vertx.createHttpServer();
-        TokenUtils.setKey(MainRouterConfig.getInstance().getTokenSalt());
+        EncryptUtils.setKey(MainRouterConfig.getInstance().getTokenSalt());
         Shared.setHttpServer(server);
         server.requestHandler(MainRouter.getRouter())
               .rxListen(listenPort, listenHost)

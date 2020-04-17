@@ -1,4 +1,4 @@
-package com.Rayfalling.middleware.Utils;
+package com.Rayfalling.middleware.Utils.Security;
 
 import com.Rayfalling.Shared;
 import com.Rayfalling.middleware.data.Token;
@@ -14,7 +14,7 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Objects;
 
-public class TokenUtils {
+public class EncryptUtils {
     
     static String key;
     
@@ -22,7 +22,7 @@ public class TokenUtils {
      * @param key key
      */
     public static void setKey(String key) {
-        TokenUtils.key = key;
+        EncryptUtils.key = key;
     }
     
     /**
@@ -67,6 +67,19 @@ public class TokenUtils {
      * @author Rayfalling
      */
     public static String EncryptFromToken(@NotNull Token token) {
+        return EncryptFromString(token.toString(), key);
+    }
+    
+    
+    /**
+     * 加密Token, 用于认证用户身份
+     *
+     * @param key   salt for encrypt
+     * @param token token to encrypt
+     * @return 加密后的Token
+     * @author Rayfalling
+     */
+    public static String EncryptFromToken(@NotNull Token token, String key) {
         return EncryptFromString(token.toString(), key);
     }
     
@@ -128,7 +141,7 @@ public class TokenUtils {
     
     /**
      * @param key 需要创建的key
-     * */
+     */
     @Nullable
     private static Key getKey(String key) {
         try {

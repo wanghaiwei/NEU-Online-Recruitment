@@ -1,6 +1,7 @@
-package com.Rayfalling.middleware.Utils;
+package com.Rayfalling.middleware.Utils.sql;
 
 import com.Rayfalling.Shared;
+import com.Rayfalling.middleware.Utils.Common;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -25,7 +26,7 @@ public class SqlQuery {
      */
     public static String getQuery(String name) {
         String path = SqlMap.get(name);
-        InputStream inputStream = Utils.LoadResource("sql/" + path);
+        InputStream inputStream = Common.LoadResource("sql/" + path);
         ByteArrayOutputStream result = new ByteArrayOutputStream();
         byte[] buffer = new byte[1024];
         int length = 0;
@@ -38,7 +39,6 @@ public class SqlQuery {
             }
             result.write(buffer, 0, length);
         }
-        // StandardCharsets.UTF_8.name() > JDK 7
         try {
             return result.toString(StandardCharsets.UTF_8.name());
         } catch (Exception e) {

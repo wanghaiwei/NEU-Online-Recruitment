@@ -2,6 +2,8 @@ package com.Rayfalling.router;
 
 import com.Rayfalling.Shared;
 import com.Rayfalling.config.MainRouterConfig;
+import com.Rayfalling.middleware.Response.JsonResponse;
+import com.Rayfalling.middleware.Response.PresetMessage;
 import com.Rayfalling.router.Admin.AdminRouter;
 import com.Rayfalling.router.Group.GroupRouter;
 import com.Rayfalling.router.Post.PostRouter;
@@ -32,7 +34,7 @@ public class MainRouter {
                                           .allowedHeader("*")
                                           .allowedHeader("content-type"));
         //创建bodyHandler
-        router.route().handler(BodyHandler.create());
+        router.route().handler(BodyHandler.create().setUploadsDirectory("upload"));
         router.route().handler(SessionHandler.create(LocalSessionStore.create(Shared.getVertx())));
         
         //依据配置开始路由记录
@@ -55,6 +57,7 @@ public class MainRouter {
         subRouter.mountSubRouter("/group", GroupRouter.getRouter());
         subRouter.mountSubRouter("/admin", AdminRouter.getRouter());
         subRouter.mountSubRouter("/verify", VerityRouter.getRouter());
+        subRouter.mountSubRouter("/upload", UploadRouter.getRouter());
         
         //挂载主路由
         router.mountSubRouter("/api", subRouter);
@@ -70,7 +73,17 @@ public class MainRouter {
         return router;
     }
     
+    /**
+     * 异常访问路由
+     */
     private static void pageMainIndex(@NotNull RoutingContext context) {
         context.response().end(("This is the index page of api router.").trim());
+    }
+    
+    /**
+     * 路由未实现
+     */
+    public static void UnImplementedRouter(@NotNull RoutingContext context) {
+        JsonResponse.RespondPreset(context, PresetMessage.ERROR_UNIMPLEMENTED);
     }
 }

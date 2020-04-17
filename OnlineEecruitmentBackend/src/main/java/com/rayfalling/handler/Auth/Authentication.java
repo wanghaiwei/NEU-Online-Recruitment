@@ -2,7 +2,7 @@ package com.Rayfalling.handler.Auth;
 
 import com.Rayfalling.Shared;
 import com.Rayfalling.middleware.Extensions.DataBaseExt;
-import com.Rayfalling.middleware.Utils.SqlQuery;
+import com.Rayfalling.middleware.Utils.sql.SqlQuery;
 import io.reactiverse.reactivex.pgclient.PgConnection;
 import io.reactiverse.reactivex.pgclient.Row;
 import io.reactiverse.reactivex.pgclient.Tuple;
