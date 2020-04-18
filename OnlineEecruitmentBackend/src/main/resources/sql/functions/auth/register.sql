@@ -1,6 +1,8 @@
 create or replace function Register(user_phone varchar, user_password varchar)
     returns integer
 as
+    -- 返回    0  更新成功
+    -- 返回    -1 更新信息表失败
 $Register$
 DECLARE
     RESULT int;
@@ -17,5 +19,5 @@ BEGIN
         RESULT = 0;
     end if;
     return RESULT;
-END
+END;
 $Register$ LANGUAGE plpgsql;

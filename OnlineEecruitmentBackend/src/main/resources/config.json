@@ -1,6 +1,6 @@
 {
   "database": {
-    "host": "rfchost.rayfalling.com",
+    "host": "127.0.0.1",
     "port": 5432,
     "database": "onlinerecruitment",
     "username": "postgres",

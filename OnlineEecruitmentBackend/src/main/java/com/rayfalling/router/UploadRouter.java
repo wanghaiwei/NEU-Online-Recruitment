@@ -3,6 +3,7 @@ package com.Rayfalling.router;
 import com.Rayfalling.Shared;
 import com.Rayfalling.middleware.Response.JsonResponse;
 import com.Rayfalling.middleware.Response.PresetMessage;
+import com.Rayfalling.router.User.AuthRouter;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.file.FileSystem;
@@ -35,8 +36,7 @@ public class UploadRouter {
         router.get("/:type/:year/:month/:filename").handler(UploadRouter::SendFile);
         
         /* 需要鉴权的路由 */
-        router.post("/new").handler(UploadRouter::Upload);
-//        router.post("/new").handler(AuthRouter::AuthToken).handler(UploadRouter::Upload);
+        router.post("/new").handler(AuthRouter::AuthToken).handler(UploadRouter::Upload);
         
         for (Route route : router.getRoutes()) {
             if (route.getPath() != null) {

@@ -17,7 +17,7 @@ public class Token {
     private boolean isExpired = false;
     
     /**
-     * 通过username生成Token
+     * 通过Token String生成Token
      *
      * @param string username or token string
      * @author Rayfalling
@@ -38,7 +38,7 @@ public class Token {
     }
     
     /**
-     * 通过username生成Token
+     * 通过username和id生成Token
      *
      * @param string username or token string
      * @author Rayfalling
@@ -92,17 +92,17 @@ public class Token {
         return expireTime;
     }
     
-    public int getId() {
-        return id;
-    }
-    
     public void setExpireTime(Long expireTime) {
         this.expireTime = expireTime;
     }
     
+    public int getId() {
+        return id;
+    }
+    
     /**
      * 设置Token直接过期
-     * */
+     */
     public void setExpired() {
         isExpired = true;
     }
@@ -135,7 +135,8 @@ public class Token {
         if (this == o) return true;
         if (!(o instanceof Token)) return false;
         Token token = (Token) o;
-        return getUsername().equals(token.getUsername()) &&
+        return getId() == token.getId() &&
+               getUsername().equals(token.getUsername()) &&
                getCreateTime().equals(token.getCreateTime()) &&
                getExpireTime().equals(token.getExpireTime());
     }

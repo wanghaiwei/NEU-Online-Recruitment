@@ -24,8 +24,12 @@ public enum PresetMessage {
     ERROR_FILE_ILLEGAL(-503, "illegal file", "非法文件类型"),
     
     /* Auth Message */
-    ERROR_TOKEN_EXPIRED(-301,"token is expired","会话过期"),
-    ERROR_TOKEN_FAKED(-301,"token is faked","无效会话"),
+    ERROR_TOKEN_EXPIRED(-301, "token is expired", "会话过期"),
+    ERROR_TOKEN_FAKED(-301, "token is faked", "无效会话"),
+    
+    /* 验证码相关 */
+    ERROR_VERIFY_CODE_EXPIRED(40001, "Verify code is expired", "验证码过期"),
+    ERROR_VERIFY_CODE_INCORRECT(40002, " Verify code incorrect", "验证码错误"),
     
     /* Defined Message */
     PHONE_REGISTERED_ERROR(50001, "phone number registered", "手机号已注册"),
@@ -47,6 +51,7 @@ public enum PresetMessage {
     DESCRIPTION_OVER_100_LIMIT_ERROR(50017, "description no more than 100 words", "描述不能多于100字"),
     OVER_MANAGE_ERROR(50018, "over management", "超额管理"),
     PHONE_FORMAT_ERROR(50019, "phone format incorrect", "手机号格式错误"),
+    OLD_PASSWORD_INCORRECT_ERROR(50020, "old password format incorrect", "旧密码错误或用户不存在"),
     ;
     
     int code;
@@ -68,6 +73,9 @@ public enum PresetMessage {
         Common.apply(fun);
     }
     
+    public String getMessage() {
+        return message;
+    }
     
     @Override
     public String toString() {

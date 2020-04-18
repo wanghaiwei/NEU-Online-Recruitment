@@ -15,10 +15,15 @@ public class SqlQuery {
     static HashMap<String, String> SqlMap = new HashMap<String, String>();
     
     static {
-        //todo add map for sql file
-        SqlMap.put("Register", "auth/register.sql");
-        SqlMap.put("Login", "auth/login.sql");
-        SqlMap.put("SelectId", "auth/select_id.sql");
+        /* Auth 相关Map */
+        SqlMap.put("AuthRegister", "auth/register.sql");
+        SqlMap.put("AuthLogin", "auth/login.sql");
+        SqlMap.put("AuthResetPwd", "auth/reset_password.sql");
+    
+        /* User 相关Map */
+        SqlMap.put("UserQueryId", "user/query_id.sql");
+        SqlMap.put("UserUpdateInfo", "user/update_info.sql");
+        SqlMap.put("UserUpdatePwd", "user/update_password.sql");
     }
     
     /**
