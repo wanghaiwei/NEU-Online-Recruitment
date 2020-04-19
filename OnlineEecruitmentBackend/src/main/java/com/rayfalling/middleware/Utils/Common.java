@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 public class Common {
     static String Reg4Phone = "^[1](([3][0-9])|([4][5-9])|([5][0-3,5-9])|([6][5,6])|([7][0-8])|([8][0-9])|([9][1,8,9]))[0-9]{8}$";
+    static String Reg4Mail = "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$";
     
     /**
      * @param <Obj> 传入对象
@@ -32,12 +33,25 @@ public class Common {
      * @author Rayfalling
      */
     public static boolean isNotMobile(final String phone) {
-        //来源手机号正则匹配
+        if (phone == null)
+            return false;
         Pattern pattern = Pattern.compile(Reg4Phone);
-        Matcher m = pattern.matcher(phone);
-        return !m.matches();
+        Matcher matcher = pattern.matcher(phone);
+        return !matcher.matches();
     }
     
+    /**
+     * @param mail 邮箱
+     * @return 是否匹配
+     * @author Rayfalling
+     */
+    public static boolean isNotEmail(String mail) {
+        if (mail == null)
+            return false;
+        Pattern pattern = Pattern.compile(Reg4Mail);
+        Matcher matcher = pattern.matcher(mail);
+        return !matcher.matches();
+    }
     
     /**
      * 从本地加载资源

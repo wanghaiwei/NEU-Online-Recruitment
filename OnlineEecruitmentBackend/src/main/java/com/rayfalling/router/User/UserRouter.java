@@ -399,7 +399,7 @@ public class UserRouter {
             String username = ((Token) context.session().get("token")).getUsername();
             
             
-            if (Common.isNotMobile(phone)) {
+            if (Common.isNotMobile(username)) {
                 JsonResponse.RespondPreset(context, PresetMessage.PHONE_FORMAT_ERROR);
                 Shared.getRouterLogger()
                       .error(context.normalisedPath() + " " + PresetMessage.PHONE_FORMAT_ERROR.toString());
@@ -409,6 +409,7 @@ public class UserRouter {
             String company = params.getString("company", "");
             String position = params.getString("position", "");
             String mail = params.getString("mail", "");
+            String code = params.getString("code", "");
             String company_serial = params.getString("company_serial", "");
             
             return new JsonObject().put("username", username);

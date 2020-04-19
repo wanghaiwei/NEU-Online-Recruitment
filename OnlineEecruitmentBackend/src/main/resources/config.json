@@ -24,5 +24,12 @@
     "accessKeySecret": "grRiJrO3KxBYytnjywIQv57pvgXIAf",
     "SignName": "职中小筑",
     "expireTime": 300000
+  },
+  "mail": {
+    "user": "ginakl@163.com",
+    "pass": "KZTHZUTXWVCRQGGJ",
+    "host": "smtp.163.com",
+    "port": 465,
+    "ssl": true
   }
 }

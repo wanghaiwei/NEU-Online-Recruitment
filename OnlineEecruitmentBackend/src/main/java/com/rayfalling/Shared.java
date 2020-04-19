@@ -7,14 +7,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class Shared {
-    private static Logger RouterLogger = LogManager.getLogger("Router");
-    private static Logger DatabaseLogger = LogManager.getLogger("Database");
-    private static Logger logger = LogManager.getLogger("Main");
-    private static Vertx vertx = Vertx.vertx();
+    private static final Logger RouterLogger = LogManager.getLogger("Router");
+    private static final Logger DatabaseLogger = LogManager.getLogger("Database");
+    private static final Logger logger = LogManager.getLogger("Main");
+    private static final Vertx vertx = Vertx.vertx();
     private static HttpServer httpServer;
-    
-    private static Shared instance = new Shared();
-    
     /**
      * 工程 Postgresql 数据库连接池对象
      */

@@ -52,6 +52,7 @@ public enum PresetMessage {
     OVER_MANAGE_ERROR(50018, "over management", "超额管理"),
     PHONE_FORMAT_ERROR(50019, "phone format incorrect", "手机号格式错误"),
     OLD_PASSWORD_INCORRECT_ERROR(50020, "old password format incorrect", "旧密码错误或用户不存在"),
+    MAIL_FORMAT_ERROR(50021, "mail format incorrect", "邮箱格式错误"),
     ;
     
     int code;

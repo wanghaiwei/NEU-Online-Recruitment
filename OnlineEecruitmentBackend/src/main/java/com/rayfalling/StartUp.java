@@ -2,10 +2,12 @@ package com.Rayfalling;
 
 
 import com.Rayfalling.config.DatabaseVerticleConfig;
+import com.Rayfalling.config.MailVerticleConfig;
 import com.Rayfalling.config.MainVerticleConfig;
 import com.Rayfalling.config.SmsVerticleConfig;
 import com.Rayfalling.middleware.Utils.Common;
 import com.Rayfalling.verticle.DatabaseVerticle;
+import com.Rayfalling.verticle.MailVerticle;
 import com.Rayfalling.verticle.MainVerticle;
 import com.Rayfalling.verticle.SmsVerticle;
 import io.reactivex.Single;
@@ -22,6 +24,7 @@ public class StartUp {
     private static String MainVerticleDeploymentID;
     private static String DatabaseVerticleDeploymentID;
     private static String SmsVerticleDeploymentID;
+    private static String MailVerticleDeploymentID;
     
     
     public static void main(String[] args) {
@@ -97,6 +100,26 @@ public class StartUp {
                   });
             
             return Single.just(resource);
+        }).flatMap(resource -> {
+            Shared.getVertx()
+                  .rxDeployVerticle(MailVerticle::new, MailVerticleConfig.getInstance())
+                  .doOnError(err -> {
+                      logger.error(err.getMessage());
+                      logger.fatal("Failed to start MailVerticle instances.");
+                      err.printStackTrace();
+                  })
+                  .doOnSubscribe(disposable -> logger.info("Starting MailVerticle..."))
+                  .doOnSuccess(res -> {
+                      MailVerticleDeploymentID = res;
+                      logger.info("MailVerticle instances startup succeeded.");
+                  })
+                  .subscribe(res -> {
+        
+                  }, failure -> {
+        
+                  });
+    
+            return Single.just(resource);
         }).subscribe(res -> {
             logger.info("Rsync Startup operation finished successfully. Waiting for Verticle starting...");
         }, err -> {
@@ -123,7 +146,7 @@ public class StartUp {
     private static void stop() {
         Logger logger = LogManager.getLogger("Shutdown");
         
-        Single.just(Shared.getVertx()).map(shared -> {
+        Single.just(Shared.getVertx()).flatMap(shared -> {
             shared.undeploy(MainVerticleDeploymentID, res -> {
                 if (res.succeeded()) {
                     logger.info("MainVerticle instances stop succeeded. Now stopping DatabaseVerticle...");
@@ -133,8 +156,8 @@ public class StartUp {
                 }
             });
             
-            return shared;
-        }).map(shared -> {
+            return Single.just(shared);
+        }).flatMap(shared -> {
             shared.undeploy(DatabaseVerticleDeploymentID, res -> {
                 if (res.succeeded()) {
                     logger.info("DatabaseVerticle instances stop succeeded.");
@@ -143,9 +166,9 @@ public class StartUp {
                     logger.fatal(res.cause());
                 }
             });
-            
-            return shared;
-        }).map(shared -> {
+    
+            return Single.just(shared);
+        }).flatMap(shared -> {
             shared.undeploy(SmsVerticleDeploymentID, res -> {
                 if (res.succeeded()) {
                     logger.info("SmsVerticle instances stop succeeded.");
@@ -154,8 +177,19 @@ public class StartUp {
                     logger.fatal(res.cause());
                 }
             });
-            
-            return shared;
+    
+            return Single.just(shared);
+        }).flatMap(shared -> {
+            shared.undeploy(MailVerticleDeploymentID, res -> {
+                if (res.succeeded()) {
+                    logger.info("MailVerticle instances stop succeeded.");
+                } else {
+                    logger.fatal("Failed to stop MailVerticle instances.");
+                    logger.fatal(res.cause());
+                }
+            });
+    
+            return Single.just(shared);
         }).subscribe(res -> {
             logger.info("Stop operation finished successfully.");
         }, err -> {
