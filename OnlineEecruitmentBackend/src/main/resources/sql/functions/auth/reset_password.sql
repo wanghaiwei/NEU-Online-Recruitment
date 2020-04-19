@@ -10,7 +10,7 @@ DECLARE
 
 BEGIN
     Count = (select count(*) from "user" where "user".phone = user_phone);
-    if Count == 1 then
+    if Count = 1 then
         UPDATE "user"
         SET password = user_password
         where phone = user_phone;

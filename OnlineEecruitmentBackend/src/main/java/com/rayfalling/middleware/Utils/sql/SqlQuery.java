@@ -24,6 +24,7 @@ public class SqlQuery {
         SqlMap.put("UserQueryId", "user/query_id.sql");
         SqlMap.put("UserUpdateInfo", "user/update_info.sql");
         SqlMap.put("UserUpdatePwd", "user/update_password.sql");
+        SqlMap.put("UserSubmitAuthentication", "user/submit_authentication.sql");
     }
     
     /**

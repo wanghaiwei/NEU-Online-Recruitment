@@ -168,7 +168,7 @@ public class UserRouter {
             
             //default return
             return new JsonObject();
-        }).flatMap(param -> AuthRouter.CheckToken(context, param)).flatMap(param -> {
+        }).flatMap(param -> AuthRouter.AuthCode(context, param)).flatMap(param -> {
             String phone = param.getString("phone");
             
             if (!param.getBoolean("result")) {
@@ -308,8 +308,10 @@ public class UserRouter {
                 Shared.getRouterLogger()
                       .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
             }
-            return new JsonObject().put("phone", phone).put("VerifyCode", VerifyCode).put("pwd_new", newPassword);
-        }).flatMap(param -> AuthRouter.CheckToken(context, param)).flatMap(param -> {
+            return new JsonObject().put("phone", phone)
+                                   .put("VerifyCode", VerifyCode)
+                                   .put("pwd_new", newPassword);
+        }).flatMap(param -> AuthRouter.AuthCode(context, param)).flatMap(param -> {
             if (!param.getBoolean("result")) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
@@ -382,8 +384,6 @@ public class UserRouter {
         });
     }
     
-    //TODO
-    
     /**
      * 用户身份认证路由
      */
@@ -398,27 +398,45 @@ public class UserRouter {
         }).map(params -> {
             String username = ((Token) context.session().get("token")).getUsername();
             
-            
             if (Common.isNotMobile(username)) {
                 JsonResponse.RespondPreset(context, PresetMessage.PHONE_FORMAT_ERROR);
                 Shared.getRouterLogger()
                       .error(context.normalisedPath() + " " + PresetMessage.PHONE_FORMAT_ERROR.toString());
             }
             
-            String identity = params.getString("identity", "");
-            String company = params.getString("company", "");
-            String position = params.getString("position", "");
-            String mail = params.getString("mail", "");
             String code = params.getString("code", "");
-            String company_serial = params.getString("company_serial", "");
+            boolean mail_can_verify = false;
             
-            return new JsonObject().put("username", username);
+            if (code.equals("")) {
+                mail_can_verify = true;
+            }
+            
+            return new JsonObject().put("username", username)
+                                   .put("identity", params.getInteger("identity", 0))
+                                   .put("company", params.getString("company", ""))
+                                   .put("position", params.getString("position", ""))
+                                   .put("mail", params.getString("mail", ""))
+                                   .put("VerifyCode", code)
+                                   .put("mail_can_verify", mail_can_verify)
+                                   .put("company_serial", params.getString("company_serial", ""));
+        }).flatMap(param -> AuthRouter.AuthCode(context, param)).flatMap(param -> {
+            if (!param.getBoolean("result") && !param.getBoolean("mail_can_verify")) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                Shared.getRouterLogger()
+                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+            } else if (param.getBoolean("result")) {
+                param.remove("mail_can_verify");
+                param.put("mail_can_verify", true);
+            }
+            
+            return Single.just(param);
         }).flatMap(Authentication::DatabaseUpdatePwd).flatMap(param -> {
             if (param == -1) {
-                JsonResponse.RespondPreset(context, PresetMessage.OLD_PASSWORD_INCORRECT_ERROR);
-                Shared.getRouterLogger().warn(context.normalisedPath() + PresetMessage.OLD_PASSWORD_INCORRECT_ERROR);
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + PresetMessage.ERROR_FAILED);
             } else {
-                JsonResponse.RespondSuccess(context, "Password updated successful");
+                JsonResponse.RespondSuccess(context, "Authentication submitted successfully");
             }
             return Single.just(param);
         }).doOnError(err -> {

@@ -47,7 +47,12 @@ public class AuthRouter {
         context.next();
     }
     
-    public static Single<JsonObject> CheckToken(RoutingContext context, JsonObject param) {
+    /**
+     * 校验用户验证码是否正确
+     * @param context 路由上下文,包含Session信息
+     * @param param {@link JsonObject} 包含VerifyCode字段的Json
+     * */
+    public static Single<JsonObject> AuthCode(RoutingContext context, JsonObject param) {
         return Single.just(param).map(res -> {
             Session session = context.session();
             String phone = param.getString("phone");

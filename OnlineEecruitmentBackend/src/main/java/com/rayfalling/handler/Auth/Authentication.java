@@ -93,7 +93,7 @@ public class Authentication {
     
     /**
      * @param data 传入参数，包含"phone"和"pwd_new"的JsonObject
-     * @return id 数据库用户id
+     * @return 执行状态
      * @author Rayfalling
      */
     public static Single<Integer> DatabaseResetPwd(JsonObject data) {
@@ -115,10 +115,9 @@ public class Authentication {
                      });
     }
     
-    
     /**
      * @param data 传入参数，包含"phone","pwd_new"和"pwd_old"的JsonObject
-     * @return id 数据库用户id
+     * @return 执行状态
      * @author Rayfalling
      */
     public static Single<Integer> DatabaseUpdatePwd(@NotNull JsonObject data) {
@@ -132,6 +131,38 @@ public class Authentication {
                      })
                      .doAfterSuccess(PgConnection::close)
                      .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("AuthUpdatePwd"), tuple))
+                     .map(res -> {
+                         Row row = DataBaseExt.oneOrNull(res);
+                         return row != null ? row.getInteger(0) : -1;
+                     })
+                     .doOnError(err -> {
+                         Shared.getDatabaseLogger().error(err);
+                         err.printStackTrace();
+                     });
+    }
+    
+    /**
+     * @param data 传入参数，包含"username","identity","company","position","mail","mail_can_verify"和"company_serial"的JsonObject
+     * @return 执行状态
+     * @author Rayfalling
+     */
+    public static Single<Integer> DatabaseSubmitAuthentication(@NotNull JsonObject data) {
+        io.reactiverse.pgclient.Tuple tuple = io.reactiverse.pgclient.Tuple.of(data.getString("username"),
+                data.getInteger("identity"),
+                data.getString("company"),
+                data.getString("position"),
+                data.getString("mail"),
+                data.getBoolean("mail_can_verify"),
+                data.getString("company_serial"));
+        
+        return Shared.getPgPool()
+                     .rxGetConnection()
+                     .doOnError(err -> {
+                         Shared.getDatabaseLogger().error(err);
+                         err.printStackTrace();
+                     })
+                     .doAfterSuccess(PgConnection::close)
+                     .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("UserSubmitAuthentication"), new Tuple(tuple)))
                      .map(res -> {
                          Row row = DataBaseExt.oneOrNull(res);
                          return row != null ? row.getInteger(0) : -1;
