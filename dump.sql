@@ -17,6 +17,44 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: identities; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public.identities AS (
+	user_identity integer,
+	auth_identity integer
+);
+
+
+ALTER TYPE public.identities OWNER TO postgres;
+
+--
+-- Name: queryidentity(character varying); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.queryidentity(user_phone character varying) RETURNS SETOF public.identities
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    RESULT        identities;
+
+BEGIN
+    BEGIN
+        select "user".identity, authentication_info.identity
+        into RESULT
+        from "user"
+                 left join authentication_info on "user".id = authentication_info.user_id
+        where phone = user_phone;
+    END;
+
+    return NEXT RESULT;
+END;
+$$;
+
+
+ALTER FUNCTION public.queryidentity(user_phone character varying) OWNER TO postgres;
+
+--
 -- Name: register(character varying, character varying); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -31,7 +69,7 @@ BEGIN
     Count = (select count(*)
              from "user"
              where "user".phone = user_phone);
-    if Count == 1 then
+    if Count = 1 then
         RESULT = -1;
     else
         insert into "user" (password, phone) values (user_password, user_phone);
@@ -57,10 +95,11 @@ DECLARE
 
 BEGIN
     Count = (select count(*) from "user" where "user".phone = user_phone);
-    if Count == 1 then
+    if Count = 1 then
         UPDATE "user"
         SET password = user_password
         where phone = user_phone;
+        RESULT = 0;
     else
         RESULT = -1;
     end if;
@@ -70,6 +109,61 @@ $$;
 
 
 ALTER FUNCTION public.resetpassword(user_phone character varying, user_password character varying) OWNER TO postgres;
+
+--
+-- Name: submitauthentication(character varying, integer, character varying, character varying, character varying, boolean, character varying); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.submitauthentication(user_phone character varying, user_identity integer, user_company character varying, user_position character varying, user_mail character varying, user_mail_can_verify boolean, user_company_serial character varying) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    RESULT int;
+    Count  int;
+    UserId int;
+
+BEGIN
+    BEGIN
+        UserId = (select id from "user" where phone = user_phone);
+    Exception
+        when others then
+            RESULT = -1;
+    END;
+
+    Begin
+        Count = (select count(*) from authentication_info where user_id = UserId);
+        if Count = 1 then
+            Update authentication_info
+            set begin_time            = localtimestamp,
+                end_time              = localtimestamp + interval '90 days',
+                identity              = user_identity,
+                company               = user_company,
+                company_serial        = user_company_serial,
+                position              = user_position,
+                mail                  = user_mail,
+                mail_can_verify       = user_mail_can_verify,
+                authentication_status = 0
+            where user_id = UserId;
+            RESULT = 0;
+        else
+            INSERT INTO authentication_info(user_id, identity, begin_time, end_time, company, position, mail,
+                                            company_serial, authentication_status, mail_can_verify)
+            values (UserId, user_identity, localtimestamp, localtimestamp + interval '90 days', user_company,
+                    user_position,
+                    user_mail, user_company_serial, 0, user_mail_can_verify);
+            RESULT = 0;
+        end if;
+    Exception
+        when others then
+            RESULT = -1;
+    END;
+
+    return RESULT;
+END ;
+$$;
+
+
+ALTER FUNCTION public.submitauthentication(user_phone character varying, user_identity integer, user_company character varying, user_position character varying, user_mail character varying, user_mail_can_verify boolean, user_company_serial character varying) OWNER TO postgres;
 
 --
 -- Name: updatepassword(character varying, character varying, character varying); Type: FUNCTION; Schema: public; Owner: postgres
@@ -83,8 +177,8 @@ DECLARE
     Count  int;
 
 BEGIN
-    Count = (select count(*) from "user" where "user".phone = user_phone and password = user_password_old);
-    if Count == 1 then
+    Count = (select count(*) from "user" where "user".phone = user_phone and user_password_old = password);
+    if Count = 1 then
         UPDATE "user"
         SET password = user_password_new
         where phone = user_phone;
@@ -109,12 +203,17 @@ CREATE FUNCTION public.userinfoupdate(username character varying, user_nickname 
     -- 返回    -1 更新信息表失败
 DECLARE
     RESULT int;
+    UserId int;
 
 BEGIN
     BEGIN
+        UserId = (select id from "user" where phone = username);
+    END;
+
+    BEGIN
         INSERT INTO user_info(user_id, nickname, nikename_last_update, gender, description, avatar,
                               expected_career_id, register_time)
-        VALUES (username, user_nickname, localtimestamp, user_gender, user_description, user_avatar,
+        VALUES (UserId, user_nickname, localtimestamp, user_gender, user_description, user_avatar,
                 user_description, localtimestamp)
         ON conflict(user_id) DO UPDATE
             SET nickname             = user_nickname,
@@ -123,6 +222,7 @@ BEGIN
                 description          = user_description,
                 avatar               = user_avatar,
                 expected_career_id   = user_expected_career_id;
+        RESULT = 0;
     EXCEPTION
         when others then
             RESULT = -1;
@@ -152,7 +252,8 @@ CREATE TABLE public.authentication_info (
     "position" character varying NOT NULL,
     mail character varying NOT NULL,
     company_serial character varying NOT NULL,
-    authentication_status integer DEFAULT '-1'::integer NOT NULL
+    authentication_status integer DEFAULT '-1'::integer NOT NULL,
+    mail_can_verify boolean DEFAULT false NOT NULL
 );
 
 
@@ -564,6 +665,32 @@ ALTER SEQUENCE public.position_category_id_seq OWNED BY public.position_category
 
 
 --
+-- Name: position_info; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.position_info (
+    id integer NOT NULL,
+    name character varying NOT NULL,
+    company character varying NOT NULL,
+    description character varying NOT NULL,
+    post_mail character varying NOT NULL,
+    grade integer DEFAULT 0 NOT NULL,
+    location character varying,
+    position_category_id integer NOT NULL,
+    post_user_id integer NOT NULL
+);
+
+
+ALTER TABLE public.position_info OWNER TO postgres;
+
+--
+-- Name: TABLE position_info; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON TABLE public.position_info IS '职位信息表';
+
+
+--
 -- Name: post; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -739,32 +866,6 @@ ALTER SEQUENCE public.post_report_id_seq OWNED BY public.report_post.id;
 
 
 --
--- Name: postion_info; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.postion_info (
-    id integer NOT NULL,
-    name character varying NOT NULL,
-    company character varying NOT NULL,
-    description character varying NOT NULL,
-    post_mail character varying NOT NULL,
-    grade character varying NOT NULL,
-    location character varying,
-    position_category_id integer NOT NULL,
-    post_user_id integer NOT NULL
-);
-
-
-ALTER TABLE public.postion_info OWNER TO postgres;
-
---
--- Name: TABLE postion_info; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON TABLE public.postion_info IS '职位信息表';
-
-
---
 -- Name: postion_info_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -783,7 +884,7 @@ ALTER TABLE public.postion_info_id_seq OWNER TO postgres;
 -- Name: postion_info_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
-ALTER SEQUENCE public.postion_info_id_seq OWNED BY public.postion_info.id;
+ALTER SEQUENCE public.postion_info_id_seq OWNED BY public.position_info.id;
 
 
 --
@@ -1259,6 +1360,13 @@ ALTER TABLE ONLY public.position_category ALTER COLUMN id SET DEFAULT nextval('p
 
 
 --
+-- Name: position_info id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.position_info ALTER COLUMN id SET DEFAULT nextval('public.postion_info_id_seq'::regclass);
+
+
+--
 -- Name: post id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1284,13 +1392,6 @@ ALTER TABLE ONLY public.post_comment_reply ALTER COLUMN id SET DEFAULT nextval('
 --
 
 ALTER TABLE ONLY public.post_like ALTER COLUMN id SET DEFAULT nextval('public.post_like_id_seq'::regclass);
-
-
---
--- Name: postion_info id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.postion_info ALTER COLUMN id SET DEFAULT nextval('public.postion_info_id_seq'::regclass);
 
 
 --
@@ -1374,7 +1475,7 @@ ALTER TABLE ONLY public.user_quota ALTER COLUMN id SET DEFAULT nextval('public.u
 -- Data for Name: authentication_info; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.authentication_info (id, user_id, identity, begin_time, end_time, company, "position", mail, company_serial, authentication_status) FROM stdin;
+COPY public.authentication_info (id, user_id, identity, begin_time, end_time, company, "position", mail, company_serial, authentication_status, mail_can_verify) FROM stdin;
 \.
 
 
@@ -1454,6 +1555,14 @@ COPY public.position_category (id, name) FROM stdin;
 
 
 --
+-- Data for Name: position_info; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.position_info (id, name, company, description, post_mail, grade, location, position_category_id, post_user_id) FROM stdin;
+\.
+
+
+--
 -- Data for Name: post; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1482,14 +1591,6 @@ COPY public.post_comment_reply (id, comment_id, type, content, target_id, from_u
 --
 
 COPY public.post_like (id, post_id, user_id) FROM stdin;
-\.
-
-
---
--- Data for Name: postion_info; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.postion_info (id, name, company, description, post_mail, grade, location, position_category_id, post_user_id) FROM stdin;
 \.
 
 
@@ -1530,7 +1631,7 @@ COPY public.report_user (id, reporter_id, reported_id, reason) FROM stdin;
 --
 
 COPY public."user" (id, password, phone, identity) FROM stdin;
-1	132456	18262258003	101
+1	2333	18262258003	101
 \.
 
 
@@ -1870,10 +1971,10 @@ ALTER TABLE ONLY public.report_post
 
 
 --
--- Name: postion_info postion_info_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: position_info postion_info_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.postion_info
+ALTER TABLE ONLY public.position_info
     ADD CONSTRAINT postion_info_pk PRIMARY KEY (id);
 
 
@@ -2066,7 +2167,7 @@ CREATE UNIQUE INDEX post_report_id_uindex ON public.report_post USING btree (id)
 -- Name: postion_info_id_uindex; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE UNIQUE INDEX postion_info_id_uindex ON public.postion_info USING btree (id);
+CREATE UNIQUE INDEX postion_info_id_uindex ON public.position_info USING btree (id);
 
 
 --
@@ -2352,18 +2453,18 @@ ALTER TABLE ONLY public.post
 
 
 --
--- Name: postion_info postion_info_position_category_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: position_info postion_info_position_category_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.postion_info
+ALTER TABLE ONLY public.position_info
     ADD CONSTRAINT postion_info_position_category_id_fk FOREIGN KEY (position_category_id) REFERENCES public.position_category(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
--- Name: postion_info postion_info_user_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: position_info postion_info_user_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.postion_info
+ALTER TABLE ONLY public.position_info
     ADD CONSTRAINT postion_info_user_id_fk FOREIGN KEY (post_user_id) REFERENCES public."user"(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
@@ -2428,7 +2529,7 @@ ALTER TABLE ONLY public.user_info
 --
 
 ALTER TABLE ONLY public.user_position_favorite
-    ADD CONSTRAINT user_position_favorite_postion_info_id_fk FOREIGN KEY (position_info_id) REFERENCES public.postion_info(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT user_position_favorite_postion_info_id_fk FOREIGN KEY (position_info_id) REFERENCES public.position_info(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
