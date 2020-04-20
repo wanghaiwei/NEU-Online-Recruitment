@@ -26,6 +26,7 @@ BEGIN
                 description          = user_description,
                 avatar               = user_avatar,
                 expected_career_id   = user_expected_career_id;
+        RESULT = 0;
     EXCEPTION
         when others then
             RESULT = -1;

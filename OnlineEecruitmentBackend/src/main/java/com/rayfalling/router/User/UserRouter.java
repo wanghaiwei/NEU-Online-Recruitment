@@ -1,12 +1,13 @@
 package com.Rayfalling.router.User;
 
 import com.Rayfalling.Shared;
-import com.Rayfalling.handler.Auth.Authentication;
+import com.Rayfalling.handler.Auth.AuthenticationHandler;
 import com.Rayfalling.handler.Auth.UserInfo;
 import com.Rayfalling.middleware.Response.JsonResponse;
 import com.Rayfalling.middleware.Response.PresetMessage;
 import com.Rayfalling.middleware.Utils.Common;
 import com.Rayfalling.middleware.Utils.Security.EncryptUtils;
+import com.Rayfalling.middleware.data.Identity;
 import com.Rayfalling.middleware.data.Token;
 import com.Rayfalling.middleware.data.TokenStorage;
 import com.Rayfalling.router.MainRouter;
@@ -93,7 +94,7 @@ public class UserRouter {
             }
             
             return new JsonObject().put("phone", phone).put("password", password);
-        }).flatMap(params -> Authentication.DatabaseUserRegister(params).map(result -> {
+        }).flatMap(params -> AuthenticationHandler.DatabaseUserRegister(params).map(result -> {
             if (result == 0) {
                 JsonResponse.RespondPreset(context, PresetMessage.SUCCESS);
             } else if (result == -1) {
@@ -177,32 +178,35 @@ public class UserRouter {
                       .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
             return context.session().data().containsKey("Code") ?
-                           Authentication.DatabaseUserId(phone).map(result -> {
-                               if (result == -1) {
-                                   return -1;
-                               }
-                               return Tuple.of(result, phone);
+                           AuthenticationHandler.DatabaseUserId(phone).flatMap(result -> {
+                               return Single.just(new JsonObject().put("id", result).put("phone", phone));
                            }) :
-                           Authentication.DatabaseUserLogin(param).map(result -> {
-                               if (result == -1) {
-                                   return -1;
-                               }
-                               return Tuple.of(result, phone);
+                           AuthenticationHandler.DatabaseUserLogin(param).flatMap(result -> {
+                               return Single.just(new JsonObject().put("id", result).put("phone", phone));
                            });
             
         }).flatMap(param -> {
-            Tuple token_param = (Tuple) param;
-            if (token_param.getInteger(0) == -1) {
+            if (param.getInteger("id") == -1) {
                 JsonResponse.RespondPreset(context, PresetMessage.PHONE_UNREGISTER_ERROR);
                 Shared.getRouterLogger().warn(context.normalisedPath() + PresetMessage.PHONE_UNREGISTER_ERROR);
             }
-            Token token = new Token(token_param.getInteger(0), token_param.getString(1));
+            
+            return Single.just(param);
+        }).flatMap(AuthenticationHandler::DatabaseQueryIdentity).flatMap(param -> {
+            if (!param.getBoolean("result")) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                Shared.getRouterLogger().warn(context.normalisedPath() + PresetMessage.ERROR_FAILED);
+            }
+            
+            Identity identity = Identity.mapFromDatabase(param.getInteger("user_identity"), param.getInteger("auth_identity"));
+            
+            Token token = new Token(param.getInteger("id"), param.getString("phone"), identity);
             TokenStorage.add(token);
             context.session().put("token", token);
             context.addCookie(Cookie.cookie("token", EncryptUtils.EncryptFromToken(token)));
             JsonResponse.RespondSuccess(context, "Login successful");
             Shared.getRouterLogger()
-                  .info(context.normalisedPath() + " " + token_param.getString(1) + " Login");
+                  .info(context.normalisedPath() + " " + param.getString("phone") + " Login");
             return Single.just(token);
         }).doOnError(err -> {
             if (!context.response().ended()) {
@@ -319,7 +323,7 @@ public class UserRouter {
             }
             
             return Single.just(param);
-        }).flatMap(Authentication::DatabaseResetPwd).flatMap(param -> {
+        }).flatMap(AuthenticationHandler::DatabaseResetPwd).flatMap(param -> {
             if (param == -1) {
                 JsonResponse.RespondPreset(context, PresetMessage.PHONE_UNREGISTER_ERROR);
                 Shared.getRouterLogger().warn(context.normalisedPath() + PresetMessage.PHONE_UNREGISTER_ERROR);
@@ -363,7 +367,7 @@ public class UserRouter {
             String oldPassword = params.getString("pwd_old", "");
             String newPassword = params.getString("pwd_new", "");
             return new JsonObject().put("phone", phone).put("pwd_old", oldPassword).put("pwd_new", newPassword);
-        }).flatMap(Authentication::DatabaseUpdatePwd).flatMap(param -> {
+        }).flatMap(AuthenticationHandler::DatabaseUpdatePwd).flatMap(param -> {
             if (param == -1) {
                 JsonResponse.RespondPreset(context, PresetMessage.OLD_PASSWORD_INCORRECT_ERROR);
                 Shared.getRouterLogger().warn(context.normalisedPath() + PresetMessage.OLD_PASSWORD_INCORRECT_ERROR);
@@ -430,7 +434,7 @@ public class UserRouter {
             }
             
             return Single.just(param);
-        }).flatMap(Authentication::DatabaseUpdatePwd).flatMap(param -> {
+        }).flatMap(AuthenticationHandler::DatabaseSubmitAuthentication).flatMap(param -> {
             if (param == -1) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()

@@ -1,1 +1,1 @@
-select resetpassword($1,$2);
+select * from resetpassword($1,$2);

@@ -1,1 +1,1 @@
-select register($1, $2);
+select * from register($1, $2);

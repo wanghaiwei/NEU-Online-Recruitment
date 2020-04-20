@@ -10,7 +10,8 @@
   "mainRouter": {
     "logRequests": true,
     "sessionKey": "fGF%MVC#",
-    "tokenSalt": "kFG^%@#5(*@&^@#$"
+    "tokenSalt": "kFG^%@#5(*@&^@#$",
+    "expireTime": 300000
   },
   "server": {
     "instance": 4,

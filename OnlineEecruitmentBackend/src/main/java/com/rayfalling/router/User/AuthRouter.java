@@ -1,14 +1,12 @@
 package com.Rayfalling.router.User;
 
 import com.Rayfalling.Shared;
-import com.Rayfalling.handler.Auth.Authentication;
 import com.Rayfalling.middleware.Response.JsonResponse;
 import com.Rayfalling.middleware.Response.PresetMessage;
 import com.Rayfalling.middleware.Utils.Security.EncryptUtils;
 import com.Rayfalling.middleware.data.Token;
 import com.Rayfalling.middleware.data.TokenStorage;
 import com.Rayfalling.middleware.data.VerifyCode;
-import io.reactiverse.pgclient.Tuple;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.http.Cookie;

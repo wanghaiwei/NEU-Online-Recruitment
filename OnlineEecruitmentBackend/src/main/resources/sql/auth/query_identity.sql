@@ -1,0 +1,1 @@
+select * from queryidentity($1)

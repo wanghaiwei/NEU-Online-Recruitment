@@ -16,15 +16,19 @@ public class SqlQuery {
     
     static {
         /* Auth 相关Map */
-        SqlMap.put("AuthRegister", "auth/register.sql");
         SqlMap.put("AuthLogin", "auth/login.sql");
+        SqlMap.put("AuthRegister", "auth/register.sql");
         SqlMap.put("AuthResetPwd", "auth/reset_password.sql");
+        SqlMap.put("AuthQueryIdentity", "auth/query_identity.sql");
     
         /* User 相关Map */
         SqlMap.put("UserQueryId", "user/query_id.sql");
         SqlMap.put("UserUpdateInfo", "user/update_info.sql");
         SqlMap.put("UserUpdatePwd", "user/update_password.sql");
         SqlMap.put("UserSubmitAuthentication", "user/submit_authentication.sql");
+    
+        /* Position 相关Map */
+        SqlMap.put("PositionQueryCategory", "position/query_category.sql");
     }
     
     /**

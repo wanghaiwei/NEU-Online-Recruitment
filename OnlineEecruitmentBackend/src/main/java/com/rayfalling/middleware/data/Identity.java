@@ -1,5 +1,9 @@
 package com.Rayfalling.middleware.data;
 
+import com.Rayfalling.middleware.Utils.File.FileType;
+import io.vertx.core.json.JsonObject;
+import org.jetbrains.annotations.NotNull;
+
 /**
  * 身份数据枚举类
  */
@@ -18,6 +22,47 @@ public enum Identity {
         this.mask = mask;
         this.category = category;
         this.description = description;
+    }
+    
+    /**
+     * 将枚举类{@link Identity}转换成{@link JsonObject}
+     *
+     * @return {@link JsonObject}
+     */
+    public static JsonObject map2JsonObject(@NotNull Identity identity) {
+        return new JsonObject().put("name", identity.name())
+                               .put("mask", identity.mask)
+                               .put("category", identity.category)
+                               .put("description", identity.description);
+    }
+    
+    /**
+     * 从{@link JsonObject}转换成枚举类{@link Identity}
+     *
+     * @return {@link Identity}
+     */
+    public static Identity mapFromJsonObject(JsonObject object) {
+        for (Identity identity : Identity.values()) {
+            if (identity.mask == object.getInteger("mask")
+                && identity.name().equals(object.getString("name"))
+                && identity.category == object.getInteger("category")
+                && identity.description.equals(object.getString("description"))) {
+                return identity;
+            }
+        }
+        return Identity.COMMON_USER_UNRECOGNIZED;
+    }
+    
+    public static Identity mapFromDatabase(Integer mask, Integer category) {
+        mask = mask == null ? 101 : mask;
+        category = category == null ? -1 : category;
+        
+        for (Identity identity : Identity.values()) {
+            if (identity.mask == mask && identity.category == category) {
+                return identity;
+            }
+        }
+        return Identity.COMMON_USER_UNRECOGNIZED;
     }
     
     public int mapCategory(String category) {

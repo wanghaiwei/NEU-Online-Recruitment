@@ -1,6 +1,7 @@
 package com.Rayfalling.middleware.Response;
 
 import com.Rayfalling.Shared;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.ext.web.RoutingContext;
 
@@ -16,7 +17,7 @@ public class JsonResponse {
     }
     
     private static void RespondJson(RoutingContext routingContext, int code, int status, Object data) {
-        if (!(data instanceof JsonObject))
+        if (!(data instanceof JsonObject) && !(data instanceof JsonArray))
             data = JsonObject.mapFrom(data);
         routingContext.response()
                       .putHeader("Content-Type", "application/json")

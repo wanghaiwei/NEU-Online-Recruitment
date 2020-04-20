@@ -24,11 +24,11 @@ public class DataBaseExt {
      * @param method   mapper方法，需要返回{@link JsonObject}
      * @author Rayfalling
      */
-    public static JsonArray mapJsonArray(PgRowSet pgRowSet, Method method) {
+    public static @NotNull JsonArray mapJsonArray(@NotNull PgRowSet pgRowSet, MapJsonArray method) {
         JsonArray jsonArray = new JsonArray();
         for (Row row : pgRowSet) {
             try {
-                jsonArray.add((JsonObject) method.invoke(row));
+                jsonArray.add(method.map(row));
             } catch (Exception e) {
                 Shared.getLogger().error(e.getMessage());
                 e.printStackTrace();
@@ -54,7 +54,7 @@ public class DataBaseExt {
      * @param name key的名字
      * @author Rayfalling
      */
-    public static Long dateToTimestamp(Row row, String name) {
+    public static @NotNull Long dateToTimestamp(@NotNull Row row, String name) {
         return Timestamp.valueOf(((LocalDate) row.getValue(name)).atStartOfDay()).getTime();
     }
     
@@ -65,7 +65,7 @@ public class DataBaseExt {
      * @param fieldName key的名字
      * @author Rayfalling
      */
-    public static Long getLocalDateTimeToTimestamp(Row row, String fieldName) {
+    public static @NotNull Long getLocalDateTimeToTimestamp(@NotNull Row row, String fieldName) {
         return Timestamp.valueOf((LocalDateTime) row.getValue(fieldName)).getTime();
     }
     
@@ -75,7 +75,7 @@ public class DataBaseExt {
      * @param timestamp timestamp
      * @author Rayfalling
      */
-    public static LocalDateTime toLocalDateTime(Long timestamp) {
+    public static @NotNull LocalDateTime toLocalDateTime(Long timestamp) {
         return LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault());
     }
     
@@ -97,7 +97,7 @@ public class DataBaseExt {
      * @param value      默认值
      * @author Rayfalling
      */
-    public static void setDefault(JsonObject jsonObject, String key, Object value) {
+    public static void setDefault(@NotNull JsonObject jsonObject, String key, Object value) {
         if (!jsonObject.containsKey(key)) {
             jsonObject.put("key", value);
         }
@@ -111,7 +111,7 @@ public class DataBaseExt {
      * @author Rayfalling
      */
     @SuppressWarnings("unchecked")
-    public static <Type> Type getOrNull(JsonObject jsonObject, String key) {
+    public static <Type> @Nullable Type getOrNull(@NotNull JsonObject jsonObject, String key) {
         if (jsonObject.containsKey(key)) {
             return (Type) jsonObject.getValue(key);
         } else return null;

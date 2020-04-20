@@ -1,1 +1,1 @@
-select updatePassword($1, $2, $3);
+select * from updatePassword($1, $2, $3);

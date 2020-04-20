@@ -10,7 +10,7 @@ import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
 
-public class Authentication {
+public class AuthenticationHandler {
     /**
      * @param data 传入参数，包含"phone"和"password"的JsonObject
      * @return 0   数据库成功执行
@@ -60,6 +60,34 @@ public class Authentication {
                      .map(res -> {
                          Row row = DataBaseExt.oneOrNull(res);
                          return row != null ? row.getInteger("id") : -1;
+                     })
+                     .doOnError(err -> {
+                         Shared.getDatabaseLogger().error(err);
+                         err.printStackTrace();
+                     });
+    }
+    
+    
+    /**
+     * @param data 传入参数，包含"phone"的JsonObject
+     * @return id 数据库用户id
+     * @author Rayfalling
+     */
+    public static Single<JsonObject> DatabaseQueryIdentity(JsonObject data) {
+        return Shared.getPgPool()
+                     .rxGetConnection()
+                     .doOnError(err -> {
+                         Shared.getDatabaseLogger().error(err);
+                         err.printStackTrace();
+                     })
+                     .doAfterSuccess(PgConnection::close)
+                     .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("AuthQueryIdentity"), Tuple.of(data.getString("phone"))))
+                     .map(res -> {
+                         Row row = DataBaseExt.oneOrNull(res);
+                         if (row == null) return data.put("result", false);
+                         data.put("result", true).put("user_identity", row.getInteger("user_identity"))
+                             .put("auth_identity", row.getInteger("auth_identity"));
+                         return data;
                      })
                      .doOnError(err -> {
                          Shared.getDatabaseLogger().error(err);

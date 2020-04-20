@@ -14,6 +14,7 @@ BEGIN
         UPDATE "user"
         SET password = user_password
         where phone = user_phone;
+        RESULT = 0;
     else
         RESULT = -1;
     end if;

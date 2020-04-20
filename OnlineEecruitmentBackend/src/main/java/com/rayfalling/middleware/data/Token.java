@@ -10,10 +10,11 @@ import java.util.Objects;
 
 public class Token {
     
+    static Long expireTime;
     private final String username;
     private int id;
     private Long createTime;
-    private Long expireTime;
+    private Identity identity;
     private boolean isExpired = false;
     
     /**
@@ -28,40 +29,28 @@ public class Token {
             this.id = jsonObject.getInteger("id");
             this.username = jsonObject.getString("username");
             this.createTime = jsonObject.getLong("createTime");
-            this.expireTime = jsonObject.getLong("expireTime");
+            this.identity = Identity.mapFromJsonObject(jsonObject.getJsonObject("identity"));
         } else {
             this.id = -1;
             this.username = string;
+            this.identity = Identity.COMMON_USER_UNRECOGNIZED;
             this.createTime = Timestamp.valueOf(LocalDateTime.now()).getTime();
-            this.expireTime = new Timestamp(1800000).getTime();
         }
     }
     
     /**
      * 通过username和id生成Token
      *
-     * @param string username or token string
+     * @param id       用户id
+     * @param string   username or token string
+     * @param identity 用户身份
      * @author Rayfalling
      */
-    public Token(Integer id, @NotNull String string) {
+    public Token(Integer id, @NotNull String string, Identity identity) {
         this.id = id;
         this.username = string;
+        this.identity = identity;
         this.createTime = Timestamp.valueOf(LocalDateTime.now()).getTime();
-        this.expireTime = new Timestamp(1800000).getTime();
-    }
-    
-    /**
-     * 通过username生成Token，
-     * 可以自定义过期时间
-     *
-     * @param username   用户名
-     * @param expireTime 过期时间, {@link Long}类型Timestamp
-     * @author Rayfalling
-     */
-    public Token(String username, Long expireTime) {
-        this.username = username;
-        this.createTime = Timestamp.valueOf(LocalDateTime.now()).getTime();
-        this.expireTime = expireTime;
     }
     
     /**
@@ -71,13 +60,16 @@ public class Token {
      * @param jsonObject Token对应String
      * @author Rayfalling
      */
-    public Token(JsonObject jsonObject) {
-        this.id = jsonObject.getInteger("username");
+    public Token(@NotNull JsonObject jsonObject) {
+        this.id = jsonObject.getInteger("id");
         this.username = jsonObject.getString("username");
         this.createTime = jsonObject.getLong("createTime");
-        this.expireTime = jsonObject.getLong("expireTime");
+        this.identity = Identity.mapFromJsonObject(jsonObject.getJsonObject("identity"));
     }
     
+    public static void setExpireTime(Long newExpireTime) {
+        expireTime = newExpireTime;
+    }
     
     //get set methods
     public String getUsername() {
@@ -88,16 +80,12 @@ public class Token {
         return createTime;
     }
     
-    public Long getExpireTime() {
-        return expireTime;
-    }
-    
-    public void setExpireTime(Long expireTime) {
-        this.expireTime = expireTime;
-    }
-    
     public int getId() {
         return id;
+    }
+    
+    public Identity getIdentity() {
+        return identity;
     }
     
     /**
@@ -124,9 +112,10 @@ public class Token {
     @Override
     public String toString() {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.put("username", username)
+        jsonObject.put("id", id)
+                  .put("username", username)
                   .put("createTime", createTime)
-                  .put("expireTime", expireTime);
+                  .put("identity", Identity.map2JsonObject(identity));
         return "NEU" + jsonObject.encode();
     }
     
@@ -138,11 +127,11 @@ public class Token {
         return getId() == token.getId() &&
                getUsername().equals(token.getUsername()) &&
                getCreateTime().equals(token.getCreateTime()) &&
-               getExpireTime().equals(token.getExpireTime());
+               getIdentity().equals(token.getIdentity());
     }
     
     @Override
     public int hashCode() {
-        return Objects.hash(getUsername(), getCreateTime(), getExpireTime());
+        return Objects.hash(getUsername(), getCreateTime(), getIdentity());
     }
 }
