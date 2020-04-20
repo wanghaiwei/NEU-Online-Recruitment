@@ -1,6 +1,7 @@
 package com.Rayfalling.router.User;
 
 import com.Rayfalling.Shared;
+import com.Rayfalling.handler.Auth.UserInfoHandler;
 import com.Rayfalling.middleware.Response.JsonResponse;
 import com.Rayfalling.middleware.Response.PresetMessage;
 import com.Rayfalling.middleware.Utils.Security.EncryptUtils;
@@ -24,7 +25,7 @@ public class AuthRouter {
     public static void AuthToken(@NotNull RoutingContext context) {
         Token sessionToken = context.session().get("token");
         Token cookieToken = EncryptUtils.Decrypt2Token(context.getCookie("token").getValue());
-        if (!TokenStorage.exist(sessionToken) || !TokenStorage.exist(cookieToken)) {
+        if (!TokenStorage.exist(sessionToken) || !TokenStorage.exist(cookieToken) || sessionToken.getId() == -1) {
             JsonResponse.RespondPreset(context, PresetMessage.ERROR_TOKEN_FAKED);
             Shared.getRouterLogger()
                   .warn(context.normalisedPath() + " " + PresetMessage.ERROR_TOKEN_FAKED.toString());
@@ -47,9 +48,10 @@ public class AuthRouter {
     
     /**
      * 校验用户验证码是否正确
+     *
      * @param context 路由上下文,包含Session信息
-     * @param param {@link JsonObject} 包含VerifyCode字段的Json
-     * */
+     * @param param   {@link JsonObject} 包含VerifyCode字段的Json
+     */
     public static Single<JsonObject> AuthCode(RoutingContext context, JsonObject param) {
         return Single.just(param).map(res -> {
             Session session = context.session();
@@ -85,5 +87,26 @@ public class AuthRouter {
                 return param.put("result", false);
             }
         });
+    }
+    
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public static void AuthQuota(@NotNull RoutingContext context) {
+        Token sessionToken = context.session().get("token");
+        UserInfoHandler.DatabaseUserQuota(new JsonObject().put("user_id", sessionToken.getId()))
+                       .flatMap(result -> {
+                           if (result <= 0) {
+                               JsonResponse.RespondPreset(context, PresetMessage.OUT_OF_POST_QUOTA_ERROR);
+                               Shared.getRouterLogger()
+                                     .warn(sessionToken.getUsername() + " " + PresetMessage.OUT_OF_POST_QUOTA_ERROR
+                                                                                      .toString());
+                           }
+                           context.next();
+                           return Single.just(result);
+                       })
+                       .subscribe(res -> {
+                           Shared.getRouterLogger().info(sessionToken.getUsername() + " quota verified");
+                       }, failure -> {
+                           Shared.getRouterLogger().info(sessionToken.getUsername() + " quota verified failed");
+                       });
     }
 }

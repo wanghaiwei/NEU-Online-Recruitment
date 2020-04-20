@@ -2,7 +2,7 @@ package com.Rayfalling.router.User;
 
 import com.Rayfalling.Shared;
 import com.Rayfalling.handler.Auth.AuthenticationHandler;
-import com.Rayfalling.handler.Auth.UserInfo;
+import com.Rayfalling.handler.Auth.UserInfoHandler;
 import com.Rayfalling.middleware.Response.JsonResponse;
 import com.Rayfalling.middleware.Response.PresetMessage;
 import com.Rayfalling.middleware.Utils.Common;
@@ -192,7 +192,7 @@ public class UserRouter {
             }
             
             return Single.just(param);
-        }).flatMap(AuthenticationHandler::DatabaseQueryIdentity).flatMap(param -> {
+        }).flatMap(UserInfoHandler::DatabaseUserQueryIdentity).flatMap(param -> {
             if (!param.getBoolean("result")) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger().warn(context.normalisedPath() + PresetMessage.ERROR_FAILED);
@@ -269,7 +269,7 @@ public class UserRouter {
                                          .put("gender", params.getString("gender", "男"))
                                          .put("user_avatar", params.getString("user_avatar", ""))
                                          .put("expected_career_id", params.getInteger("expected_career_id", 0)))
-              .flatMap(UserInfo::DatabaseUserInfoUpdate).doOnError(err -> {
+              .flatMap(UserInfoHandler::DatabaseUserInfoUpdate).doOnError(err -> {
             
         }).doAfterSuccess(res -> {
             if (res == 0) {

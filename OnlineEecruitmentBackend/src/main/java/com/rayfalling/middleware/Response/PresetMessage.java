@@ -25,7 +25,7 @@ public enum PresetMessage {
     
     /* Auth Message */
     ERROR_TOKEN_EXPIRED(-301, "token is expired", "会话过期"),
-    ERROR_TOKEN_FAKED(-301, "token is faked", "无效会话"),
+    ERROR_TOKEN_FAKED(-302, "token is faked", "无效会话"),
     
     /* 验证码相关 */
     ERROR_VERIFY_CODE_EXPIRED(40001, "Verify code is expired", "验证码过期"),

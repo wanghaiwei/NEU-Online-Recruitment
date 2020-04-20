@@ -67,34 +67,6 @@ public class AuthenticationHandler {
                      });
     }
     
-    
-    /**
-     * @param data 传入参数，包含"phone"的JsonObject
-     * @return id 数据库用户id
-     * @author Rayfalling
-     */
-    public static Single<JsonObject> DatabaseQueryIdentity(JsonObject data) {
-        return Shared.getPgPool()
-                     .rxGetConnection()
-                     .doOnError(err -> {
-                         Shared.getDatabaseLogger().error(err);
-                         err.printStackTrace();
-                     })
-                     .doAfterSuccess(PgConnection::close)
-                     .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("AuthQueryIdentity"), Tuple.of(data.getString("phone"))))
-                     .map(res -> {
-                         Row row = DataBaseExt.oneOrNull(res);
-                         if (row == null) return data.put("result", false);
-                         data.put("result", true).put("user_identity", row.getInteger("user_identity"))
-                             .put("auth_identity", row.getInteger("auth_identity"));
-                         return data;
-                     })
-                     .doOnError(err -> {
-                         Shared.getDatabaseLogger().error(err);
-                         err.printStackTrace();
-                     });
-    }
-    
     /**
      * @param username 传入参数，用户名
      * @return id 数据库用户id

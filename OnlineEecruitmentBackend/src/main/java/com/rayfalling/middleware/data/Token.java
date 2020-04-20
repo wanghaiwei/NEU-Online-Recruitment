@@ -12,7 +12,7 @@ public class Token {
     
     static Long expireTime;
     private final String username;
-    private int id;
+    private final int id;
     private Long createTime;
     private Identity identity;
     private boolean isExpired = false;
@@ -86,6 +86,10 @@ public class Token {
     
     public Identity getIdentity() {
         return identity;
+    }
+    
+    public void setIdentity(Identity identity) {
+        this.identity = identity;
     }
     
     /**
