@@ -89,24 +89,25 @@ public class AuthRouter {
         });
     }
     
+    /**
+     * 校验用户发布额度
+     * */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void AuthQuota(@NotNull RoutingContext context) {
         Token sessionToken = context.session().get("token");
-        UserInfoHandler.DatabaseUserQuota(new JsonObject().put("user_id", sessionToken.getId()))
-                       .flatMap(result -> {
-                           if (result <= 0) {
-                               JsonResponse.RespondPreset(context, PresetMessage.OUT_OF_POST_QUOTA_ERROR);
-                               Shared.getRouterLogger()
-                                     .warn(sessionToken.getUsername() + " " + PresetMessage.OUT_OF_POST_QUOTA_ERROR
-                                                                                      .toString());
-                           }
-                           context.next();
-                           return Single.just(result);
-                       })
-                       .subscribe(res -> {
-                           Shared.getRouterLogger().info(sessionToken.getUsername() + " quota verified");
-                       }, failure -> {
-                           Shared.getRouterLogger().info(sessionToken.getUsername() + " quota verified failed");
-                       });
+        UserInfoHandler.DatabaseUserQuota(new JsonObject().put("user_id", sessionToken.getId())).flatMap(result -> {
+            if (result <= 0) {
+                JsonResponse.RespondPreset(context, PresetMessage.OUT_OF_POST_QUOTA_ERROR);
+                Shared.getRouterLogger()
+                      .warn(sessionToken.getUsername() + " " + PresetMessage.OUT_OF_POST_QUOTA_ERROR
+                                                                       .toString());
+            }
+            context.next();
+            return Single.just(result);
+        }).subscribe(res -> {
+            Shared.getRouterLogger().info(sessionToken.getUsername() + " quota verified");
+        }, failure -> {
+            Shared.getRouterLogger().info(sessionToken.getUsername() + " quota verified failed");
+        });
     }
 }

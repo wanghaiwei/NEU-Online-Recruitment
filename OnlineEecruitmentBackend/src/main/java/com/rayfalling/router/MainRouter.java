@@ -8,9 +8,12 @@ import com.Rayfalling.router.Admin.AdminRouter;
 import com.Rayfalling.router.Group.GroupRouter;
 import com.Rayfalling.router.Post.PostRouter;
 import com.Rayfalling.router.Postion.PositionRouter;
+import com.Rayfalling.router.Upload.UploadRouter;
 import com.Rayfalling.router.User.UserRouter;
 import com.Rayfalling.router.Verify.VerityRouter;
+import io.reactivex.Single;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.ext.web.Route;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
@@ -85,5 +88,15 @@ public class MainRouter {
      */
     public static void UnImplementedRouter(@NotNull RoutingContext context) {
         JsonResponse.RespondPreset(context, PresetMessage.ERROR_UNIMPLEMENTED);
+    }
+    
+    public static Single<JsonObject> getJsonObjectSingle(@NotNull RoutingContext context) {
+        return Single.just(context).map(res -> res.getBody().toJsonObject()).doOnError(err -> {
+            if (!context.response().ended()) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON);
+                Shared.getRouterLogger()
+                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON.toString());
+            }
+        });
     }
 }

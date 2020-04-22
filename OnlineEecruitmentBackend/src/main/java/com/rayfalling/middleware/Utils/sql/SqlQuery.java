@@ -24,13 +24,20 @@ public class SqlQuery {
         /* User 相关Map */
         SqlMap.put("UserQueryId", "user/query_id.sql");
         SqlMap.put("UserUpdateInfo", "user/update_info.sql");
-        SqlMap.put("AuthQueryQuota", "user/query_quota.sql");
+        SqlMap.put("UserQueryQuota", "user/query_quota.sql");
         SqlMap.put("UserUpdatePwd", "user/update_password.sql");
         SqlMap.put("UserSubmitAuthentication", "user/submit_authentication.sql");
     
         /* Position 相关Map */
         SqlMap.put("PositionNew", "position/new.sql");
+        SqlMap.put("PositionDelete", "position/delete.sql");
+        SqlMap.put("PositionFavour", "position/favour.sql");
         SqlMap.put("PositionQueryCategory", "position/query_category.sql");
+    
+        /* Position 相关Map */
+        SqlMap.put("GroupNew", "group/new.sql");
+        SqlMap.put("GroupQueryCategory", "group/query_category.sql");
+        
     }
     
     /**

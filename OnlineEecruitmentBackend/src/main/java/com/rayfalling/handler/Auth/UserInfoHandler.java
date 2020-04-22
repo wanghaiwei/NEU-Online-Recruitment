@@ -11,6 +11,8 @@ import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
 
+import static com.Rayfalling.handler.DatabaseConnection.PgConnectionSingle;
+
 public class UserInfoHandler {
     /**
      * @param data 传入参数，包含"username"和"nickname"的JsonObject
@@ -25,22 +27,16 @@ public class UserInfoHandler {
                 data.getString("user_avatar"),
                 data.getInteger("expected_career_id"));
         
-        return Shared.getPgPool()
-                     .rxGetConnection()
-                     .doOnError(err -> {
-                         Shared.getDatabaseLogger().error(err);
-                         err.printStackTrace();
-                     })
-                     .doAfterSuccess(PgConnection::close)
-                     .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("UserUpdateInfo"), tuple))
-                     .map(res -> {
-                         Row row = DataBaseExt.oneOrNull(res);
-                         return row != null ? row.getInteger(0) : -1;
-                     })
-                     .doOnError(err -> {
-                         Shared.getDatabaseLogger().error(err);
-                         err.printStackTrace();
-                     });
+        return PgConnectionSingle()
+                       .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("UserUpdateInfo"), tuple))
+                       .map(res -> {
+                           Row row = DataBaseExt.oneOrNull(res);
+                           return row != null ? row.getInteger(0) : -1;
+                       })
+                       .doOnError(err -> {
+                           Shared.getDatabaseLogger().error(err);
+                           err.printStackTrace();
+                       });
     }
     
     /**
@@ -51,22 +47,16 @@ public class UserInfoHandler {
     public static Single<Identity> DatabaseUserIdentity(@NotNull JsonObject data) {
         Tuple tuple = Tuple.of(data.getString("username"));
         
-        return Shared.getPgPool()
-                     .rxGetConnection()
-                     .doOnError(err -> {
-                         Shared.getDatabaseLogger().error(err);
-                         err.printStackTrace();
-                     })
-                     .doAfterSuccess(PgConnection::close)
-                     .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("UserQueryIdentity"), tuple))
-                     .map(res -> {
-                         Row row = DataBaseExt.oneOrNull(res);
-                         return Identity.COMMON_USER_STAFF;
-                     })
-                     .doOnError(err -> {
-                         Shared.getDatabaseLogger().error(err);
-                         err.printStackTrace();
-                     });
+        return PgConnectionSingle()
+                       .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("UserQueryIdentity"), tuple))
+                       .map(res -> {
+                           Row row = DataBaseExt.oneOrNull(res);
+                           return Identity.COMMON_USER_STAFF;
+                       })
+                       .doOnError(err -> {
+                           Shared.getDatabaseLogger().error(err);
+                           err.printStackTrace();
+                       });
     }
     
     /**
@@ -75,25 +65,19 @@ public class UserInfoHandler {
      * @author Rayfalling
      */
     public static Single<JsonObject> DatabaseUserQueryIdentity(JsonObject data) {
-        return Shared.getPgPool()
-                     .rxGetConnection()
-                     .doOnError(err -> {
-                         Shared.getDatabaseLogger().error(err);
-                         err.printStackTrace();
-                     })
-                     .doAfterSuccess(PgConnection::close)
-                     .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("AuthQueryIdentity"), Tuple.of(data.getString("phone"))))
-                     .map(res -> {
-                         Row row = DataBaseExt.oneOrNull(res);
-                         if (row == null) return data.put("result", false);
-                         data.put("result", true).put("user_identity", row.getInteger("user_identity"))
-                             .put("auth_identity", row.getInteger("auth_identity"));
-                         return data;
-                     })
-                     .doOnError(err -> {
-                         Shared.getDatabaseLogger().error(err);
-                         err.printStackTrace();
-                     });
+        return PgConnectionSingle()
+                       .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("AuthQueryIdentity"), Tuple.of(data.getString("phone"))))
+                       .map(res -> {
+                           Row row = DataBaseExt.oneOrNull(res);
+                           if (row == null) return data.put("result", false);
+                           data.put("result", true).put("user_identity", row.getInteger("user_identity"))
+                               .put("auth_identity", row.getInteger("auth_identity"));
+                           return data;
+                       })
+                       .doOnError(err -> {
+                           Shared.getDatabaseLogger().error(err);
+                           err.printStackTrace();
+                       });
     }
     
     /**
@@ -102,22 +86,16 @@ public class UserInfoHandler {
      * @author Rayfalling
      */
     public static Single<Integer> DatabaseUserQuota(JsonObject data) {
-        return Shared.getPgPool()
-                     .rxGetConnection()
-                     .doOnError(err -> {
-                         Shared.getDatabaseLogger().error(err);
-                         err.printStackTrace();
-                     })
-                     .doAfterSuccess(PgConnection::close)
-                     .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("AuthQueryQuota"), Tuple.of(data.getInteger("user_id"))))
-                     .map(res -> {
-                         Row row = DataBaseExt.oneOrNull(res);
-                         return row != null ? row.getInteger(0) : -1;
-                     })
-                     .doOnError(err -> {
-                         Shared.getDatabaseLogger().error(err);
-                         err.printStackTrace();
-                     });
+        return PgConnectionSingle()
+                       .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("UserQueryQuota"), Tuple.of(data.getInteger("user_id"))))
+                       .map(res -> {
+                           Row row = DataBaseExt.oneOrNull(res);
+                           return row != null ? row.getInteger(0) : -1;
+                       })
+                       .doOnError(err -> {
+                           Shared.getDatabaseLogger().error(err);
+                           err.printStackTrace();
+                       });
     }
     
     

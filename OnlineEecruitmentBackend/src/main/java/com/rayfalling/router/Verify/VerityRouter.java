@@ -12,6 +12,8 @@ import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
 import org.jetbrains.annotations.NotNull;
 
+import static com.Rayfalling.router.MainRouter.getJsonObjectSingle;
+
 /**
  * 用户相关路由
  *
@@ -48,13 +50,7 @@ public class VerityRouter {
      * */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void VerifyPhone(@NotNull RoutingContext context) {
-        Single.just(context).map(res -> res.getBody().toJsonObject()).doOnError(err -> {
-            if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON);
-                Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON.toString());
-            }
-        }).map(params -> {
+        getJsonObjectSingle(context).map(params -> {
             //check param is null
             String phone = params.getString("phone", "");
             
@@ -103,13 +99,7 @@ public class VerityRouter {
      * */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void VerifyMail(@NotNull RoutingContext context) {
-        Single.just(context).map(res -> res.getBody().toJsonObject()).doOnError(err -> {
-            if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON);
-                Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON.toString());
-            }
-        }).map(params -> {
+        getJsonObjectSingle(context).map(params -> {
             //check mail is null
             String mail = params.getString("mail", "");
             

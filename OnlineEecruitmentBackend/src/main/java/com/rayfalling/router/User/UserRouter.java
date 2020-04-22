@@ -20,6 +20,8 @@ import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
 import org.jetbrains.annotations.NotNull;
 
+import static com.Rayfalling.router.MainRouter.getJsonObjectSingle;
+
 /**
  * 用户相关路由
  *
@@ -70,13 +72,7 @@ public class UserRouter {
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void UserRegister(@NotNull RoutingContext context) {
-        Single.just(context).map(res -> res.getBody().toJsonObject()).doOnError(err -> {
-            if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON);
-                Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON.toString());
-            }
-        }).map(params -> {
+        getJsonObjectSingle(context).map(params -> {
             //check param is null
             String phone = params.getString("phone", "");
             String password = params.getString("password", "");
@@ -125,13 +121,7 @@ public class UserRouter {
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void UserLogin(@NotNull RoutingContext context) {
-        Single.just(context).map(res -> res.getBody().toJsonObject()).doOnError(err -> {
-            if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON);
-                Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON.toString());
-            }
-        }).map(params -> {
+        getJsonObjectSingle(context).map(params -> {
             //check param is null
             String type = params.getString("type", "password");
             
@@ -226,13 +216,7 @@ public class UserRouter {
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void UserLogout(@NotNull RoutingContext context) {
-        Single.just(context).map(res -> res.getBody().toJsonObject()).doOnError(err -> {
-            if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON);
-                Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON.toString());
-            }
-        }).flatMap(params -> {
+        getJsonObjectSingle(context).flatMap(params -> {
             Token token = context.session().get("token");
             token.setExpired();
             
@@ -257,13 +241,7 @@ public class UserRouter {
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void UserInfoUpdate(@NotNull RoutingContext context) {
-        Single.just(context).map(res -> res.getBody().toJsonObject()).doOnError(err -> {
-            if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON);
-                Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON.toString());
-            }
-        }).map(params -> new JsonObject().put("username", ((Token) context.session().get("token")).getUsername())
+        getJsonObjectSingle(context).map(params -> new JsonObject().put("username", ((Token) context.session().get("token")).getUsername())
                                          .put("user_description", params.getString("user_description", ""))
                                          .put("nickname", params.getString("nickname", ""))
                                          .put("gender", params.getString("gender", "男"))
@@ -290,13 +268,7 @@ public class UserRouter {
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void UserResetPWD(@NotNull RoutingContext context) {
-        Single.just(context).map(res -> res.getBody().toJsonObject()).doOnError(err -> {
-            if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON);
-                Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON.toString());
-            }
-        }).map(params -> {
+        getJsonObjectSingle(context).map(params -> {
             String phone = params.getString("phone", "");
             
             if (Common.isNotMobile(phone)) {
@@ -349,13 +321,7 @@ public class UserRouter {
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void UserUpdatePWD(@NotNull RoutingContext context) {
-        Single.just(context).map(res -> res.getBody().toJsonObject()).doOnError(err -> {
-            if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON);
-                Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON.toString());
-            }
-        }).map(params -> {
+        getJsonObjectSingle(context).map(params -> {
             String phone = ((Token) context.session().get("token")).getUsername();
             
             if (Common.isNotMobile(phone)) {
@@ -393,13 +359,7 @@ public class UserRouter {
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void UserAuthentication(@NotNull RoutingContext context) {
-        Single.just(context).map(res -> res.getBody().toJsonObject()).doOnError(err -> {
-            if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON);
-                Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON.toString());
-            }
-        }).map(params -> {
+        getJsonObjectSingle(context).map(params -> {
             String username = ((Token) context.session().get("token")).getUsername();
             
             if (Common.isNotMobile(username)) {
