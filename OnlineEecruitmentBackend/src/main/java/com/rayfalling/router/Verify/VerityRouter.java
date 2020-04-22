@@ -82,9 +82,9 @@ public class VerityRouter {
             return Single.just(params);
         }).doOnError(err -> {
             if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON_PARAM);
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
+                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
         }).subscribe(res -> {
             Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
@@ -131,9 +131,9 @@ public class VerityRouter {
             return Single.just(params);
         }).doOnError(err -> {
             if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON_PARAM);
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
+                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
         }).subscribe(res -> {
             Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");

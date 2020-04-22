@@ -105,9 +105,9 @@ public class UserRouter {
             return result;
         })).doOnError(err -> {
             if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON_PARAM);
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
+                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
         }).subscribe(res -> {
             Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
@@ -241,13 +241,14 @@ public class UserRouter {
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void UserInfoUpdate(@NotNull RoutingContext context) {
-        getJsonObjectSingle(context).map(params -> new JsonObject().put("username", ((Token) context.session().get("token")).getUsername())
-                                         .put("user_description", params.getString("user_description", ""))
-                                         .put("nickname", params.getString("nickname", ""))
-                                         .put("gender", params.getString("gender", "男"))
-                                         .put("user_avatar", params.getString("user_avatar", ""))
-                                         .put("expected_career_id", params.getInteger("expected_career_id", 0)))
-              .flatMap(UserInfoHandler::DatabaseUserInfoUpdate).doOnError(err -> {
+        getJsonObjectSingle(context)
+                .map(params -> new JsonObject().put("username", ((Token) context.session().get("token")).getUsername())
+                                               .put("user_description", params.getString("user_description", ""))
+                                               .put("nickname", params.getString("nickname", ""))
+                                               .put("gender", params.getString("gender", "男"))
+                                               .put("user_avatar", params.getString("user_avatar", ""))
+                                               .put("expected_career_id", params.getInteger("expected_career_id", 0)))
+                .flatMap(UserInfoHandler::DatabaseUserInfoUpdate).doOnError(err -> {
             
         }).doAfterSuccess(res -> {
             if (res == 0) {
@@ -295,7 +296,13 @@ public class UserRouter {
             }
             
             return Single.just(param);
-        }).flatMap(AuthenticationHandler::DatabaseResetPwd).flatMap(param -> {
+        }).flatMap(AuthenticationHandler::DatabaseResetPwd).doOnError(err -> {
+            if (!context.response().ended()) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                Shared.getRouterLogger()
+                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+            }
+        }).flatMap(param -> {
             if (param == -1) {
                 JsonResponse.RespondPreset(context, PresetMessage.PHONE_UNREGISTER_ERROR);
                 Shared.getRouterLogger().warn(context.normalisedPath() + PresetMessage.PHONE_UNREGISTER_ERROR);
@@ -303,12 +310,6 @@ public class UserRouter {
                 JsonResponse.RespondSuccess(context, "Password reset successful");
             }
             return Single.just(param);
-        }).doOnError(err -> {
-            if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
-                Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
-            }
         }).subscribe(res -> {
             Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
         }, failure -> {
@@ -333,7 +334,13 @@ public class UserRouter {
             String oldPassword = params.getString("pwd_old", "");
             String newPassword = params.getString("pwd_new", "");
             return new JsonObject().put("phone", phone).put("pwd_old", oldPassword).put("pwd_new", newPassword);
-        }).flatMap(AuthenticationHandler::DatabaseUpdatePwd).flatMap(param -> {
+        }).flatMap(AuthenticationHandler::DatabaseUpdatePwd).doOnError(err -> {
+            if (!context.response().ended()) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                Shared.getRouterLogger()
+                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+            }
+        }).flatMap(param -> {
             if (param == -1) {
                 JsonResponse.RespondPreset(context, PresetMessage.OLD_PASSWORD_INCORRECT_ERROR);
                 Shared.getRouterLogger().warn(context.normalisedPath() + PresetMessage.OLD_PASSWORD_INCORRECT_ERROR);
@@ -341,12 +348,6 @@ public class UserRouter {
                 JsonResponse.RespondSuccess(context, "Password updated successful");
             }
             return Single.just(param);
-        }).doOnError(err -> {
-            if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
-                Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
-            }
         }).subscribe(res -> {
             Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
         }, failure -> {
@@ -394,7 +395,13 @@ public class UserRouter {
             }
             
             return Single.just(param);
-        }).flatMap(AuthenticationHandler::DatabaseSubmitAuthentication).flatMap(param -> {
+        }).flatMap(AuthenticationHandler::DatabaseSubmitAuthentication).doOnError(err -> {
+            if (!context.response().ended()) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                Shared.getRouterLogger()
+                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+            }
+        }).flatMap(param -> {
             if (param == -1) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
@@ -403,12 +410,6 @@ public class UserRouter {
                 JsonResponse.RespondSuccess(context, "Authentication submitted successfully");
             }
             return Single.just(param);
-        }).doOnError(err -> {
-            if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
-                Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
-            }
         }).subscribe(res -> {
             Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
         }, failure -> {

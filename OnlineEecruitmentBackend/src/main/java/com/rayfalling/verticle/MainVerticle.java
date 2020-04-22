@@ -52,8 +52,8 @@ public class MainVerticle extends AbstractVerticle {
     public void stop(@NotNull Promise<Void> stopPromise) {
         Single.just(Shared.getHttpServer()).map(httpServer -> {
             httpServer.close();
-            
-            return null;
+    
+            return Single.just(true);
         }).doOnSubscribe(res -> {
             logger.info("Starting close HttpServer...");
         }).doOnSuccess(res -> {

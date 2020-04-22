@@ -16,7 +16,7 @@ public class ConfigLoader {
     /**
      * 外部配置文件。
      */
-    private static File configFileExternal = new File("conf/config.json");
+    private static final File configFileExternal = new File("conf/config.json");
     
     /**
      * 外部配置文件不存在时，复制并使用内部配置文件；

@@ -38,27 +38,7 @@ public class UserInfoHandler {
                            err.printStackTrace();
                        });
     }
-    
-    /**
-     * @param data 传入参数，包含"username"
-     * @return 0   数据库成功执行
-     * @author Rayfalling
-     */
-    public static Single<Identity> DatabaseUserIdentity(@NotNull JsonObject data) {
-        Tuple tuple = Tuple.of(data.getString("username"));
-        
-        return PgConnectionSingle()
-                       .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("UserQueryIdentity"), tuple))
-                       .map(res -> {
-                           Row row = DataBaseExt.oneOrNull(res);
-                           return Identity.COMMON_USER_STAFF;
-                       })
-                       .doOnError(err -> {
-                           Shared.getDatabaseLogger().error(err);
-                           err.printStackTrace();
-                       });
-    }
-    
+
     /**
      * @param data 传入参数，包含"phone"的JsonObject
      * @return id 数据库用户id
