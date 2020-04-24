@@ -5,6 +5,7 @@ import io.reactiverse.reactivex.pgclient.PgRowSet;
 import io.reactiverse.reactivex.pgclient.Row;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -115,5 +116,26 @@ public class DataBaseExt {
         if (jsonObject.containsKey(key)) {
             return (Type) jsonObject.getValue(key);
         } else return null;
+    }
+    
+    /**
+     * 将 {@link JsonObject} 转换为查询字符串
+     *
+     * @param jsonArray 数组
+     * @author Rayfalling
+     */
+    public static @NotNull String getQueryString(@NotNull JsonArray jsonArray) {
+        return jsonArray.encode().replace('[', '{').replace(']', '}');
+    }
+    
+    /**
+     * 将 {@link String} 转换为查询字符串
+     *
+     * @param queryStr 原始搜索内容
+     * @author Rayfalling
+     */
+    @Contract(pure = true)
+    public static @NotNull String getQueryString(String queryStr) {
+        return "%" + queryStr + "%";
     }
 }

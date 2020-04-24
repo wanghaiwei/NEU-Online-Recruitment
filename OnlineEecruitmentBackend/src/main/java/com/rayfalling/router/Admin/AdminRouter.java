@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
  * @author Rayfalling
  */
 public class AdminRouter {
-    private static Router router = Router.router(Shared.getVertx());
+    private static final Router router = Router.router(Shared.getVertx());
     
     //静态初始化块
     static {

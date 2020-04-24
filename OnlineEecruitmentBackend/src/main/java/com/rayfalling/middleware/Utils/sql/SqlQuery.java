@@ -36,6 +36,8 @@ public class SqlQuery {
     
         /* Position 相关Map */
         SqlMap.put("GroupNew", "group/new.sql");
+        SqlMap.put("GroupJoin", "group/join.sql");
+        SqlMap.put("GroupSearch", "group/search.sql");
         SqlMap.put("GroupQueryCategory", "group/query_category.sql");
         
     }

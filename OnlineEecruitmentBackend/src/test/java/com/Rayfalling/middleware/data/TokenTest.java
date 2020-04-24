@@ -15,7 +15,7 @@ public class TokenTest {
         Token token = new Token("13388886666");
         System.out.println(token.toString());
         assert !token.isExpired();
-        token.setExpireTime(new Timestamp(4000).getTime());
+        Token.setExpireTime(new Timestamp(4000).getTime());
         Thread.sleep(4000);
         assert token.isExpired();
         token.UpdateSession();
