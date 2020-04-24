@@ -2,7 +2,6 @@ package com.Rayfalling.verticle;
 
 import com.Rayfalling.Shared;
 import io.reactiverse.pgclient.PgPoolOptions;
-import io.reactiverse.reactivex.pgclient.PgConnection;
 import io.reactiverse.reactivex.pgclient.PgPool;
 import io.reactivex.Single;
 import io.vertx.core.Promise;

@@ -95,7 +95,7 @@ public class MainRouter {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON.toString());
             }
         });
     }

@@ -114,11 +114,11 @@ public class StartUp {
                       logger.info("MailVerticle instances startup succeeded.");
                   })
                   .subscribe(res -> {
-        
+                
                   }, failure -> {
-        
+                
                   });
-    
+            
             return Single.just(resource);
         }).subscribe(res -> {
             logger.info("Rsync Startup operation finished successfully. Waiting for Verticle starting...");
@@ -166,7 +166,7 @@ public class StartUp {
                     logger.fatal(res.cause());
                 }
             });
-    
+            
             return Single.just(shared);
         }).flatMap(shared -> {
             shared.undeploy(SmsVerticleDeploymentID, res -> {
@@ -177,7 +177,7 @@ public class StartUp {
                     logger.fatal(res.cause());
                 }
             });
-    
+            
             return Single.just(shared);
         }).flatMap(shared -> {
             shared.undeploy(MailVerticleDeploymentID, res -> {
@@ -188,7 +188,7 @@ public class StartUp {
                     logger.fatal(res.cause());
                 }
             });
-    
+            
             return Single.just(shared);
         }).subscribe(res -> {
             logger.info("Stop operation finished successfully.");

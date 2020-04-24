@@ -6,7 +6,6 @@ import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
-import io.vertx.ext.mail.StartTLSOptions;
 import io.vertx.reactivex.core.AbstractVerticle;
 import io.vertx.reactivex.core.eventbus.MessageConsumer;
 import io.vertx.reactivex.ext.mail.MailClient;
@@ -38,7 +37,7 @@ public class MailVerticle extends AbstractVerticle {
             mailClient.sendMail(message, result -> {
                 if (result.succeeded()) {
                     logger.info("Mail send to " + msg.body().getString("mail_to") + " success");
-                    msg.reply(new JsonObject().put("generateCode", code).put("status",true));
+                    msg.reply(new JsonObject().put("generateCode", code).put("status", true));
                 } else {
                     logger.error("Mail send to " + msg.body().getString("mail_to") + " failed");
                     logger.error(result.cause());

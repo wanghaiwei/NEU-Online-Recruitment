@@ -2,7 +2,6 @@ package com.Rayfalling.router.Group;
 
 import com.Rayfalling.Shared;
 import com.Rayfalling.handler.Group.GroupHandler;
-import com.Rayfalling.handler.Position.PositionHandler;
 import com.Rayfalling.middleware.Response.JsonResponse;
 import com.Rayfalling.middleware.Response.PresetMessage;
 import com.Rayfalling.middleware.data.Token;
@@ -64,13 +63,13 @@ public class GroupRouter {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON.toString());
             }
         }).flatMap(param -> GroupHandler.DatabaseQueryGroupCategory()).doOnError(err -> {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
         }).doAfterSuccess(result -> {
             JsonResponse.RespondSuccess(context, result);
@@ -95,13 +94,13 @@ public class GroupRouter {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
         }).flatMap(result -> {
             if (result == -1) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             } else if (result == -2) {
                 JsonResponse.RespondPreset(context, PresetMessage.OVER_MANAGE_ERROR);
                 Shared.getRouterLogger()
@@ -136,13 +135,13 @@ public class GroupRouter {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
         }).doOnError(err -> {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
         }).doAfterSuccess(result -> {
             JsonResponse.RespondSuccess(context, result);
@@ -165,13 +164,13 @@ public class GroupRouter {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
         }).flatMap(result -> {
             if (result == -1) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
             JsonResponse.RespondSuccess(context, "Group joined successful");
             return Single.just(result);

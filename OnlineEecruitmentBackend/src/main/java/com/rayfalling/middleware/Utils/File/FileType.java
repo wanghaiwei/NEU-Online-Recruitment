@@ -1,7 +1,9 @@
 package com.Rayfalling.middleware.Utils.File;
 
 public enum FileType {
-    /**Unknown type*/
+    /**
+     * Unknown type
+     */
     UNKNOWN(""),
     /**
      * JEPG.

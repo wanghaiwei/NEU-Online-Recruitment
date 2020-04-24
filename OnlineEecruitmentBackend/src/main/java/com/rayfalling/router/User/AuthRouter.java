@@ -91,7 +91,7 @@ public class AuthRouter {
     
     /**
      * 校验用户发布额度
-     * */
+     */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void AuthQuota(@NotNull RoutingContext context) {
         Token sessionToken = context.session().get("token");

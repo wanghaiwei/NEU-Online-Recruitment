@@ -11,7 +11,6 @@ import com.Rayfalling.middleware.data.Identity;
 import com.Rayfalling.middleware.data.Token;
 import com.Rayfalling.middleware.data.TokenStorage;
 import com.Rayfalling.router.MainRouter;
-import io.reactiverse.pgclient.Tuple;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.http.Cookie;
@@ -37,9 +36,10 @@ public class UserRouter {
         router.get("/").handler(UserRouter::UserIndex);
         
         /* 不需要鉴权的路由 */
-        router.post("/register").handler(UserRouter::UserRegister);
         router.post("/login").handler(UserRouter::UserLogin);
         router.post("/logout").handler(UserRouter::UserLogout);
+        router.post("/profile").handler(UserRouter::UserProfile);
+        router.post("/register").handler(UserRouter::UserRegister);
         router.post("/password/reset").handler(UserRouter::UserResetPWD);
         
         /* 需要鉴权的路由 */
@@ -70,7 +70,7 @@ public class UserRouter {
     /**
      * 用户注册路由
      */
-    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @SuppressWarnings(value = "ResultOfMethodCallIgnored")
     private static void UserRegister(@NotNull RoutingContext context) {
         getJsonObjectSingle(context).map(params -> {
             //check param is null
@@ -80,13 +80,13 @@ public class UserRouter {
             if (password.equals("") || phone.equals("")) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON_PARAM);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
             }
             
             if (Common.isNotMobile(phone)) {
                 JsonResponse.RespondPreset(context, PresetMessage.PHONE_FORMAT_ERROR);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.PHONE_FORMAT_ERROR.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.PHONE_FORMAT_ERROR.toString());
             }
             
             return new JsonObject().put("phone", phone).put("password", password);
@@ -96,7 +96,7 @@ public class UserRouter {
             } else if (result == -1) {
                 JsonResponse.RespondPreset(context, PresetMessage.PHONE_REGISTERED_ERROR);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.PHONE_REGISTERED_ERROR.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.PHONE_REGISTERED_ERROR.toString());
             } else if (result == -2) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_UNKNOWN);
                 Shared.getRouterLogger().error(context.normalisedPath() + " " + PresetMessage.ERROR_UNKNOWN.toString());
@@ -107,7 +107,7 @@ public class UserRouter {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
         }).subscribe(res -> {
             Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
@@ -119,7 +119,7 @@ public class UserRouter {
     /**
      * 用户登录路由
      */
-    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @SuppressWarnings(value = "ResultOfMethodCallIgnored")
     private static void UserLogin(@NotNull RoutingContext context) {
         getJsonObjectSingle(context).map(params -> {
             //check param is null
@@ -128,7 +128,7 @@ public class UserRouter {
             if (type.equals("")) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON_PARAM);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
             }
             
             String phone = params.getString("phone", "");
@@ -136,7 +136,7 @@ public class UserRouter {
             if (Common.isNotMobile(phone)) {
                 JsonResponse.RespondPreset(context, PresetMessage.PHONE_FORMAT_ERROR);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.PHONE_FORMAT_ERROR.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.PHONE_FORMAT_ERROR.toString());
             }
             
             if (type.equals("password")) {
@@ -144,7 +144,7 @@ public class UserRouter {
                 if (password.equals("")) {
                     JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON_PARAM);
                     Shared.getRouterLogger()
-                          .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
+                          .warn(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
                 }
                 return new JsonObject().put("phone", phone).put("password", password);
             } else if (type.equals("code")) {
@@ -152,7 +152,7 @@ public class UserRouter {
                 if (VerifyCode.equals("")) {
                     JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON_PARAM);
                     Shared.getRouterLogger()
-                          .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
+                          .warn(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
                 }
                 return new JsonObject().put("phone", phone).put("VerifyCode", VerifyCode);
             }
@@ -165,7 +165,7 @@ public class UserRouter {
             if (!param.getBoolean("result")) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
             return context.session().data().containsKey("Code") ?
                            AuthenticationHandler.DatabaseUserId(phone).flatMap(result -> {
@@ -202,7 +202,7 @@ public class UserRouter {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
         }).subscribe(res -> {
             Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
@@ -214,7 +214,7 @@ public class UserRouter {
     /**
      * 用户登出路由
      */
-    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @SuppressWarnings(value = "ResultOfMethodCallIgnored")
     private static void UserLogout(@NotNull RoutingContext context) {
         getJsonObjectSingle(context).flatMap(params -> {
             Token token = context.session().get("token");
@@ -237,9 +237,33 @@ public class UserRouter {
     }
     
     /**
+     * 用户信息获取
+     */
+    @SuppressWarnings(value = "ResultOfMethodCallIgnored")
+    private static void UserProfile(@NotNull RoutingContext context) {
+        getJsonObjectSingle(context).flatMap(params -> {
+            return Single.just(new JsonObject().put("user_id", params.getInteger("user_id")));
+        }).flatMap(UserInfoHandler::DatabaseUserProfile).flatMap(result -> {
+            if (result == null) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
+            } else {
+                JsonResponse.RespondSuccess(context, result);
+                return Single.just(result);
+            }
+            return Single.just(new JsonObject());
+        }).subscribe(res -> {
+            Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
+        }, failure -> {
+            Shared.getRouterLogger().error(failure.getMessage());
+        });
+    }
+    
+    /**
      * 用户修改信息路由
      */
-    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @SuppressWarnings(value = "ResultOfMethodCallIgnored")
     private static void UserInfoUpdate(@NotNull RoutingContext context) {
         getJsonObjectSingle(context)
                 .map(params -> new JsonObject().put("username", ((Token) context.session().get("token")).getUsername())
@@ -267,7 +291,7 @@ public class UserRouter {
     /**
      * 用户忘记密码路由
      */
-    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @SuppressWarnings(value = "ResultOfMethodCallIgnored")
     private static void UserResetPWD(@NotNull RoutingContext context) {
         getJsonObjectSingle(context).map(params -> {
             String phone = params.getString("phone", "");
@@ -275,7 +299,7 @@ public class UserRouter {
             if (Common.isNotMobile(phone)) {
                 JsonResponse.RespondPreset(context, PresetMessage.PHONE_FORMAT_ERROR);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.PHONE_FORMAT_ERROR.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.PHONE_FORMAT_ERROR.toString());
             }
             
             String VerifyCode = params.getString("verification_code", "");
@@ -283,7 +307,7 @@ public class UserRouter {
             if (VerifyCode.equals("")) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON_PARAM);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
             }
             return new JsonObject().put("phone", phone)
                                    .put("VerifyCode", VerifyCode)
@@ -292,7 +316,7 @@ public class UserRouter {
             if (!param.getBoolean("result")) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
             
             return Single.just(param);
@@ -300,7 +324,7 @@ public class UserRouter {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
         }).flatMap(param -> {
             if (param == -1) {
@@ -320,7 +344,7 @@ public class UserRouter {
     /**
      * 用户更新密码路由
      */
-    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @SuppressWarnings(value = "ResultOfMethodCallIgnored")
     private static void UserUpdatePWD(@NotNull RoutingContext context) {
         getJsonObjectSingle(context).map(params -> {
             String phone = ((Token) context.session().get("token")).getUsername();
@@ -328,7 +352,7 @@ public class UserRouter {
             if (Common.isNotMobile(phone)) {
                 JsonResponse.RespondPreset(context, PresetMessage.PHONE_FORMAT_ERROR);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.PHONE_FORMAT_ERROR.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.PHONE_FORMAT_ERROR.toString());
             }
             
             String oldPassword = params.getString("pwd_old", "");
@@ -338,7 +362,7 @@ public class UserRouter {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
         }).flatMap(param -> {
             if (param == -1) {
@@ -358,7 +382,7 @@ public class UserRouter {
     /**
      * 用户身份认证路由
      */
-    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @SuppressWarnings(value = "ResultOfMethodCallIgnored")
     private static void UserAuthentication(@NotNull RoutingContext context) {
         getJsonObjectSingle(context).map(params -> {
             String username = ((Token) context.session().get("token")).getUsername();
@@ -366,7 +390,7 @@ public class UserRouter {
             if (Common.isNotMobile(username)) {
                 JsonResponse.RespondPreset(context, PresetMessage.PHONE_FORMAT_ERROR);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.PHONE_FORMAT_ERROR.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.PHONE_FORMAT_ERROR.toString());
             }
             
             String code = params.getString("code", "");
@@ -388,7 +412,7 @@ public class UserRouter {
             if (!param.getBoolean("result") && !param.getBoolean("mail_can_verify")) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             } else if (param.getBoolean("result")) {
                 param.remove("mail_can_verify");
                 param.put("mail_can_verify", true);
@@ -399,7 +423,7 @@ public class UserRouter {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
         }).flatMap(param -> {
             if (param == -1) {

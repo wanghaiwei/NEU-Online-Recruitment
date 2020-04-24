@@ -64,13 +64,13 @@ public class PositionRouter {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON.toString());
             }
         }).flatMap(param -> PositionHandler.DatabaseQueryPositionCategory()).doOnError(err -> {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
         }).doAfterSuccess(result -> {
             JsonResponse.RespondSuccess(context, result);
@@ -82,6 +82,7 @@ public class PositionRouter {
     }
     
     //TODO 完成相关推荐算法部分
+    
     /**
      * 职位搜索路由
      */
@@ -92,13 +93,13 @@ public class PositionRouter {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON.toString());
             }
         }).flatMap(param -> PositionHandler.DatabaseQueryPositionCategory()).doOnError(err -> {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
         }).doAfterSuccess(result -> {
             JsonResponse.RespondSuccess(context, result);
@@ -126,13 +127,13 @@ public class PositionRouter {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_UNKNOWN);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_UNKNOWN.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_UNKNOWN.toString());
             }
         }).doAfterSuccess(result -> {
             if (result == -1) {
                 JsonResponse.RespondPreset(context, PresetMessage.OUT_OF_POST_QUOTA_ERROR);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.OUT_OF_POST_QUOTA_ERROR.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.OUT_OF_POST_QUOTA_ERROR.toString());
             }
             JsonResponse.RespondSuccess(context, new JsonObject().put("post_id", result));
         }).subscribe(res -> {
@@ -149,23 +150,23 @@ public class PositionRouter {
     private static void PositionPostDelete(@NotNull RoutingContext context) {
         getJsonObjectSingle(context).flatMap(param -> {
             Token sessionToken = context.session().get("token");
-            if(param.getInteger("position_id") == -1){
+            if (param.getInteger("position_id") == -1) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON_PARAM);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
             }
             return Single.just(param.put("user_id", sessionToken.getId()));
         }).flatMap(PositionHandler::DatabaseDeletePosition).doOnError(err -> {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_UNKNOWN);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_UNKNOWN.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_UNKNOWN.toString());
             }
         }).doAfterSuccess(result -> {
             if (result == -1) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
             JsonResponse.RespondSuccess(context, "Delete Success");
         }).subscribe(res -> {
@@ -182,23 +183,23 @@ public class PositionRouter {
     private static void PositionFavorite(@NotNull RoutingContext context) {
         getJsonObjectSingle(context).flatMap(param -> {
             Token sessionToken = context.session().get("token");
-            if(param.getInteger("pid") == -1){
+            if (param.getInteger("pid") == -1) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON_PARAM);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
             }
-            return Single.just(param.put("user_id", sessionToken.getId()).put("position_id",param.getInteger("pid")));
+            return Single.just(param.put("user_id", sessionToken.getId()).put("position_id", param.getInteger("pid")));
         }).flatMap(PositionHandler::DatabaseFavourPosition).doOnError(err -> {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_UNKNOWN);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_UNKNOWN.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_UNKNOWN.toString());
             }
         }).doAfterSuccess(result -> {
             if (result == -1) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
             JsonResponse.RespondSuccess(context, "Favour position Success");
         }).subscribe(res -> {

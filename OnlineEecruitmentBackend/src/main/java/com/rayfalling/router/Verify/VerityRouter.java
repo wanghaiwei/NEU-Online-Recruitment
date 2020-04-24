@@ -47,7 +47,7 @@ public class VerityRouter {
     
     /**
      * 短信发送路由
-     * */
+     */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void VerifyPhone(@NotNull RoutingContext context) {
         getJsonObjectSingle(context).map(params -> {
@@ -57,7 +57,7 @@ public class VerityRouter {
             if (Common.isNotMobile(phone)) {
                 JsonResponse.RespondPreset(context, PresetMessage.PHONE_FORMAT_ERROR);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.PHONE_FORMAT_ERROR.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.PHONE_FORMAT_ERROR.toString());
             }
             
             return new JsonObject().put("phone", phone);
@@ -70,12 +70,12 @@ public class VerityRouter {
                     } else {
                         JsonResponse.RespondPreset(context, PresetMessage.ERROR_UNKNOWN);
                         Shared.getRouterLogger()
-                              .error(context.normalisedPath() + " " + result.cause().getMessage());
+                              .warn(context.normalisedPath() + " " + result.cause().getMessage());
                     }
                 } else {
                     JsonResponse.RespondPreset(context, PresetMessage.ERROR_UNKNOWN);
                     Shared.getRouterLogger()
-                          .error(context.normalisedPath() + " " + result.result().body().getString("Message"));
+                          .warn(context.normalisedPath() + " " + result.result().body().getString("Message"));
                 }
             });
             
@@ -84,7 +84,7 @@ public class VerityRouter {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
         }).subscribe(res -> {
             Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
@@ -96,7 +96,7 @@ public class VerityRouter {
     
     /**
      * 邮箱验证发送路由
-     * */
+     */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void VerifyMail(@NotNull RoutingContext context) {
         getJsonObjectSingle(context).map(params -> {
@@ -106,7 +106,7 @@ public class VerityRouter {
             if (Common.isNotEmail(mail)) {
                 JsonResponse.RespondPreset(context, PresetMessage.PHONE_FORMAT_ERROR);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.PHONE_FORMAT_ERROR.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.PHONE_FORMAT_ERROR.toString());
             }
             
             return new JsonObject().put("mail_to", mail);
@@ -119,12 +119,12 @@ public class VerityRouter {
                     } else {
                         JsonResponse.RespondPreset(context, PresetMessage.ERROR_UNKNOWN);
                         Shared.getRouterLogger()
-                              .error(context.normalisedPath() + " " + result.cause().getMessage());
+                              .warn(context.normalisedPath() + " " + result.cause().getMessage());
                     }
                 } else {
                     JsonResponse.RespondPreset(context, PresetMessage.ERROR_UNKNOWN);
                     Shared.getRouterLogger()
-                          .error(context.normalisedPath() + " " + result.result().body().getString("Message"));
+                          .warn(context.normalisedPath() + " " + result.result().body().getString("Message"));
                 }
             });
             
@@ -133,7 +133,7 @@ public class VerityRouter {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
                 Shared.getRouterLogger()
-                      .error(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
         }).subscribe(res -> {
             Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");

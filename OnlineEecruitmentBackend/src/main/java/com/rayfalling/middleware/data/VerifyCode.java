@@ -163,7 +163,7 @@ public class VerifyCode {
         public Timestamp getCreateTime() {
             return createTime;
         }
-    
+        
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -172,7 +172,7 @@ public class VerifyCode {
             return getCreateTime().equals(code1.getCreateTime()) &&
                    getCode().equals(code1.getCode());
         }
-    
+        
         @Override
         public int hashCode() {
             return Objects.hash(getCreateTime(), getCode());

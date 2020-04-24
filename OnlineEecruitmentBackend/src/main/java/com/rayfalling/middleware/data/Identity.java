@@ -1,6 +1,5 @@
 package com.Rayfalling.middleware.data;
 
-import com.Rayfalling.middleware.Utils.File.FileType;
 import io.vertx.core.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
 

@@ -3,8 +3,6 @@ package com.Rayfalling.handler.Auth;
 import com.Rayfalling.Shared;
 import com.Rayfalling.middleware.Extensions.DataBaseExt;
 import com.Rayfalling.middleware.Utils.sql.SqlQuery;
-import com.Rayfalling.middleware.data.Identity;
-import io.reactiverse.reactivex.pgclient.PgConnection;
 import io.reactiverse.reactivex.pgclient.Row;
 import io.reactiverse.reactivex.pgclient.Tuple;
 import io.reactivex.Single;
@@ -38,7 +36,7 @@ public class UserInfoHandler {
                            err.printStackTrace();
                        });
     }
-
+    
     /**
      * @param data 传入参数，包含"phone"的JsonObject
      * @return id 数据库用户id
@@ -78,6 +76,26 @@ public class UserInfoHandler {
                        });
     }
     
+    /**
+     * @param data 传入参数，包含"user_id"的JsonObject
+     * @return id 数据库用户id
+     * @author Rayfalling
+     */
+    public static Single<JsonObject> DatabaseUserProfile(JsonObject data) {
+        return PgConnectionSingle()
+                       .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("UserProfile"), Tuple.of(data.getInteger("user_id"))))
+                       .map(res -> {
+                           Row row = DataBaseExt.oneOrNull(res);
+                           return row == null ? null : new JsonObject()
+                                                               .put("avatar", row.getString("avatar"))
+                                                               .put("nickname", row.getString("nickname"))
+                                                               .put("description", row.getString("description"));
+                       })
+                       .doOnError(err -> {
+                           Shared.getDatabaseLogger().error(err);
+                           err.printStackTrace();
+                       });
+    }
     
     //TODO 修正更新个人信息时发布职位额度问题
     

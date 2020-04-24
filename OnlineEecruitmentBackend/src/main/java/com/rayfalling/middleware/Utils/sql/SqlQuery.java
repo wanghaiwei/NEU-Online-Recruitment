@@ -20,26 +20,32 @@ public class SqlQuery {
         SqlMap.put("AuthRegister", "auth/register.sql");
         SqlMap.put("AuthResetPwd", "auth/reset_password.sql");
         SqlMap.put("AuthQueryIdentity", "auth/query_identity.sql");
-    
+        
         /* User 相关Map */
+        SqlMap.put("UserProfile", "user/profile.sql");
         SqlMap.put("UserQueryId", "user/query_id.sql");
         SqlMap.put("UserUpdateInfo", "user/update_info.sql");
         SqlMap.put("UserQueryQuota", "user/query_quota.sql");
         SqlMap.put("UserUpdatePwd", "user/update_password.sql");
         SqlMap.put("UserSubmitAuthentication", "user/submit_authentication.sql");
-    
+        
         /* Position 相关Map */
         SqlMap.put("PositionNew", "position/new.sql");
         SqlMap.put("PositionDelete", "position/delete.sql");
         SqlMap.put("PositionFavour", "position/favour.sql");
         SqlMap.put("PositionQueryCategory", "position/query_category.sql");
-    
+        
         /* Position 相关Map */
         SqlMap.put("GroupNew", "group/new.sql");
         SqlMap.put("GroupJoin", "group/join.sql");
         SqlMap.put("GroupSearch", "group/search.sql");
         SqlMap.put("GroupQueryCategory", "group/query_category.sql");
         
+        /* Post 相关Map */
+        SqlMap.put("PostNewPost", "post/new.sql");
+        SqlMap.put("PostLikePost", "post/like.sql");
+        SqlMap.put("PostDeletePost", "post/delete.sql");
+        SqlMap.put("PostFetchAll", "post/fetch_all.sql");
     }
     
     /**
