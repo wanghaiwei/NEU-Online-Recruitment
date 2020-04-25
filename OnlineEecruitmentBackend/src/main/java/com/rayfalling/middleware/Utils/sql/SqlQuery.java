@@ -50,7 +50,9 @@ public class SqlQuery {
         SqlMap.put("PostFetchAll", "post/fetch_all.sql");
     
         /* Group 相关Map */
+        SqlMap.put("GroupAdminAuth", "group/admin/auth.sql");
         SqlMap.put("GroupAdminDelete", "group/admin/delete.sql");
+        SqlMap.put("GroupAdminWarnUser", "group/admin/warn.sql");
     }
     
     /**
