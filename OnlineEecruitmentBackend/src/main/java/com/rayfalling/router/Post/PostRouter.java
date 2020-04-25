@@ -39,6 +39,15 @@ public class PostRouter {
         router.post("/new").handler(AuthRouter::AuthToken).handler(PostRouter::PostNew);
         router.post("/like").handler(AuthRouter::AuthToken).handler(PostRouter::PostLike);
         router.post("/delete").handler(AuthRouter::AuthToken).handler(PostRouter::PostDelete);
+        router.post("/comment").handler(AuthRouter::AuthToken).handler(PostRouter::PostComment);
+    
+        /* 未实现 */
+        router.post("/report").handler(AuthRouter::AuthToken).handler(MainRouter::UnImplementedRouter);
+        router.post("/update").handler(AuthRouter::AuthToken).handler(MainRouter::UnImplementedRouter);
+        router.post("/favorite").handler(AuthRouter::AuthToken).handler(MainRouter::UnImplementedRouter);
+        router.post("/comment/reply").handler(AuthRouter::AuthToken).handler(MainRouter::UnImplementedRouter);
+        router.post("/comment/report").handler(AuthRouter::AuthToken).handler(MainRouter::UnImplementedRouter);
+        router.post("/comment/reply/report").handler(AuthRouter::AuthToken).handler(MainRouter::UnImplementedRouter);
         
         for (Route route : router.getRoutes()) {
             if (route.getPath() != null) {
@@ -71,9 +80,9 @@ public class PostRouter {
                                                .put("sort_col", param.getString("sort_col")));
         }).flatMap(PostHandler::DatabaseFetchAll).doOnError(err -> {
             if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
                 Shared.getRouterLogger()
-                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
             }
         }).flatMap(result -> {
             JsonResponse.RespondSuccess(context, result);
@@ -95,9 +104,9 @@ public class PostRouter {
             return Single.just(param.put("user_id", token.getId()));
         }).flatMap(PostHandler::DatabaseNewPost).doOnError(err -> {
             if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
                 Shared.getRouterLogger()
-                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
             }
         }).flatMap(result -> {
             if (result == -1) {
@@ -124,9 +133,9 @@ public class PostRouter {
             return Single.just(param.put("user_id", token.getId()));
         }).flatMap(PostHandler::DatabaseDeletePost).doOnError(err -> {
             if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
                 Shared.getRouterLogger()
-                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
             }
         }).flatMap(result -> {
             if (result == -1) {
@@ -153,9 +162,9 @@ public class PostRouter {
             return Single.just(param.put("user_id", token.getId()));
         }).flatMap(PostHandler::DatabaseLikePost).doOnError(err -> {
             if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
                 Shared.getRouterLogger()
-                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
             }
         }).flatMap(result -> {
             if (result == -1) {
@@ -164,6 +173,35 @@ public class PostRouter {
                       .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
             JsonResponse.RespondSuccess(context, "Like post id: " + result + " success");
+            return Single.just(result);
+        }).subscribe(res -> {
+            Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
+        }, failure -> {
+            Shared.getRouterLogger().error(failure.getMessage());
+        });
+    }
+    
+    /**
+     * 动态评论路由
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private static void PostComment(@NotNull RoutingContext context) {
+        getJsonObjectSingle(context).flatMap(param -> {
+            Token token = context.session().get("token");
+            return Single.just(param.put("user_id", token.getId()));
+        }).flatMap(PostHandler::DatabasePostComment).doOnError(err -> {
+            if (!context.response().ended()) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
+            }
+        }).flatMap(result -> {
+            if (result == -1) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+            }
+            JsonResponse.RespondSuccess(context, "Comment id: " + result + " success");
             return Single.just(result);
         }).subscribe(res -> {
             Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");

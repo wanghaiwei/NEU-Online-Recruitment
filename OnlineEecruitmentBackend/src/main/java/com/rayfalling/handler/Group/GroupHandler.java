@@ -32,6 +32,25 @@ public class GroupHandler {
     }
     
     /**
+     * 数据库查询圈子分类
+     *
+     * @return 查询结果
+     * @author Rayfalling
+     */
+    public static Single<JsonArray> DatabaseQueryGroupInfo() {
+        return PgConnectionSingle()
+                       .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("GroupQueryInfo")))
+                       .map(res -> DataBaseExt.mapJsonArray(res, row -> new JsonObject().put("id", row.getInteger("id"))
+                                                                                        .put("avatar", row.getInteger("logo"))
+                                                                                        .put("description", row.getInteger("description"))
+                                                                                        .put("name", row.getString("name"))))
+                       .doOnError(err -> {
+                           Shared.getDatabaseLogger().error(err);
+                           err.printStackTrace();
+                       });
+    }
+    
+    /**
      * 数据库用户添加圈子
      *
      * @return 包含成功的ID的 {@link JsonObject}

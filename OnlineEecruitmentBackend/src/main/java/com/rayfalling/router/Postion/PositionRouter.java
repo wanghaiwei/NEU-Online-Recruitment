@@ -68,9 +68,9 @@ public class PositionRouter {
             }
         }).flatMap(param -> PositionHandler.DatabaseQueryPositionCategory()).doOnError(err -> {
             if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
                 Shared.getRouterLogger()
-                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
             }
         }).doAfterSuccess(result -> {
             JsonResponse.RespondSuccess(context, result);
@@ -97,9 +97,9 @@ public class PositionRouter {
             }
         }).flatMap(param -> PositionHandler.DatabaseQueryPositionCategory()).doOnError(err -> {
             if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
                 Shared.getRouterLogger()
-                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
             }
         }).doAfterSuccess(result -> {
             JsonResponse.RespondSuccess(context, result);

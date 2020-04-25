@@ -33,6 +33,7 @@ public class GroupRouter {
         
         /* 不需要鉴权的路由 */
         router.get("/search").handler(GroupRouter::GroupSearch);
+        router.get("/info/all").handler(GroupRouter::GroupInfoAll);
         router.get("/category/all").handler(GroupRouter::GroupCategoryAll);
         
         /* 需要鉴权的路由 */
@@ -55,7 +56,7 @@ public class GroupRouter {
     }
     
     /**
-     * 获取职位类别路由
+     * 获取圈子类别路由
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void GroupCategoryAll(@NotNull RoutingContext context) {
@@ -67,9 +68,35 @@ public class GroupRouter {
             }
         }).flatMap(param -> GroupHandler.DatabaseQueryGroupCategory()).doOnError(err -> {
             if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
                 Shared.getRouterLogger()
-                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
+            }
+        }).doAfterSuccess(result -> {
+            JsonResponse.RespondSuccess(context, result);
+        }).subscribe(res -> {
+            Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
+        }, failure -> {
+            Shared.getRouterLogger().error(failure.getMessage());
+        });
+    }
+    
+    /**
+     * 获取圈子信息路由
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private static void GroupInfoAll(@NotNull RoutingContext context) {
+        getJsonObjectSingle(context).doOnError(err -> {
+            if (!context.response().ended()) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON.toString());
+            }
+        }).flatMap(param -> GroupHandler.DatabaseQueryGroupInfo()).doOnError(err -> {
+            if (!context.response().ended()) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
             }
         }).doAfterSuccess(result -> {
             JsonResponse.RespondSuccess(context, result);
@@ -92,9 +119,9 @@ public class GroupRouter {
             return Single.just(param);
         }).flatMap(GroupHandler::DatabaseNewGroup).doOnError(err -> {
             if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
                 Shared.getRouterLogger()
-                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
             }
         }).flatMap(result -> {
             if (result == -1) {
@@ -133,15 +160,15 @@ public class GroupRouter {
             return Single.just(jsonObject);
         }).flatMap(GroupHandler::DatabaseSearchGroup).doOnError(err -> {
             if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
                 Shared.getRouterLogger()
-                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
             }
         }).doOnError(err -> {
             if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
                 Shared.getRouterLogger()
-                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
             }
         }).doAfterSuccess(result -> {
             JsonResponse.RespondSuccess(context, result);
@@ -162,9 +189,9 @@ public class GroupRouter {
             return Single.just(new JsonObject().put("user_id", token.getId()).put("group_id", param.getInteger("gid")));
         }).flatMap(GroupHandler::DatabaseJoinGroup).doOnError(err -> {
             if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
                 Shared.getRouterLogger()
-                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
             }
         }).flatMap(result -> {
             if (result == -1) {

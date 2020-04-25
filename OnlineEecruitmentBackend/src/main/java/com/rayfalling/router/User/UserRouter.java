@@ -48,9 +48,8 @@ public class UserRouter {
         router.post("/authentication").handler(AuthRouter::AuthToken).handler(UserRouter::UserAuthentication);
         
         /* 未实现的路由节点 */
-        router.post("/follow").handler(MainRouter::UnImplementedRouter);
-        router.post("/report").handler(MainRouter::UnImplementedRouter);
-        
+        router.post("/follow").handler(AuthRouter::AuthToken).handler(MainRouter::UnImplementedRouter);
+        router.post("/report").handler(AuthRouter::AuthToken).handler(MainRouter::UnImplementedRouter);
         
         for (Route route : router.getRoutes()) {
             if (route.getPath() != null) {
@@ -105,9 +104,9 @@ public class UserRouter {
             return result;
         })).doOnError(err -> {
             if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
                 Shared.getRouterLogger()
-                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
             }
         }).subscribe(res -> {
             Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
@@ -200,9 +199,9 @@ public class UserRouter {
             return Single.just(token);
         }).doOnError(err -> {
             if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
                 Shared.getRouterLogger()
-                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
             }
         }).subscribe(res -> {
             Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
@@ -322,9 +321,9 @@ public class UserRouter {
             return Single.just(param);
         }).flatMap(AuthenticationHandler::DatabaseResetPwd).doOnError(err -> {
             if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
                 Shared.getRouterLogger()
-                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
             }
         }).flatMap(param -> {
             if (param == -1) {
@@ -360,9 +359,9 @@ public class UserRouter {
             return new JsonObject().put("phone", phone).put("pwd_old", oldPassword).put("pwd_new", newPassword);
         }).flatMap(AuthenticationHandler::DatabaseUpdatePwd).doOnError(err -> {
             if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
                 Shared.getRouterLogger()
-                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
             }
         }).flatMap(param -> {
             if (param == -1) {
@@ -421,9 +420,9 @@ public class UserRouter {
             return Single.just(param);
         }).flatMap(AuthenticationHandler::DatabaseSubmitAuthentication).doOnError(err -> {
             if (!context.response().ended()) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
                 Shared.getRouterLogger()
-                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
             }
         }).flatMap(param -> {
             if (param == -1) {

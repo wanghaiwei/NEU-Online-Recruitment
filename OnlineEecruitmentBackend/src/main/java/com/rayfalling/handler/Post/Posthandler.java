@@ -104,4 +104,25 @@ public class PostHandler {
                            err.printStackTrace();
                        });
     }
+    
+    
+    /**
+     * 数据库用户评论动态
+     *
+     * @return 包含成功的ID的 {@link JsonObject}
+     * @author Rayfalling
+     */
+    public static Single<Integer> DatabasePostComment(@NotNull JsonObject data) {
+        Tuple tuple = Tuple.of(data.getInteger("post_id"), data.getInteger("user_id"), data.getString("content"));
+        return PgConnectionSingle()
+                       .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("PostComment"), tuple))
+                       .map(res -> {
+                           Row row = DataBaseExt.oneOrNull(res);
+                           return row != null ? row.getInteger(0) : -1;
+                       })
+                       .doOnError(err -> {
+                           Shared.getDatabaseLogger().error(err);
+                           err.printStackTrace();
+                       });
+    }
 }

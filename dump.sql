@@ -29,6 +29,462 @@ CREATE TYPE public.identities AS (
 ALTER TYPE public.identities OWNER TO postgres;
 
 --
+-- Name: commentpost(integer, integer, character varying); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.commentpost(comment_post_id integer, comment_user_id integer, comment_content character varying) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+    -- 返回  ID 插入的ID
+    -- 返回  -1 添加失败
+DECLARE
+    RESULT int;
+
+BEGIN
+    BEGIN
+        Insert Into post_comment(post_id, content, user_id, timestamp)
+        values (comment_post_id,comment_user_id,comment_content, localtimestamp)
+        returning id into RESULT;
+        UPDATE post
+        SET comment_number = (select comment_number from post where id = comment_post_id) + 1
+        where id = comment_post_id;
+        return RESULT;
+    Exception
+        when others then
+            RESULT = -1;
+            RETURN RESULT;
+    END;
+END;
+$$;
+
+
+ALTER FUNCTION public.commentpost(comment_post_id integer, comment_user_id integer, comment_content character varying) OWNER TO postgres;
+
+--
+-- Name: deletepost(integer, integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.deletepost(post_id integer, post_user_id integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+    -- 返回  ID 插入的ID
+    -- 返回  -1 添加失败
+DECLARE
+    RESULT         int;
+    STORED_USER_ID int;
+
+BEGIN
+    BEGIN
+        STORED_USER_ID = (select user_id from post where id = post_id);
+        if STORED_USER_ID != post_user_id THEN
+            RESULT = -1;
+        else
+            Delete from post where user_id = post_user_id AND id = post_id;
+            RESULT = 0;
+        end if;
+        return RESULT;
+    Exception
+        when others then
+            RESULT = -1;
+            RETURN RESULT;
+    END;
+END;
+$$;
+
+
+ALTER FUNCTION public.deletepost(post_id integer, post_user_id integer) OWNER TO postgres;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: post; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.post (
+    id integer NOT NULL,
+    content character varying NOT NULL,
+    group_id integer NOT NULL,
+    user_id integer NOT NULL,
+    like_number integer DEFAULT 0 NOT NULL,
+    comment_number integer DEFAULT 0 NOT NULL,
+    favorite_number integer DEFAULT 0 NOT NULL,
+    is_pinned boolean DEFAULT false NOT NULL,
+    "timestamp" timestamp without time zone DEFAULT LOCALTIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE public.post OWNER TO postgres;
+
+--
+-- Name: TABLE post; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON TABLE public.post IS '动态信息表';
+
+
+--
+-- Name: fetchallpost(integer, integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.fetchallpost(post_group_id integer, sort integer) RETURNS SETOF public.post
+    LANGUAGE plpgsql
+    AS $$
+    -- 返回  ID 插入的ID
+    -- sort 为0时热度排序，为1时时间排序
+DECLARE
+
+BEGIN
+    BEGIN
+        IF sort = 0 THEN
+            Return Query SELECT *
+                         from post
+                         where group_id = post_group_id
+                         group by post.id
+                         order by sum(like_number + favorite_number + comment_number) desc;
+        elseif sort = 1 THEN
+            Return Query SELECT *
+                         from post
+                         where group_id = post_group_id
+                         group by post.id
+                         order by timestamp;
+        else
+            RAISE Exception 'Unknown sort method';
+        end if;
+    END;
+END;
+$$;
+
+
+ALTER FUNCTION public.fetchallpost(post_group_id integer, sort integer) OWNER TO postgres;
+
+--
+-- Name: likepost(integer, integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.likepost(post_like_id integer, post_user_id integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+    -- 返回  ID 插入的ID
+    -- 返回  -1 数据库异常
+DECLARE
+    RESULT int;
+
+BEGIN
+    BEGIN
+        Insert Into post_like(post_id, user_id)
+        values (post_like_id, post_user_id)
+        returning id into RESULT;
+        UPDATE post
+        SET like_number = (select like_number from post where id = post_like_id) + 1
+        where id = post_like_id;
+        return RESULT;
+    Exception
+        when others then
+            RESULT = -1;
+            RETURN RESULT;
+    END;
+END;
+$$;
+
+
+ALTER FUNCTION public.likepost(post_like_id integer, post_user_id integer) OWNER TO postgres;
+
+--
+-- Name: newpost(integer, integer, character varying); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.newpost(post_group_id integer, post_user_id integer, post_content character varying) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+    -- 返回  ID 插入的ID
+    -- 返回  -1 添加失败
+DECLARE
+    IsInGroup int;
+    RESULT    int;
+
+BEGIN
+    BEGIN
+        IsInGroup = (SELECT count(*) from group_user_map where user_id = post_user_id and group_id = post_group_id);
+        IF IsInGroup = 1 Then
+            RESULT = -1;
+            RETURN RESULT;
+        end if;
+    end;
+
+    BEGIN
+        Insert Into post(content, group_id, user_id, like_number, comment_number, favorite_number, is_pinned, timestamp)
+        values (post_content, post_group_id, post_user_id, 0, 0, 0, false, localtimestamp)
+        returning id into RESULT;
+        return RESULT;
+    Exception
+        when others then
+            RESULT = -1;
+            RETURN RESULT;
+    END;
+END;
+$$;
+
+
+ALTER FUNCTION public.newpost(post_group_id integer, post_user_id integer, post_content character varying) OWNER TO postgres;
+
+--
+-- Name: postdeleteposition(integer, integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.postdeleteposition(position_post_user_id integer, position_id integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+    -- 返回  ID 插入的ID
+    -- 返回  -1 用户不是该记录拥有者或删除失败
+DECLARE
+    QUOTA    int;
+    IDENTITY int;
+    CNT      int;
+    RESULT   int;
+
+BEGIN
+    BEGIN
+        CNT = (SELECT count(id) from position_info where post_user_id = position_post_user_id and id = position_id);
+        if CNT = 0 then
+            RESULT = -1;
+            RETURN RESULT;
+        end if;
+    END;
+
+    BEGIN
+        Delete from position_info where post_user_id = position_post_user_id and id = position_id;
+    END;
+
+    BEGIN
+        QUOTA = (select quota from user_quota where uid = position_post_user_id);
+        IDENTITY = (select identity from "authentication_info" where user_id = position_post_user_id);
+        if IDENTITY = 1 Then
+            if QUOTA + 1 > 5 Then
+                QUOTA = 5;
+            else
+                QUOTA = QUOTA + 1;
+            end if;
+        end if;
+        if IDENTITY = 0 Then
+            if QUOTA + 1 > 1 Then
+                QUOTA = 1;
+            else
+                QUOTA = QUOTA + 1;
+            end if;
+        end if;
+        update "user_quota" set quota = QUOTA where uid = position_post_user_id;
+        RESULT = 0;
+    END;
+
+    return RESULT;
+END;
+$$;
+
+
+ALTER FUNCTION public.postdeleteposition(position_post_user_id integer, position_id integer) OWNER TO postgres;
+
+--
+-- Name: postjoingroup(integer, integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.postjoingroup(group_id integer, group_user_id integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+    -- 返回  ID 插入的ID
+DECLARE
+    RESULT int;
+
+BEGIN
+    BEGIN
+        insert into group_user_map(user_id, group_id, state, user_join_time)
+        VALUES (group_user_id, group_id, 1, localtimestamp)
+        on conflict do nothing;
+        RESULT = 0;
+    EXCEPTION
+        when others then
+            RESULT = -1;
+    END;
+
+    return RESULT;
+END;
+$$;
+
+
+ALTER FUNCTION public.postjoingroup(group_id integer, group_user_id integer) OWNER TO postgres;
+
+--
+-- Name: postnewgroup(character varying, character varying, character varying, integer, integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.postnewgroup(group_name character varying, group_avatar character varying, group_description character varying, group_category integer, group_user_id integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+    -- 返回  ID 插入的ID
+    -- 返回  -2 额度已用完
+    -- 返回  -3 创建条件不足
+DECLARE
+    CREDIT   int;
+    COUNT    int;
+    RESULT   int;
+    GROUP_ID int;
+
+BEGIN
+    BEGIN
+        CREDIT = (select credit from user_credit where user_id = group_user_id);
+        IF CREDIT < 10 THEN
+            RESULT = -3;
+            RETURN RESULT;
+        end if;
+    END;
+
+    BEGIN
+        COUNT = (select distinct COUNT(id)
+                 from post
+                 where user_id = group_user_id
+                   AND length(content) >= 200
+                   AND (select distinct COUNT(group_id)
+                        from post
+                        where user_id = group_user_id
+                          AND length(content) >= 200) >= 3);
+        IF CREDIT < 15 THEN
+            RESULT = -3;
+            RETURN RESULT;
+        end if;
+    END;
+
+    BEGIN
+        COUNT = (select COUNT(*) from "group_user_map" where user_id = group_user_id);
+        IF CREDIT >= 2 THEN
+            RESULT = -2;
+            RETURN RESULT;
+        end if;
+    END;
+
+    BEGIN
+        insert into "group"(name, logo, description, group_category_id, logo_last_update)
+        values (group_name, group_avatar, group_description, group_category, localtimestamp)
+        on conflict (name) do nothing
+        returning id into GROUP_ID;
+        if GROUP_ID is not null then
+            insert into group_user_map(user_id, group_id, state, user_join_time)
+            VALUES (group_user_id, GROUP_ID, 0, localtimestamp);
+            RESULT = 0;
+        else
+            RESULT = -1;
+        end if;
+    EXCEPTION
+        when others then
+            RESULT = -1;
+    END;
+
+    return RESULT;
+END;
+$$;
+
+
+ALTER FUNCTION public.postnewgroup(group_name character varying, group_avatar character varying, group_description character varying, group_category integer, group_user_id integer) OWNER TO postgres;
+
+--
+-- Name: postnewposition(character varying, character varying, character varying, character varying, character varying, character varying, integer, integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.postnewposition(position_name character varying, position_company character varying, position_description character varying, position_post_mail character varying, position_grade character varying, position_location character varying, position_position_category_id integer, position_post_user_id integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+    -- 返回  ID 插入的ID
+    -- 返回  -1  用户未认证或额度已用完
+DECLARE
+    QUOTA  int;
+    RESULT int;
+
+BEGIN
+    BEGIN
+        QUOTA = (SELECT quota from user_quota where uid = position_post_user_id);
+        IF QUOTA <= 0 THEN
+            RESULT = -1;
+            return RESULT;
+        else
+            QUOTA = QUOTA - 1;
+            UPDATE user_quota set quota = QUOTA where uid = position_post_user_id;
+        end if;
+    END;
+
+    BEGIN
+        INSERT INTO position_info(name, company, description, post_mail, grade, location, position_category_id,
+                                  post_user_id)
+        values (position_name, position_company, position_description, position_post_mail, position_grade,
+                position_location, position_position_category_id, position_post_user_id);
+        RESULT = 0;
+    EXCEPTION
+        when others then
+            QUOTA = QUOTA + 1;
+            UPDATE user_quota set quota = QUOTA where uid = position_post_user_id;
+            RESULT = -1;
+    END;
+    return RESULT;
+END;
+$$;
+
+
+ALTER FUNCTION public.postnewposition(position_name character varying, position_company character varying, position_description character varying, position_post_mail character varying, position_grade character varying, position_location character varying, position_position_category_id integer, position_post_user_id integer) OWNER TO postgres;
+
+--
+-- Name: group; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."group" (
+    id integer NOT NULL,
+    name character varying NOT NULL,
+    logo character varying NOT NULL,
+    description character varying NOT NULL,
+    group_category_id integer NOT NULL,
+    logo_last_update timestamp without time zone NOT NULL
+);
+
+
+ALTER TABLE public."group" OWNER TO postgres;
+
+--
+-- Name: TABLE "group"; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON TABLE public."group" IS '圈子信息表';
+
+
+--
+-- Name: postsearchgroup(character varying, integer[]); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.postsearchgroup(group_desc character varying, group_category integer[]) RETURNS SETOF public."group"
+    LANGUAGE plpgsql
+    AS $$
+    -- 返回 group
+DECLARE
+
+BEGIN
+    BEGIN
+        if -1 = any (group_category) Then
+            RETURN Query select *
+                         from "group"
+                         where name like group_desc
+                            or description like group_desc;
+        else
+            RETURN Query select *
+                         from "group"
+                         where id = any (group_category)
+                           and (name like group_desc
+                             or description like group_desc);
+        end if;
+    END;
+END ;
+$$;
+
+
+ALTER FUNCTION public.postsearchgroup(group_desc character varying, group_category integer[]) OWNER TO postgres;
+
+--
 -- Name: queryidentity(character varying); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -53,6 +509,39 @@ $$;
 
 
 ALTER FUNCTION public.queryidentity(user_phone character varying) OWNER TO postgres;
+
+--
+-- Name: queryquota(character varying); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.queryquota(username character varying) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+    -- 返回  int 额度
+    -- 返回  -1  用户未认证或额度已用完
+DECLARE
+    RESULT int;
+
+BEGIN
+    BEGIN
+        select quota
+        into RESULT
+        from user_quota
+                 left join "user" on user_quota.uid = "user".id
+        where phone = username;
+        if RESULT IS NULL then
+            RESULT = -1;
+        end if;
+    EXCEPTION
+        when others then
+            RESULT = -1;
+    END;
+    return RESULT;
+END;
+$$;
+
+
+ALTER FUNCTION public.queryquota(username character varying) OWNER TO postgres;
 
 --
 -- Name: register(character varying, character varying); Type: FUNCTION; Schema: public; Owner: postgres
@@ -234,10 +723,6 @@ $$;
 
 ALTER FUNCTION public.userinfoupdate(username character varying, user_nickname character varying, user_gender character varying, user_description character varying, user_avatar character varying, user_expected_career_id integer) OWNER TO postgres;
 
-SET default_tablespace = '';
-
-SET default_table_access_method = heap;
-
 --
 -- Name: authentication_info; Type: TABLE; Schema: public; Owner: postgres
 --
@@ -299,7 +784,8 @@ CREATE TABLE public.post_comment_reply (
     content character varying NOT NULL,
     target_id integer NOT NULL,
     from_uid integer NOT NULL,
-    to_uid integer
+    to_uid integer,
+    "timestamp" timestamp without time zone DEFAULT LOCALTIMESTAMP NOT NULL
 );
 
 
@@ -332,29 +818,6 @@ ALTER TABLE public.comment_reply_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.comment_reply_id_seq OWNED BY public.post_comment_reply.id;
-
-
---
--- Name: group; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public."group" (
-    id integer NOT NULL,
-    name character varying NOT NULL,
-    logo character varying NOT NULL,
-    description character varying NOT NULL,
-    group_category_id integer NOT NULL,
-    logo_last_update timestamp without time zone NOT NULL
-);
-
-
-ALTER TABLE public."group" OWNER TO postgres;
-
---
--- Name: TABLE "group"; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON TABLE public."group" IS '圈子信息表';
 
 
 --
@@ -691,31 +1154,6 @@ COMMENT ON TABLE public.position_info IS '职位信息表';
 
 
 --
--- Name: post; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.post (
-    id integer NOT NULL,
-    content character varying NOT NULL,
-    group_id integer NOT NULL,
-    user_id integer NOT NULL,
-    like_number integer DEFAULT 0 NOT NULL,
-    comment_number integer DEFAULT 0 NOT NULL,
-    favorite_number integer DEFAULT 0 NOT NULL,
-    is_pinned boolean DEFAULT false NOT NULL
-);
-
-
-ALTER TABLE public.post OWNER TO postgres;
-
---
--- Name: TABLE post; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON TABLE public.post IS '动态信息表';
-
-
---
 -- Name: post_comment; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -723,7 +1161,8 @@ CREATE TABLE public.post_comment (
     id integer NOT NULL,
     post_id integer NOT NULL,
     content character varying NOT NULL,
-    user_id integer NOT NULL
+    user_id integer NOT NULL,
+    "timestamp" timestamp without time zone DEFAULT LOCALTIMESTAMP NOT NULL
 );
 
 
@@ -1484,6 +1923,7 @@ COPY public.authentication_info (id, user_id, identity, begin_time, end_time, co
 --
 
 COPY public."group" (id, name, logo, description, group_category_id, logo_last_update) FROM stdin;
+1	测试	没有logo.jpg	测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试	1	2020-04-24 15:14:09
 \.
 
 
@@ -1566,7 +2006,9 @@ COPY public.position_info (id, name, company, description, post_mail, grade, loc
 -- Data for Name: post; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.post (id, content, group_id, user_id, like_number, comment_number, favorite_number, is_pinned) FROM stdin;
+COPY public.post (id, content, group_id, user_id, like_number, comment_number, favorite_number, is_pinned, "timestamp") FROM stdin;
+2	dfgjdfj	1	1	56	22	46	f	2020-04-24 13:23:04.500617
+1	213233	1	1	14	23	44	f	2020-04-22 13:23:04.5
 \.
 
 
@@ -1574,7 +2016,7 @@ COPY public.post (id, content, group_id, user_id, like_number, comment_number, f
 -- Data for Name: post_comment; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.post_comment (id, post_id, content, user_id) FROM stdin;
+COPY public.post_comment (id, post_id, content, user_id, "timestamp") FROM stdin;
 \.
 
 
@@ -1582,7 +2024,7 @@ COPY public.post_comment (id, post_id, content, user_id) FROM stdin;
 -- Data for Name: post_comment_reply; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.post_comment_reply (id, comment_id, type, content, target_id, from_uid, to_uid) FROM stdin;
+COPY public.post_comment_reply (id, comment_id, type, content, target_id, from_uid, to_uid, "timestamp") FROM stdin;
 \.
 
 
@@ -1715,7 +2157,7 @@ SELECT pg_catalog.setval('public.group_category_id_seq', 4, true);
 -- Name: group_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.group_id_seq', 1, false);
+SELECT pg_catalog.setval('public.group_id_seq', 1, true);
 
 
 --
@@ -1764,7 +2206,7 @@ SELECT pg_catalog.setval('public.post_comment_id_seq', 1, false);
 -- Name: post_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.post_id_seq', 1, false);
+SELECT pg_catalog.setval('public.post_id_seq', 2, true);
 
 
 --
