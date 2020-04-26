@@ -1,4 +1,4 @@
-create or replace function GroupAdminDelete(group_delete_id varchar, group_user_id int, group_delete_reason varchar)
+create or replace function GroupAdminDelete(group_delete_id int, group_user_id int, group_delete_reason varchar)
     returns integer
 as
 $GroupAdminDelete$

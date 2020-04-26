@@ -67,9 +67,9 @@ public class AuthenticationHandler {
      * @return id 数据库用户id
      * @author Rayfalling
      */
-    public static Single<Integer> DatabaseUserId(String username) {
+    public static Single<Integer> DatabaseUserId(JsonObject data) {
         return PgConnectionSingle()
-                       .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("UserQueryId"), Tuple.of(username)))
+                       .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("UserQueryId"), Tuple.of(data.getString("username"))))
                        .map(res -> {
                            Row row = DataBaseExt.oneOrNull(res);
                            return row != null ? row.getInteger("id") : -1;
@@ -143,6 +143,28 @@ public class AuthenticationHandler {
                        .map(res -> {
                            Row row = DataBaseExt.oneOrNull(res);
                            return row != null ? row.getInteger(0) : -1;
+                       })
+                       .doOnError(err -> {
+                           Shared.getDatabaseLogger().error(err);
+                           err.printStackTrace();
+                       });
+    }
+    
+    /**
+     * 数据库用户更新密码
+     *
+     * @param data 传入参数，包含"group_id"和"user_id"的JsonObject
+     * @return banned返回True
+     * @author Rayfalling
+     */
+    public static Single<Boolean> DatabaseQueryUserBanned(@NotNull JsonObject data) {
+        Tuple tuple = Tuple.of(data.getString("group_id"), data.getString("user_id"));
+        
+        return PgConnectionSingle()
+                       .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("AuthQueryUserBanned"), tuple))
+                       .map(res -> {
+                           Row row = DataBaseExt.oneOrNull(res);
+                           return row != null && row.getInteger(0) == 1;
                        })
                        .doOnError(err -> {
                            Shared.getDatabaseLogger().error(err);

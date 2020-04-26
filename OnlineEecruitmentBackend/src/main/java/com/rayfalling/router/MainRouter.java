@@ -91,7 +91,7 @@ public class MainRouter {
     }
     
     public static Single<JsonObject> getJsonObjectSingle(@NotNull RoutingContext context) {
-        return Single.just(context).map(res -> res.getBody().toJsonObject()).doOnError(err -> {
+        return Single.just(context).map(body -> body.getBody().toJsonObject()).doOnError(err -> {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON);
                 Shared.getRouterLogger()

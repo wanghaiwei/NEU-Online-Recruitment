@@ -40,7 +40,7 @@ public class GroupAdminRouter {
               .handler(GroupAdminRouter::GroupUserWarn);
         router.post("/shield").handler(AuthRouter::AuthToken)
               .handler(GroupAdminRouter::GroupAuthAdmin)
-              .handler(MainRouter::UnImplementedRouter);
+              .handler(GroupAdminRouter::GroupUserShield);
         router.post("/post/top").handler(AuthRouter::AuthToken)
               .handler(GroupAdminRouter::GroupAuthAdmin)
               .handler(MainRouter::UnImplementedRouter);
@@ -157,4 +157,31 @@ public class GroupAdminRouter {
         });
     }
     
+    /**
+     * 拉黑用户路由
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private static void GroupUserShield(@NotNull RoutingContext context) {
+        getJsonObjectSingle(context).flatMap(GroupAdminHandler::DatabaseGroupBanUser).doOnError(err -> {
+            if (!context.response().ended()) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
+            }
+        }).flatMap(result -> {
+            if (!result) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+            }
+            JsonResponse.RespondSuccess(context, "Banned user success");
+            return Single.just(result);
+        }).subscribe(res -> {
+            Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
+        }, failure -> {
+            Shared.getRouterLogger().error(failure.getMessage());
+        });
+    }
+    
+    //TODO 校验用户是否被圈子拉黑
 }

@@ -20,6 +20,7 @@ public class SqlQuery {
         SqlMap.put("AuthRegister", "auth/register.sql");
         SqlMap.put("AuthResetPwd", "auth/reset_password.sql");
         SqlMap.put("AuthQueryIdentity", "auth/query_identity.sql");
+        SqlMap.put("AuthQueryUserBanned", "auth/query_banned.sql");
         
         /* User 相关Map */
         SqlMap.put("UserProfile", "user/profile.sql");
@@ -51,6 +52,7 @@ public class SqlQuery {
     
         /* Group 相关Map */
         SqlMap.put("GroupAdminAuth", "group/admin/auth.sql");
+        SqlMap.put("GroupAdminBanUser", "group/admin/ban.sql");
         SqlMap.put("GroupAdminDelete", "group/admin/delete.sql");
         SqlMap.put("GroupAdminWarnUser", "group/admin/warn.sql");
     }

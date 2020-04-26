@@ -36,20 +36,38 @@ public class UserRouter {
         router.get("/").handler(UserRouter::UserIndex);
         
         /* 不需要鉴权的路由 */
-        router.post("/login").handler(UserRouter::UserLogin);
-        router.post("/logout").handler(UserRouter::UserLogout);
-        router.post("/profile").handler(UserRouter::UserProfile);
-        router.post("/register").handler(UserRouter::UserRegister);
-        router.post("/password/reset").handler(UserRouter::UserResetPWD);
+        router.post("/logout")
+              .handler(UserRouter::UserLogout);
+        router.post("/profile")
+              .handler(UserRouter::UserProfile);
+        router.post("/register")
+              .handler(UserRouter::UserRegister);
+        router.post("/login")
+              .handler(AuthRouter::AuthCode)
+              .handler(UserRouter::UserLogin);
+        router.post("/password/reset")
+              .handler(AuthRouter::AuthCode)
+              .handler(UserRouter::UserResetPWD);
         
         /* 需要鉴权的路由 */
-        router.post("/info/update").handler(AuthRouter::AuthToken).handler(UserRouter::UserInfoUpdate);
-        router.post("/password/update").handler(AuthRouter::AuthToken).handler(UserRouter::UserUpdatePWD);
-        router.post("/authentication").handler(AuthRouter::AuthToken).handler(UserRouter::UserAuthentication);
+        router.post("/info/update")
+              .handler(AuthRouter::AuthToken)
+              .handler(UserRouter::UserInfoUpdate);
+        router.post("/password/update")
+              .handler(AuthRouter::AuthToken)
+              .handler(UserRouter::UserUpdatePWD);
+        router.post("/authentication")
+              .handler(AuthRouter::AuthToken)
+              .handler(AuthRouter::AuthCode)
+              .handler(UserRouter::UserAuthentication);
         
         /* 未实现的路由节点 */
-        router.post("/follow").handler(AuthRouter::AuthToken).handler(MainRouter::UnImplementedRouter);
-        router.post("/report").handler(AuthRouter::AuthToken).handler(MainRouter::UnImplementedRouter);
+        router.post("/follow")
+              .handler(AuthRouter::AuthToken)
+              .handler(MainRouter::UnImplementedRouter);
+        router.post("/report")
+              .handler(AuthRouter::AuthToken)
+              .handler(MainRouter::UnImplementedRouter);
         
         for (Route route : router.getRoutes()) {
             if (route.getPath() != null) {
@@ -158,18 +176,13 @@ public class UserRouter {
             
             //default return
             return new JsonObject();
-        }).flatMap(param -> AuthRouter.AuthCode(context, param)).flatMap(param -> {
+        }).flatMap(param -> {
             String phone = param.getString("phone");
             
-            if (!param.getBoolean("result")) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
-                Shared.getRouterLogger()
-                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
-            }
             return context.session().data().containsKey("Code") ?
-                           AuthenticationHandler.DatabaseUserId(phone).flatMap(result -> {
-                               return Single.just(new JsonObject().put("id", result).put("phone", phone));
-                           }) :
+                           AuthenticationHandler.DatabaseUserId(new JsonObject().put("username", phone))
+                                                .flatMap(result -> Single.just(new JsonObject().put("id", result)
+                                                                                               .put("phone", phone))) :
                            AuthenticationHandler.DatabaseUserLogin(param).flatMap(result -> {
                                return Single.just(new JsonObject().put("id", result).put("phone", phone));
                            });
@@ -264,15 +277,14 @@ public class UserRouter {
      */
     @SuppressWarnings(value = "ResultOfMethodCallIgnored")
     private static void UserInfoUpdate(@NotNull RoutingContext context) {
-        getJsonObjectSingle(context)
-                .map(params -> new JsonObject().put("username", ((Token) context.session().get("token")).getUsername())
-                                               .put("user_description", params.getString("user_description", ""))
-                                               .put("nickname", params.getString("nickname", ""))
-                                               .put("gender", params.getString("gender", "男"))
-                                               .put("user_avatar", params.getString("user_avatar", ""))
-                                               .put("expected_career_id", params.getInteger("expected_career_id", 0)))
-                .flatMap(UserInfoHandler::DatabaseUserInfoUpdate).doOnError(err -> {
-            
+        getJsonObjectSingle(context).map(params -> {
+            return params.put("username", ((Token) context.session().get("token")).getUsername());
+        }).flatMap(UserInfoHandler::DatabaseUserInfoUpdate).doOnError(err -> {
+            if (!context.response().ended()) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
+            }
         }).doAfterSuccess(res -> {
             if (res == 0) {
                 JsonResponse.RespondSuccess(context, "Update Success");
@@ -301,24 +313,8 @@ public class UserRouter {
                       .warn(context.normalisedPath() + " " + PresetMessage.PHONE_FORMAT_ERROR.toString());
             }
             
-            String VerifyCode = params.getString("verification_code", "");
-            String newPassword = params.getString("pwd_new", "");
-            if (VerifyCode.equals("")) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON_PARAM);
-                Shared.getRouterLogger()
-                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
-            }
             return new JsonObject().put("phone", phone)
-                                   .put("VerifyCode", VerifyCode)
-                                   .put("pwd_new", newPassword);
-        }).flatMap(param -> AuthRouter.AuthCode(context, param)).flatMap(param -> {
-            if (!param.getBoolean("result")) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
-                Shared.getRouterLogger()
-                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
-            }
-            
-            return Single.just(param);
+                                   .put("pwd_new", params.getString("pwd_new", ""));
         }).flatMap(AuthenticationHandler::DatabaseResetPwd).doOnError(err -> {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
@@ -392,32 +388,7 @@ public class UserRouter {
                       .warn(context.normalisedPath() + " " + PresetMessage.PHONE_FORMAT_ERROR.toString());
             }
             
-            String code = params.getString("code", "");
-            boolean mail_can_verify = false;
-            
-            if (code.equals("")) {
-                mail_can_verify = true;
-            }
-            
-            return new JsonObject().put("username", username)
-                                   .put("identity", params.getInteger("identity", 0))
-                                   .put("company", params.getString("company", ""))
-                                   .put("position", params.getString("position", ""))
-                                   .put("mail", params.getString("mail", ""))
-                                   .put("VerifyCode", code)
-                                   .put("mail_can_verify", mail_can_verify)
-                                   .put("company_serial", params.getString("company_serial", ""));
-        }).flatMap(param -> AuthRouter.AuthCode(context, param)).flatMap(param -> {
-            if (!param.getBoolean("result") && !param.getBoolean("mail_can_verify")) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
-                Shared.getRouterLogger()
-                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
-            } else if (param.getBoolean("result")) {
-                param.remove("mail_can_verify");
-                param.put("mail_can_verify", true);
-            }
-            
-            return Single.just(param);
+            return params.put("username", username);
         }).flatMap(AuthenticationHandler::DatabaseSubmitAuthentication).doOnError(err -> {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);

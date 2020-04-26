@@ -1,6 +1,7 @@
 package com.Rayfalling.router.User;
 
 import com.Rayfalling.Shared;
+import com.Rayfalling.handler.Auth.AuthenticationHandler;
 import com.Rayfalling.handler.Auth.UserInfoHandler;
 import com.Rayfalling.middleware.Response.JsonResponse;
 import com.Rayfalling.middleware.Response.PresetMessage;
@@ -14,6 +15,8 @@ import io.vertx.reactivex.core.http.Cookie;
 import io.vertx.reactivex.ext.web.RoutingContext;
 import io.vertx.reactivex.ext.web.Session;
 import org.jetbrains.annotations.NotNull;
+
+import static com.Rayfalling.router.MainRouter.getJsonObjectSingle;
 
 /**
  * 用户登录状态鉴权路由
@@ -50,12 +53,13 @@ public class AuthRouter {
      * 校验用户验证码是否正确
      *
      * @param context 路由上下文,包含Session信息
-     * @param param   {@link JsonObject} 包含VerifyCode字段的Json
      */
-    public static Single<JsonObject> AuthCode(RoutingContext context, JsonObject param) {
-        return Single.just(param).map(res -> {
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public static void AuthCode(RoutingContext context) {
+        Single.just(context).map(body -> body.getBody().toJsonObject()).flatMap(jsonObject -> {
             Session session = context.session();
-            String phone = param.getString("phone");
+            String phone = jsonObject.getString("phone");
+            boolean result = false;
             if (session.data().containsKey("Code")) {
                 VerifyCode.Code code = session.get("Code");
                 VerifyCode.Code storageCode = VerifyCode.getInstance().find(phone);
@@ -66,26 +70,42 @@ public class AuthRouter {
                         Shared.getRouterLogger()
                               .warn(context.normalisedPath() + ": User: " + phone + ": " + PresetMessage.ERROR_VERIFY_CODE_EXPIRED
                                                                                                    .getMessage());
-                        return param.put("result", false);
                     }
-                    if (!code.getCode().equals(param.getString("VerifyCode", ""))) {
+                    if (!code.getCode().equals(jsonObject.getString("code", ""))) {
                         JsonResponse.RespondPreset(context, PresetMessage.ERROR_VERIFY_CODE_INCORRECT);
                         Shared.getRouterLogger()
                               .warn(context.normalisedPath() + ": User: " + phone + ": " + PresetMessage.ERROR_VERIFY_CODE_INCORRECT
                                                                                                    .getMessage());
-                        return param.put("result", false);
                     }
-                    return param.put("result", true);
+                    result = VerifyCode.getInstance().verityCode(phone, jsonObject.getString("code"));
                 } else {
                     JsonResponse.RespondPreset(context, PresetMessage.ERROR_UNKNOWN);
                     Shared.getRouterLogger().warn(context.normalisedPath() + PresetMessage.ERROR_UNKNOWN.toString());
-                    return param.put("result", false);
                 }
             } else {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_UNKNOWN);
                 Shared.getRouterLogger().warn(context.normalisedPath() + PresetMessage.ERROR_UNKNOWN.toString());
-                return param.put("result", false);
+                //make result to true while try password login
+                result = jsonObject.containsKey("type") && jsonObject.getString("type").equals("password");
             }
+            context.put("VerifyCode", result);
+            return Single.just(result);
+        }).doAfterSuccess(result -> {
+            if (!result) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+            } else {
+                context.next();
+            }
+        }).doOnError(err -> {
+            JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+            Shared.getRouterLogger()
+                  .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+        }).subscribe(res -> {
+            Shared.getRouterLogger().info("Code verified");
+        }, failure -> {
+            Shared.getRouterLogger().info("Code verified failed");
         });
     }
     
@@ -107,6 +127,35 @@ public class AuthRouter {
         }).subscribe(res -> {
             Shared.getRouterLogger().info(sessionToken.getUsername() + " quota verified");
         }, failure -> {
+            Shared.getRouterLogger().info(sessionToken.getUsername() + " quota verified failed");
+        });
+    }
+    
+    
+    /**
+     * 校验用户发布额度
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public static void AuthIsBanned(@NotNull RoutingContext context) {
+        Token sessionToken = context.session().get("token");
+        getJsonObjectSingle(context).flatMap(param -> {
+            JsonObject jsonObject = new JsonObject().put("user_id", sessionToken.getId())
+                                                    .put("group_id", param.getInteger("group_id"));
+            return AuthenticationHandler.DatabaseQueryUserBanned(jsonObject).flatMap(result -> {
+                if (result) {
+                    JsonResponse.RespondPreset(context, PresetMessage.USER_BLOCKED_ERROR);
+                    Shared.getRouterLogger()
+                          .warn(sessionToken.getUsername() + " " + PresetMessage.USER_BLOCKED_ERROR.toString());
+                    context.fail(-1, new Throwable("User banned by group"));
+                }
+                context.next();
+                return Single.just(result);
+            });
+        }).subscribe(res -> {
+            context.next();
+            Shared.getRouterLogger().info(sessionToken.getUsername() + " quota verified");
+        }, failure -> {
+            context.fail(-1, new Throwable("User banned by group"));
             Shared.getRouterLogger().info(sessionToken.getUsername() + " quota verified failed");
         });
     }

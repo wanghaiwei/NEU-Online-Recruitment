@@ -72,7 +72,7 @@ public class VerifyCode {
      */
     public boolean verityCode(String username, String code) {
         return codeMap.containsKey(username) && !codeMap.get(username).isExpired() && codeMap.get(username).code
-                                                                                              .equals(code);
+                                                                                              .equals(code) && codeMap.remove(username, codeMap.get(username));
     }
     
     /**
@@ -106,7 +106,7 @@ public class VerifyCode {
      *
      * @param expireTime 过期时间{@link Timestamp}
      */
-    public void setCodeExpireTime(Timestamp expireTime) {
+    public static void setCodeExpireTime(Timestamp expireTime) {
         Code.setExpireTime(expireTime);
     }
     
@@ -115,7 +115,7 @@ public class VerifyCode {
      *
      * @param expireTime 过期时间{@link Long}
      */
-    public void setCodeExpireTime(Long expireTime) {
+    public static void setCodeExpireTime(Long expireTime) {
         Code.setExpireTime(new Timestamp(expireTime));
     }
     
