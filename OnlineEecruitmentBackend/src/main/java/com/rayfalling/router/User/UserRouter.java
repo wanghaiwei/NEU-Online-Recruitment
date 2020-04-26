@@ -33,7 +33,8 @@ public class UserRouter {
     static {
         String prefix = "/api/user";
         
-        router.get("/").handler(UserRouter::UserIndex);
+        router.get("/")
+              .handler(UserRouter::UserIndex);
         
         /* 不需要鉴权的路由 */
         router.post("/logout")

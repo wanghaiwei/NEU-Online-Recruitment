@@ -52,6 +52,9 @@ BEGIN
         if GROUP_ID is not null then
             insert into group_user_map(user_id, group_id, state, user_join_time)
             VALUES (group_user_id, GROUP_ID, 0, localtimestamp);
+            UPDATE "user"
+            set identity = 100
+            where phone = group_user_id;
             RESULT = 0;
         else
             RESULT = -1;

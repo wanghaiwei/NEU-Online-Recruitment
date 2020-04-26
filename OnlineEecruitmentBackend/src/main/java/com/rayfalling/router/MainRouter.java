@@ -31,14 +31,17 @@ public class MainRouter {
     static {
         String prefix = "";
         
-        router.route().handler(CorsHandler.create("*")
-                                          .allowedMethod(HttpMethod.GET)
-                                          .allowedMethod(HttpMethod.POST)
-                                          .allowedHeader("*")
-                                          .allowedHeader("content-type"));
+        router.route()
+              .handler(CorsHandler.create("*")
+                                  .allowedMethod(HttpMethod.GET)
+                                  .allowedMethod(HttpMethod.POST)
+                                  .allowedHeader("*")
+                                  .allowedHeader("content-type"));
         //创建bodyHandler
-        router.route().handler(BodyHandler.create().setUploadsDirectory("upload"));
-        router.route().handler(SessionHandler.create(LocalSessionStore.create(Shared.getVertx())));
+        router.route()
+              .handler(BodyHandler.create().setUploadsDirectory("upload"));
+        router.route()
+              .handler(SessionHandler.create(LocalSessionStore.create(Shared.getVertx())));
         
         //依据配置开始路由记录
         if (MainRouterConfig.getInstance().getLogRequests()) {
@@ -51,7 +54,8 @@ public class MainRouter {
         
         //mount subRouters
         Router subRouter = Router.router(Shared.getVertx());
-        subRouter.get("/").handler(MainRouter::pageMainIndex);
+        subRouter.get("/")
+                 .handler(MainRouter::pageMainIndex);
         
         //挂载用户相关url
         subRouter.mountSubRouter("/user", UserRouter.getRouter());

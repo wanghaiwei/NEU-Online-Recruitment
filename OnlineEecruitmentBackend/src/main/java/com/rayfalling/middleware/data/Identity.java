@@ -52,6 +52,9 @@ public enum Identity {
         return Identity.COMMON_USER_UNRECOGNIZED;
     }
     
+    /**
+     * 从数据库生成Identity
+     */
     public static Identity mapFromDatabase(Integer mask, Integer category) {
         mask = mask == null ? 101 : mask;
         category = category == null ? -1 : category;
@@ -64,13 +67,24 @@ public enum Identity {
         return Identity.COMMON_USER_UNRECOGNIZED;
     }
     
-    public int mapCategory(String category) {
-        switch (category) {
-            case "HR":
-                return 1;
-            case "员工":
-                return 0;
-        }
-        return 0;
+    /**
+     * 查询用户是否是管理员
+     */
+    public boolean IsAdmin() {
+        return this.mask == 0;
+    }
+    
+    /**
+     * 查询用户是否是圈主
+     */
+    public boolean IsGroupAdmin() {
+        return this.mask == 100;
+    }
+    
+    /**
+     * 查询用户是否是HR
+     * */
+    public boolean IsHR(){
+        return this.category == 1;
     }
 }

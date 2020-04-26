@@ -11,6 +11,7 @@ public enum PresetMessage {
     ERROR_UNKNOWN(),
     ERROR_UNIMPLEMENTED(-101, "unimplemented", "尚未实现"),
     ERROR_DATABASE(-102, "database exec failed", "数据库请求失败"),
+    ERROR_AUTH_FAILED(-102, "auth failed", "权限校验失败"),
     SUCCESS(0, "ok", "操作成功"),
     
     /* 请求消息 */

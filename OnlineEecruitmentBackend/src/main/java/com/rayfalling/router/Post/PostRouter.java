@@ -29,25 +29,51 @@ public class PostRouter {
     static {
         String prefix = "/api/post";
         
-        router.get("/").handler(PostRouter::PostIndex);
+        router.get("/")
+              .handler(PostRouter::PostIndex);
         
         /* 不需要鉴权的路由 */
-        router.get("/all").handler(PostRouter::FetchAll);
-        router.get("/category/all").handler(MainRouter::UnImplementedRouter);
+        router.get("/all")
+              .handler(PostRouter::FetchAll);
+        router.get("/category/all")
+              .handler(MainRouter::UnImplementedRouter);
         
         /* 需要鉴权的路由 */
-        router.post("/new").handler(AuthRouter::AuthToken).handler(PostRouter::PostNew);
-        router.post("/like").handler(AuthRouter::AuthToken).handler(PostRouter::PostLike);
-        router.post("/delete").handler(AuthRouter::AuthToken).handler(PostRouter::PostDelete);
-        router.post("/comment").handler(AuthRouter::AuthToken).handler(PostRouter::PostComment);
+        router.post("/new")
+              .handler(AuthRouter::AuthToken)
+              .handler(AuthRouter::AuthIsBanned)
+              .handler(PostRouter::PostNew);
+        router.post("/like")
+              .handler(AuthRouter::AuthToken)
+              .handler(PostRouter::PostLike);
+        router.post("/delete")
+              .handler(AuthRouter::AuthToken)
+              .handler(PostRouter::PostDelete);
+        router.post("/comment")
+              .handler(AuthRouter::AuthToken)
+              .handler(AuthRouter::AuthIsBanned)
+              .handler(PostRouter::PostComment);
     
         /* 未实现 */
-        router.post("/report").handler(AuthRouter::AuthToken).handler(MainRouter::UnImplementedRouter);
-        router.post("/update").handler(AuthRouter::AuthToken).handler(MainRouter::UnImplementedRouter);
-        router.post("/favorite").handler(AuthRouter::AuthToken).handler(MainRouter::UnImplementedRouter);
-        router.post("/comment/reply").handler(AuthRouter::AuthToken).handler(MainRouter::UnImplementedRouter);
-        router.post("/comment/report").handler(AuthRouter::AuthToken).handler(MainRouter::UnImplementedRouter);
-        router.post("/comment/reply/report").handler(AuthRouter::AuthToken).handler(MainRouter::UnImplementedRouter);
+        router.post("/report")
+              .handler(AuthRouter::AuthToken)
+              .handler(MainRouter::UnImplementedRouter);
+        router.post("/update")
+              .handler(AuthRouter::AuthToken)
+              .handler(MainRouter::UnImplementedRouter);
+        router.post("/favorite")
+              .handler(AuthRouter::AuthToken)
+              .handler(MainRouter::UnImplementedRouter);
+        router.post("/comment/reply")
+              .handler(AuthRouter::AuthToken)
+              .handler(AuthRouter::AuthIsBanned)
+              .handler(MainRouter::UnImplementedRouter);
+        router.post("/comment/report")
+              .handler(AuthRouter::AuthToken)
+              .handler(MainRouter::UnImplementedRouter);
+        router.post("/comment/reply/report")
+              .handler(AuthRouter::AuthToken)
+              .handler(MainRouter::UnImplementedRouter);
         
         for (Route route : router.getRoutes()) {
             if (route.getPath() != null) {

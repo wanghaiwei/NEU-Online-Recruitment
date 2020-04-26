@@ -29,16 +29,25 @@ public class GroupRouter {
         String prefix = "/api/group";
         
         router.mountSubRouter("/admin", GroupAdminRouter.getRouter());
-        router.get("/").handler(GroupRouter::GroupIndex);
+        router.get("/")
+              .handler(GroupRouter::GroupIndex);
         
         /* 不需要鉴权的路由 */
-        router.get("/search").handler(GroupRouter::GroupSearch);
-        router.get("/info/all").handler(GroupRouter::GroupInfoAll);
-        router.get("/category/all").handler(GroupRouter::GroupCategoryAll);
+        router.get("/search")
+              .handler(GroupRouter::GroupSearch);
+        router.get("/info/all")
+              .handler(GroupRouter::GroupInfoAll);
+        router.get("/category/all")
+              .handler(GroupRouter::GroupCategoryAll);
         
         /* 需要鉴权的路由 */
-        router.post("/create").handler(AuthRouter::AuthToken).handler(GroupRouter::GroupCreate);
-        router.post("/follow").handler(AuthRouter::AuthToken).handler(GroupRouter::GroupFollow);
+        router.post("/create")
+              .handler(AuthRouter::AuthToken)
+              .handler(GroupRouter::GroupCreate);
+        router.post("/follow")
+              .handler(AuthRouter::AuthToken)
+              .handler(AuthRouter::AuthIsBanned)
+              .handler(GroupRouter::GroupFollow);
         
         for (Route route : router.getRoutes()) {
             if (route.getPath() != null) {

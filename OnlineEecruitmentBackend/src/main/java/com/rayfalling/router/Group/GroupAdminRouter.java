@@ -29,7 +29,8 @@ public class GroupAdminRouter {
     static {
         String prefix = "/api/group/admin";
         
-        router.get("/").handler(GroupAdminRouter::GroupIndex);
+        router.get("/")
+              .handler(GroupAdminRouter::GroupIndex);
         
         /* 需要鉴权的路由 */
         router.post("/delete").handler(AuthRouter::AuthToken)
@@ -43,7 +44,7 @@ public class GroupAdminRouter {
               .handler(GroupAdminRouter::GroupUserShield);
         router.post("/post/top").handler(AuthRouter::AuthToken)
               .handler(GroupAdminRouter::GroupAuthAdmin)
-              .handler(MainRouter::UnImplementedRouter);
+              .handler(GroupAdminRouter::GroupPinPost);
         
         /* 未实现的路由 */
         router.post("/update").handler(AuthRouter::AuthToken)
@@ -92,11 +93,13 @@ public class GroupAdminRouter {
             if (result) {
                 context.next();
             } else {
-                context.fail(-1, new Throwable("Auth Group Admin Failed"));
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_AUTH_FAILED);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_AUTH_FAILED.toString());
             }
             return result;
         }).subscribe(res -> {
-            Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
+            Shared.getRouterLogger().info("Group admin authed");
         }, failure -> {
             Shared.getRouterLogger().error(failure.getMessage());
         });
@@ -183,5 +186,29 @@ public class GroupAdminRouter {
         });
     }
     
-    //TODO 校验用户是否被圈子拉黑
+    /**
+     * 置顶动态用户路由
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private static void GroupPinPost(@NotNull RoutingContext context) {
+        getJsonObjectSingle(context).flatMap(GroupAdminHandler::DatabaseGroupPinPost).doOnError(err -> {
+            if (!context.response().ended()) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
+            }
+        }).flatMap(result -> {
+            if (!result) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+            }
+            JsonResponse.RespondSuccess(context, "Pinned post success");
+            return Single.just(result);
+        }).subscribe(res -> {
+            Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
+        }, failure -> {
+            Shared.getRouterLogger().error(failure.getMessage());
+        });
+    }
 }

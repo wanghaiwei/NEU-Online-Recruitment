@@ -73,6 +73,7 @@ public class GroupAdminHandler {
                            err.printStackTrace();
                        });
     }
+    
     /**
      * 数据库圈子拉黑用户
      *
@@ -83,6 +84,26 @@ public class GroupAdminHandler {
         Tuple tuple = Tuple.of(data.getInteger("group_id"), data.getInteger("user_id"));
         return PgConnectionSingle()
                        .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("GroupAdminBanUser"), tuple))
+                       .map(res -> {
+                           Row row = DataBaseExt.oneOrNull(res);
+                           return row != null && row.getInteger(0) > 0;
+                       })
+                       .doOnError(err -> {
+                           Shared.getDatabaseLogger().error(err);
+                           err.printStackTrace();
+                       });
+    }
+    
+    /**
+     * 数据库圈子置顶动态
+     *
+     * @return 包含成功的ID的 {@link JsonObject}
+     * @author Rayfalling
+     */
+    public static Single<Boolean> DatabaseGroupPinPost(@NotNull JsonObject data) {
+        Tuple tuple = Tuple.of(data.getInteger("group_id"), data.getInteger("post_id"));
+        return PgConnectionSingle()
+                       .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("GroupAdminPinPost"), tuple))
                        .map(res -> {
                            Row row = DataBaseExt.oneOrNull(res);
                            return row != null && row.getInteger(0) > 0;

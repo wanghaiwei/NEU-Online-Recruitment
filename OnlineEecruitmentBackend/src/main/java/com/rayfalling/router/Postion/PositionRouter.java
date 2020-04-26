@@ -28,17 +28,26 @@ public class PositionRouter {
     static {
         String prefix = "/api/position";
         
-        router.get("/").handler(PositionRouter::PositionIndex);
+        router.get("/")
+              .handler(PositionRouter::PositionIndex);
         
         /* 不需要鉴权的路由 */
-        router.post("/search").handler(PositionRouter::PositionSearch);
-        router.get("/category/all").handler(PositionRouter::PositionCategoryAll);
+        router.post("/search")
+              .handler(PositionRouter::PositionSearch);
+        router.get("/category/all")
+              .handler(PositionRouter::PositionCategoryAll);
         
         /* 需要鉴权的路由 */
-        router.post("/post").handler(AuthRouter::AuthToken).handler(AuthRouter::AuthQuota)
+        router.post("/post")
+              .handler(AuthRouter::AuthToken)
+              .handler(AuthRouter::AuthQuota)
               .handler(PositionRouter::PositionPostNew);
-        router.post("/delete").handler(AuthRouter::AuthToken).handler(PositionRouter::PositionPostDelete);
-        router.post("/favorite").handler(AuthRouter::AuthToken).handler(PositionRouter::PositionFavorite);
+        router.post("/delete")
+              .handler(AuthRouter::AuthToken)
+              .handler(PositionRouter::PositionPostDelete);
+        router.post("/favorite")
+              .handler(AuthRouter::AuthToken)
+              .handler(PositionRouter::PositionFavorite);
         
         for (Route route : router.getRoutes()) {
             if (route.getPath() != null) {

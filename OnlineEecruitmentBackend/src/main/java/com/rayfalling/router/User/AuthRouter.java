@@ -146,16 +146,14 @@ public class AuthRouter {
                     JsonResponse.RespondPreset(context, PresetMessage.USER_BLOCKED_ERROR);
                     Shared.getRouterLogger()
                           .warn(sessionToken.getUsername() + " " + PresetMessage.USER_BLOCKED_ERROR.toString());
-                    context.fail(-1, new Throwable("User banned by group"));
+                } else {
+                    context.next();
                 }
-                context.next();
                 return Single.just(result);
             });
         }).subscribe(res -> {
-            context.next();
             Shared.getRouterLogger().info(sessionToken.getUsername() + " quota verified");
         }, failure -> {
-            context.fail(-1, new Throwable("User banned by group"));
             Shared.getRouterLogger().info(sessionToken.getUsername() + " quota verified failed");
         });
     }

@@ -26,9 +26,12 @@ public class VerityRouter {
     static {
         String prefix = "/api/verify";
         
-        router.get("/").handler(VerityRouter::UserIndex);
-        router.post("/phone/new").handler(VerityRouter::VerifyPhone);
-        router.post("/mail/new").handler(VerityRouter::VerifyMail);
+        router.get("/")
+              .handler(VerityRouter::UserIndex);
+        router.post("/phone/new")
+              .handler(VerityRouter::VerifyPhone);
+        router.post("/mail/new")
+              .handler(VerityRouter::VerifyMail);
         
         for (Route route : router.getRoutes()) {
             if (route.getPath() != null) {
