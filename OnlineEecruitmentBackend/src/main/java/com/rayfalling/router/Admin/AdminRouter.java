@@ -35,9 +35,19 @@ public class AdminRouter {
         router.post("/auth/list").handler(AuthRouter::AuthToken)
               .handler(AdminRouter::AdminAuthAdmin)
               .handler(AdminRouter::AdminAuthList);
+        router.post("/auth/confirm").handler(AuthRouter::AuthToken)
+              .handler(AdminRouter::AdminAuthAdmin)
+              .handler(AdminRouter::AdminAuthConfirm);
+        router.post("/user/list").handler(AuthRouter::AuthToken)
+              .handler(AdminRouter::AdminAuthAdmin)
+              .handler(AdminRouter::AdminUserList);
+        router.post("/user/shield").handler(AuthRouter::AuthToken)
+              .handler(AdminRouter::AdminAuthAdmin)
+              .handler(AdminRouter::AdminUserBan);
         router.post("/post/top").handler(AuthRouter::AuthToken)
               .handler(AdminRouter::AdminAuthAdmin)
               .handler(AdminRouter::AdminPinPost);
+        
         /* 未实现的路由 */
         router.post("/update").handler(AuthRouter::AuthToken)
               .handler(AdminRouter::AdminAuthAdmin)
@@ -106,6 +116,73 @@ public class AdminRouter {
         });
     }
     
+    /**
+     * 身份认证确认用户路由
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private static void AdminAuthConfirm(@NotNull RoutingContext context) {
+        getJsonObjectSingle(context).flatMap(AdminHandler::DatabaseAdminConfirmAuth).doOnError(err -> {
+            if (!context.response().ended()) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
+            }
+        }).flatMap(result -> {
+            if (!result) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+            }
+            JsonResponse.RespondSuccess(context, "Confirmed auth success");
+            return Single.just(result);
+        }).subscribe(res -> {
+            Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
+        }, failure -> {
+            Shared.getRouterLogger().error(failure.getMessage());
+        });
+    }
+    
+    /**
+     * 查询身份认证用户路由
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private static void AdminUserList(@NotNull RoutingContext context) {
+        getJsonObjectSingle(context).flatMap(AdminHandler::DatabaseQueryUser).doOnError(err -> {
+            if (!context.response().ended()) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
+            }
+        }).flatMap(result -> {
+            JsonResponse.RespondSuccess(context, result);
+            return Single.just(result);
+        }).subscribe(res -> {
+            Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
+        }, failure -> {
+            Shared.getRouterLogger().error(failure.getMessage());
+        });
+    }
+    
+    /**
+     * 查询身份认证用户路由
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private static void AdminUserBan(@NotNull RoutingContext context) {
+        getJsonObjectSingle(context).flatMap(AdminHandler::DatabaseQueryUser).doOnError(err -> {
+            if (!context.response().ended()) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
+            }
+        }).flatMap(result -> {
+            JsonResponse.RespondSuccess(context, result);
+            return Single.just(result);
+        }).subscribe(res -> {
+            Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
+        }, failure -> {
+            Shared.getRouterLogger().error(failure.getMessage());
+        });
+    }
     
     /**
      * 置顶动态用户路由

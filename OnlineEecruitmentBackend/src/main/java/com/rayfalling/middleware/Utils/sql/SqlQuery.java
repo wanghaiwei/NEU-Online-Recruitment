@@ -59,7 +59,10 @@ public class SqlQuery {
     
         /* Admin 相关Map */
         SqlMap.put("AdminPinPost", "admin/pin.sql");
+        SqlMap.put("AdminUserBan", "admin/ban.sql");
         SqlMap.put("AdminFetchAuth", "admin/auth.sql");
+        SqlMap.put("AdminFetchUser", "admin/user.sql");
+        SqlMap.put("AdminConfirmAuth", "admin/confirm.sql");
     }
     
     /**

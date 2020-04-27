@@ -7,6 +7,7 @@ $Register$
 DECLARE
     RESULT int;
     Count  int;
+    UserID int;
 
 BEGIN
     Count = (select count(*)
@@ -15,7 +16,8 @@ BEGIN
     if Count = 1 then
         RESULT = -1;
     else
-        insert into "user" (password, phone) values (user_password, user_phone);
+        insert into "user" (password, phone) values (user_password, user_phone) returning id into UserID;
+        insert into user_credit (user_id, credit) values (UserID, 10);
         RESULT = 0;
     end if;
     return RESULT;
