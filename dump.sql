@@ -160,6 +160,113 @@ $$;
 ALTER FUNCTION public.fetchallpost(post_group_id integer, sort integer) OWNER TO postgres;
 
 --
+-- Name: groupadmindelete(integer, integer, character varying); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.groupadmindelete(group_delete_id integer, group_user_id integer, group_delete_reason character varying) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+    -- 返回  ID  申请的ID
+    -- 返回  -1  申请已经存在
+DECLARE
+    RESULT  int;
+    IfExist int;
+
+BEGIN
+    BEGIN
+        IfExist = (select count(*) from group_modify where group_id = group_delete_id);
+        IF IfExist = 1 THEN
+            RESULT = -1;
+            RETURN RESULT;
+        end if;
+    END;
+
+    BEGIN
+        INSERT into group_modify(request_uid, type, reason, transform_uid, group_id)
+        values (group_user_id, 0, group_delete_reason, null, group_delete_id)
+        RETURNING id into RESULT;
+    END;
+
+    return RESULT;
+END;
+$$;
+
+
+ALTER FUNCTION public.groupadmindelete(group_delete_id integer, group_user_id integer, group_delete_reason character varying) OWNER TO postgres;
+
+--
+-- Name: groupadminuserban(integer, integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.groupadminuserban(ban_group_id integer, ban_user_id integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+    -- 返回  0   执行成功
+    -- 返回  -1  执行失败
+DECLARE
+    RESULT int;
+
+BEGIN
+    BEGIN
+        Insert Into group_banned(user_id, group_id)
+        values (ban_group_id, ban_user_id)
+        on conflict (user_id,group_id) do nothing
+        returning id into RESULT;
+        RESULT = 0;
+    EXCEPTION
+        when others then
+            RESULT = -1;
+            RETURN RESULT;
+    END;
+
+    return RESULT;
+END;
+$$;
+
+
+ALTER FUNCTION public.groupadminuserban(ban_group_id integer, ban_user_id integer) OWNER TO postgres;
+
+--
+-- Name: groupadminuserwarn(integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.groupadminuserwarn(warn_user_id integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+    -- 返回  0   执行成功
+    -- 返回  -1  申请已经存在
+DECLARE
+    RESULT int;
+    CREDIT int;
+
+BEGIN
+    BEGIN
+        CREDIT = (select credit from user_credit where user_id = warn_user_id) - 1;
+        if CREDIT = 0 Then
+            update user_credit
+            set banned_begin_time = localtimestamp,
+                credit            = credit
+            where user_id = warn_user_id;
+        else
+            update user_credit
+            set credit = credit
+            where user_id = warn_user_id;
+        end if;
+        RESULT = 0;
+    EXCEPTION
+        when others then
+            RESULT = -1;
+            RETURN RESULT;
+    END;
+
+    return RESULT;
+END;
+$$;
+
+
+ALTER FUNCTION public.groupadminuserwarn(warn_user_id integer) OWNER TO postgres;
+
+--
 -- Name: likepost(integer, integer); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -370,6 +477,9 @@ BEGIN
         if GROUP_ID is not null then
             insert into group_user_map(user_id, group_id, state, user_join_time)
             VALUES (group_user_id, GROUP_ID, 0, localtimestamp);
+            UPDATE "user"
+            set identity = 100
+            where phone = group_user_id;
             RESULT = 0;
         else
             RESULT = -1;
@@ -553,6 +663,7 @@ CREATE FUNCTION public.register(user_phone character varying, user_password char
 DECLARE
     RESULT int;
     Count  int;
+    UserID int;
 
 BEGIN
     Count = (select count(*)
@@ -561,7 +672,8 @@ BEGIN
     if Count = 1 then
         RESULT = -1;
     else
-        insert into "user" (password, phone) values (user_password, user_phone);
+        insert into "user" (password, phone) values (user_password, user_phone) returning id into UserID;
+        insert into user_credit (user_id, credit) values (UserID, 10);
         RESULT = 0;
     end if;
     return RESULT;
@@ -598,6 +710,66 @@ $$;
 
 
 ALTER FUNCTION public.resetpassword(user_phone character varying, user_password character varying) OWNER TO postgres;
+
+--
+-- Name: position_info; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.position_info (
+    id integer NOT NULL,
+    name character varying NOT NULL,
+    company character varying NOT NULL,
+    description character varying NOT NULL,
+    post_mail character varying NOT NULL,
+    grade integer DEFAULT 0 NOT NULL,
+    location character varying,
+    position_category_id integer NOT NULL,
+    post_user_id integer NOT NULL,
+    post_time timestamp without time zone DEFAULT LOCALTIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE public.position_info OWNER TO postgres;
+
+--
+-- Name: TABLE position_info; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON TABLE public.position_info IS '职位信息表';
+
+
+--
+-- Name: searchposition(character varying, character varying, integer[], integer[]); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.searchposition(content character varying, query_location character varying, position_category_ids integer[], query_grade integer[]) RETURNS SETOF public.position_info
+    LANGUAGE plpgsql
+    AS $$
+    -- 返回 position_info
+DECLARE
+
+BEGIN
+    BEGIN
+        if -1 = any (position_category_ids) Then
+            RETURN Query select *
+                         from position_info
+                         where location like query_location
+                           and (name like content or description like content)
+                           and grade = any (query_grade);
+        else
+            RETURN Query select *
+                         from position_info
+                         where location like query_location
+                           and (name like content or description like content)
+                           and position_category_id = any (position_category_ids)
+                           and grade = any (query_grade);
+        end if;
+    END;
+END ;
+$$;
+
+
+ALTER FUNCTION public.searchposition(content character varying, query_location character varying, position_category_ids integer[], query_grade integer[]) OWNER TO postgres;
 
 --
 -- Name: submitauthentication(character varying, integer, character varying, character varying, character varying, boolean, character varying); Type: FUNCTION; Schema: public; Owner: postgres
@@ -934,7 +1106,8 @@ CREATE TABLE public.group_modify (
     request_uid integer NOT NULL,
     type integer DEFAULT 1 NOT NULL,
     reason character varying NOT NULL,
-    transform_uid integer
+    transform_uid integer,
+    group_id integer NOT NULL
 );
 
 
@@ -1128,29 +1301,74 @@ ALTER SEQUENCE public.position_category_id_seq OWNED BY public.position_category
 
 
 --
--- Name: position_info; Type: TABLE; Schema: public; Owner: postgres
+-- Name: position_recommend_data; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.position_info (
+CREATE TABLE public.position_recommend_data (
     id integer NOT NULL,
-    name character varying NOT NULL,
-    company character varying NOT NULL,
-    description character varying NOT NULL,
-    post_mail character varying NOT NULL,
-    grade integer DEFAULT 0 NOT NULL,
-    location character varying,
-    position_category_id integer NOT NULL,
-    post_user_id integer NOT NULL
+    position_id integer NOT NULL,
+    next_id integer NOT NULL,
+    hit_count integer DEFAULT 0 NOT NULL
 );
 
 
-ALTER TABLE public.position_info OWNER TO postgres;
+ALTER TABLE public.position_recommend_data OWNER TO postgres;
 
 --
--- Name: TABLE position_info; Type: COMMENT; Schema: public; Owner: postgres
+-- Name: position_recommend_data_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
-COMMENT ON TABLE public.position_info IS '职位信息表';
+CREATE SEQUENCE public.position_recommend_data_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.position_recommend_data_id_seq OWNER TO postgres;
+
+--
+-- Name: position_recommend_data_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.position_recommend_data_id_seq OWNED BY public.position_recommend_data.id;
+
+
+--
+-- Name: position_user_recommend; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.position_user_recommend (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    recommend json NOT NULL
+);
+
+
+ALTER TABLE public.position_user_recommend OWNER TO postgres;
+
+--
+-- Name: position_user_recommend_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.position_user_recommend_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.position_user_recommend_id_seq OWNER TO postgres;
+
+--
+-- Name: position_user_recommend_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.position_user_recommend_id_seq OWNED BY public.position_user_recommend.id;
 
 
 --
@@ -1806,6 +2024,20 @@ ALTER TABLE ONLY public.position_info ALTER COLUMN id SET DEFAULT nextval('publi
 
 
 --
+-- Name: position_recommend_data id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.position_recommend_data ALTER COLUMN id SET DEFAULT nextval('public.position_recommend_data_id_seq'::regclass);
+
+
+--
+-- Name: position_user_recommend id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.position_user_recommend ALTER COLUMN id SET DEFAULT nextval('public.position_user_recommend_id_seq'::regclass);
+
+
+--
 -- Name: post id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1951,7 +2183,8 @@ COPY public.group_category (id, name) FROM stdin;
 -- Data for Name: group_modify; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.group_modify (id, request_uid, type, reason, transform_uid) FROM stdin;
+COPY public.group_modify (id, request_uid, type, reason, transform_uid, group_id) FROM stdin;
+1	1	0	1111	\N	1
 \.
 
 
@@ -1998,7 +2231,24 @@ COPY public.position_category (id, name) FROM stdin;
 -- Data for Name: position_info; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.position_info (id, name, company, description, post_mail, grade, location, position_category_id, post_user_id) FROM stdin;
+COPY public.position_info (id, name, company, description, post_mail, grade, location, position_category_id, post_user_id, post_time) FROM stdin;
+1	aaa	a	a	sda	1	ccc	1	1	2020-04-27 17:03:18.710101
+\.
+
+
+--
+-- Data for Name: position_recommend_data; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.position_recommend_data (id, position_id, next_id, hit_count) FROM stdin;
+\.
+
+
+--
+-- Data for Name: position_user_recommend; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.position_user_recommend (id, user_id, recommend) FROM stdin;
 \.
 
 
@@ -2073,7 +2323,8 @@ COPY public.report_user (id, reporter_id, reported_id, reason) FROM stdin;
 --
 
 COPY public."user" (id, password, phone, identity) FROM stdin;
-1	2333	18262258003	101
+1	1234556	18262258003	101
+12	1234556	17704226312	101
 \.
 
 
@@ -2164,7 +2415,7 @@ SELECT pg_catalog.setval('public.group_id_seq', 1, true);
 -- Name: group_modify_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.group_modify_id_seq', 1, false);
+SELECT pg_catalog.setval('public.group_modify_id_seq', 1, true);
 
 
 --
@@ -2193,6 +2444,20 @@ SELECT pg_catalog.setval('public.message_list_id_seq', 1, false);
 --
 
 SELECT pg_catalog.setval('public.position_category_id_seq', 7, true);
+
+
+--
+-- Name: position_recommend_data_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.position_recommend_data_id_seq', 1, false);
+
+
+--
+-- Name: position_user_recommend_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.position_user_recommend_id_seq', 1, false);
 
 
 --
@@ -2227,7 +2492,7 @@ SELECT pg_catalog.setval('public.post_report_id_seq', 1, false);
 -- Name: postion_info_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.postion_info_id_seq', 1, false);
+SELECT pg_catalog.setval('public.postion_info_id_seq', 1, true);
 
 
 --
@@ -2262,7 +2527,7 @@ SELECT pg_catalog.setval('public.user_follow_id_seq', 1, false);
 -- Name: user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.user_id_seq', 11, true);
+SELECT pg_catalog.setval('public.user_id_seq', 12, true);
 
 
 --
@@ -2378,6 +2643,22 @@ ALTER TABLE ONLY public.message
 
 ALTER TABLE ONLY public.position_category
     ADD CONSTRAINT position_category_pk PRIMARY KEY (id);
+
+
+--
+-- Name: position_recommend_data position_recommend_data_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.position_recommend_data
+    ADD CONSTRAINT position_recommend_data_pk PRIMARY KEY (id);
+
+
+--
+-- Name: position_user_recommend position_user_recommend_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.position_user_recommend
+    ADD CONSTRAINT position_user_recommend_pk PRIMARY KEY (id);
 
 
 --
@@ -2575,6 +2856,20 @@ CREATE UNIQUE INDEX position_category_id_uindex ON public.position_category USIN
 --
 
 CREATE UNIQUE INDEX position_category_name_uindex ON public.position_category USING btree (name);
+
+
+--
+-- Name: position_recommend_data_id_uindex; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX position_recommend_data_id_uindex ON public.position_recommend_data USING btree (id);
+
+
+--
+-- Name: position_user_recommend_id_uindex; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX position_user_recommend_id_uindex ON public.position_user_recommend USING btree (id);
 
 
 --
@@ -2783,6 +3078,14 @@ ALTER TABLE ONLY public."group"
 
 
 --
+-- Name: group_modify group_modify_group_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.group_modify
+    ADD CONSTRAINT group_modify_group_id_fk FOREIGN KEY (group_id) REFERENCES public."group"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
 -- Name: group_modify group_modify_user_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2828,6 +3131,30 @@ ALTER TABLE ONLY public.message
 
 ALTER TABLE ONLY public.message
     ADD CONSTRAINT message_user_id_fk_2 FOREIGN KEY (receiver_id) REFERENCES public."user"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: position_recommend_data position_recommend_data_position_info_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.position_recommend_data
+    ADD CONSTRAINT position_recommend_data_position_info_id_fk FOREIGN KEY (position_id) REFERENCES public.position_info(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: position_recommend_data position_recommend_data_position_info_id_fk_2; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.position_recommend_data
+    ADD CONSTRAINT position_recommend_data_position_info_id_fk_2 FOREIGN KEY (next_id) REFERENCES public.position_info(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: position_user_recommend position_user_recommend_user_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.position_user_recommend
+    ADD CONSTRAINT position_user_recommend_user_id_fk FOREIGN KEY (user_id) REFERENCES public."user"(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
