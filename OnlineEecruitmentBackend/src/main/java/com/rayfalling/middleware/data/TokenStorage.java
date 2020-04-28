@@ -29,10 +29,10 @@ public class TokenStorage {
      */
     
     public static Token find(Token token) {
-        Optional<Token> result = tokenList.stream()
-                                          .filter(obj -> obj.equals(token))
-                                          .findFirst();
-        return result.orElse(null);
+        return tokenList.stream()
+                        .filter(obj -> obj.equals(token))
+                        .findFirst()
+                        .orElse(null);
     }
     
     /**

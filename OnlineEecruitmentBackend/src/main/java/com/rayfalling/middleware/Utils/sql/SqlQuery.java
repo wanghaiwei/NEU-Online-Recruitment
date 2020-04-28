@@ -34,6 +34,7 @@ public class SqlQuery {
         SqlMap.put("PositionNew", "position/new.sql");
         SqlMap.put("PositionDelete", "position/delete.sql");
         SqlMap.put("PositionFavour", "position/favour.sql");
+        SqlMap.put("PositionSearch", "position/search.sql");
         SqlMap.put("PositionQueryCategory", "position/query_category.sql");
         
         /* Group 相关Map */
@@ -63,6 +64,11 @@ public class SqlQuery {
         SqlMap.put("AdminFetchAuth", "admin/auth.sql");
         SqlMap.put("AdminFetchUser", "admin/user.sql");
         SqlMap.put("AdminConfirmAuth", "admin/confirm.sql");
+    
+        /* Recommend 相关Map */
+        SqlMap.put("RecommendSaveMap", "recommend/save_map.sql");
+        SqlMap.put("RecommendSaveUser", "recommend/save_user.sql");
+        SqlMap.put("RecommendLoadPosition", "recommend/load_position.sql");
     }
     
     /**

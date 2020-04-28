@@ -1,15 +1,10 @@
 package com.Rayfalling;
 
 
-import com.Rayfalling.config.DatabaseVerticleConfig;
-import com.Rayfalling.config.MailVerticleConfig;
-import com.Rayfalling.config.MainVerticleConfig;
-import com.Rayfalling.config.SmsVerticleConfig;
+import com.Rayfalling.config.*;
+import com.Rayfalling.handler.RegisterHandler;
 import com.Rayfalling.middleware.Utils.Common;
-import com.Rayfalling.verticle.DatabaseVerticle;
-import com.Rayfalling.verticle.MailVerticle;
-import com.Rayfalling.verticle.MainVerticle;
-import com.Rayfalling.verticle.SmsVerticle;
+import com.Rayfalling.verticle.*;
 import io.reactivex.Single;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,6 +20,7 @@ public class StartUp {
     private static String DatabaseVerticleDeploymentID;
     private static String SmsVerticleDeploymentID;
     private static String MailVerticleDeploymentID;
+    private static String TimerVerticleDeploymentID;
     
     
     public static void main(String[] args) {
@@ -41,6 +37,29 @@ public class StartUp {
         final Logger logger = LogManager.getLogger("StartUp");
         
         Single.just(Shared.getVertx()).flatMap(resource -> {
+            Shared.getVertx()
+                  .rxDeployVerticle(TimerVerticle::new, TimerVerticleConfig.getInstance())
+                  .doOnError(err -> {
+                      logger.error(err.getMessage());
+                      logger.fatal("Failed to start TimerVerticle instances.");
+                      err.printStackTrace();
+                  })
+                  .doOnSubscribe(disposable -> logger.info("Starting TimerVerticle..."))
+                  .doOnSuccess(res -> {
+                      TimerVerticleDeploymentID = res;
+                      //Register all timer at here to avoid
+                      //null eventbus handler when class init
+                      RegisterHandler.Register();
+                      logger.info("TimerVerticle instances startup succeeded.");
+                  })
+                  .subscribe(res -> {
+                
+                  }, failure -> {
+                
+                  });
+            
+            return Single.just(resource);
+        }).flatMap(resource -> {
             Shared.getVertx()
                   .rxDeployVerticle(MainVerticle::new, MainVerticleConfig.getInstance())
                   .doOnSuccess(res -> {
@@ -189,6 +208,17 @@ public class StartUp {
                 }
             });
             
+            return Single.just(shared);
+        }).flatMap(shared -> {
+            shared.undeploy(TimerVerticleDeploymentID, res -> {
+                if (res.succeeded()) {
+                    logger.info("TimerVerticle instances stop succeeded.");
+                } else {
+                    logger.fatal("Failed to stop TimerVerticle instances.");
+                    logger.fatal(res.cause());
+                }
+            });
+    
             return Single.just(shared);
         }).subscribe(res -> {
             logger.info("Stop operation finished successfully.");

@@ -32,5 +32,8 @@
     "host": "smtp.163.com",
     "port": 465,
     "ssl": true
+  },
+  "timer": {
+    "delay": 3600000
   }
 }

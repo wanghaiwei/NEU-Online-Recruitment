@@ -16,6 +16,8 @@ import io.vertx.reactivex.ext.web.RoutingContext;
 import io.vertx.reactivex.ext.web.Session;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
+
 import static com.Rayfalling.router.MainRouter.getJsonObjectSingle;
 
 /**
@@ -26,9 +28,18 @@ public class AuthRouter {
      * 验证用户Token
      */
     public static void AuthToken(@NotNull RoutingContext context) {
-        Token sessionToken = context.session().get("token");
-        Token cookieToken = EncryptUtils.Decrypt2Token(context.getCookie("token").getValue());
-        if (!TokenStorage.exist(sessionToken) || !TokenStorage.exist(cookieToken) || sessionToken.getId() == -1) {
+        Token sessionToken = null;
+        Token cookieToken = null;
+        
+        try {
+            sessionToken = context.session().get("token");
+            cookieToken = EncryptUtils.Decrypt2Token(context.getCookie("token").getValue());
+        } catch (Exception e) {
+            JsonResponse.RespondPreset(context, PresetMessage.ERROR_UNKNOWN);
+            Shared.getRouterLogger().fatal(e.getMessage());
+        }
+        if (!TokenStorage.exist(sessionToken) || !TokenStorage.exist(cookieToken)
+            || Objects.requireNonNull(sessionToken).getId() == -1) {
             JsonResponse.RespondPreset(context, PresetMessage.ERROR_TOKEN_FAKED);
             Shared.getRouterLogger()
                   .warn(context.normalisedPath() + " " + PresetMessage.ERROR_TOKEN_FAKED.toString());

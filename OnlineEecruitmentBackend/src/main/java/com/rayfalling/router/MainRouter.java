@@ -8,6 +8,7 @@ import com.Rayfalling.router.Admin.AdminRouter;
 import com.Rayfalling.router.Group.GroupRouter;
 import com.Rayfalling.router.Post.PostRouter;
 import com.Rayfalling.router.Postion.PositionRouter;
+import com.Rayfalling.router.Recommend.RecommendRouter;
 import com.Rayfalling.router.Upload.UploadRouter;
 import com.Rayfalling.router.User.UserRouter;
 import com.Rayfalling.router.Verify.VerityRouter;
@@ -59,12 +60,13 @@ public class MainRouter {
         
         //挂载用户相关url
         subRouter.mountSubRouter("/user", UserRouter.getRouter());
-        subRouter.mountSubRouter("/position", PositionRouter.getRouter());
         subRouter.mountSubRouter("/post", PostRouter.getRouter());
         subRouter.mountSubRouter("/group", GroupRouter.getRouter());
         subRouter.mountSubRouter("/admin", AdminRouter.getRouter());
         subRouter.mountSubRouter("/verify", VerityRouter.getRouter());
         subRouter.mountSubRouter("/upload", UploadRouter.getRouter());
+        subRouter.mountSubRouter("/position", PositionRouter.getRouter());
+        subRouter.mountSubRouter("/recommend", RecommendRouter.getRouter());
         
         //挂载主路由
         router.mountSubRouter("/api", subRouter);

@@ -8,11 +8,14 @@ import com.Rayfalling.middleware.data.Token;
 import com.Rayfalling.router.User.AuthRouter;
 import io.netty.util.internal.UnstableApi;
 import io.reactivex.Single;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.ext.web.Route;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Arrays;
 
 import static com.Rayfalling.router.MainRouter.getJsonObjectSingle;
 
@@ -98,13 +101,20 @@ public class PositionRouter {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @UnstableApi
     private static void PositionSearch(@NotNull RoutingContext context) {
-        Single.just(context).doOnError(err -> {
+        getJsonObjectSingle(context).doOnError(err -> {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON);
                 Shared.getRouterLogger()
                       .warn(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON.toString());
             }
-        }).flatMap(param -> PositionHandler.DatabaseQueryPositionCategory()).doOnError(err -> {
+        }).map(jsonObject -> {
+            return new JsonObject().put("content", jsonObject.getString("content", ""))
+                                   .put("location", jsonObject.getString("location", ""))
+                                   .put("position_category_id", jsonObject
+                                                                        .getJsonArray("position_category_id", new JsonArray()
+                                                                                                                      .add(-1)))
+                                   .put("grade", jsonObject.getJsonArray("grade", new JsonArray(Arrays.asList(0, 1))));
+        }).flatMap(PositionHandler::DatabaseSearchPosition).doOnError(err -> {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
                 Shared.getRouterLogger()

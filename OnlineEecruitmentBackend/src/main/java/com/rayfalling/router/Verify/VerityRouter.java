@@ -27,7 +27,7 @@ public class VerityRouter {
         String prefix = "/api/verify";
         
         router.get("/")
-              .handler(VerityRouter::UserIndex);
+              .handler(VerityRouter::VerityIndex);
         router.post("/phone/new")
               .handler(VerityRouter::VerifyPhone);
         router.post("/mail/new")
@@ -44,7 +44,7 @@ public class VerityRouter {
         return router;
     }
     
-    private static void UserIndex(@NotNull RoutingContext context) {
+    private static void VerityIndex(@NotNull RoutingContext context) {
         context.response().end(("This is the index page of verify router.").trim());
     }
     

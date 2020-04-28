@@ -31,6 +31,35 @@ public class PositionHandler {
     }
     
     /**
+     * 数据库查询职位列表
+     *
+     * @return 查询结果
+     * @author Rayfalling
+     */
+    public static Single<JsonArray> DatabaseSearchPosition(@NotNull JsonObject data) {
+        Tuple tuple = Tuple.of(DataBaseExt.getQueryString(data.getString("content")),
+                DataBaseExt.getQueryString(data.getString("location")),
+                DataBaseExt.getQueryString(data.getJsonArray("position_category_id")),
+                DataBaseExt.getQueryString(data.getJsonArray("grade")));
+        return PgConnectionSingle()
+                       .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("PositionSearch"), tuple))
+                       .map(res -> DataBaseExt.mapJsonArray(res, row -> new JsonObject().put("id", row.getInteger("id"))
+                                                                                        .put("name", row.getString("name"))
+                                                                                        .put("grade", row.getInteger("grade"))
+                                                                                        .put("company", row.getString("company"))
+                                                                                        .put("location", row.getString("location"))
+                                                                                        .put("post_mail", row.getString("post_mail"))
+                                                                                        .put("description", row.getString("description"))
+                                                                                        .put("post_time", DataBaseExt
+                                                                                                                  .getLocalDateTimeToTimestamp(row, "description"))
+                                                                                        .put("position_category_id", row.getString("position_category_id"))))
+                       .doOnError(err -> {
+                           Shared.getDatabaseLogger().error(err);
+                           err.printStackTrace();
+                       });
+    }
+    
+    /**
      * 数据库用户添加职位
      *
      * @return 包含成功的ID的 {@link JsonObject}
