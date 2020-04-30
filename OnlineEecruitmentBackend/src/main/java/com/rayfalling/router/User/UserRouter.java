@@ -42,6 +42,7 @@ public class UserRouter {
         router.post("/profile")
               .handler(UserRouter::UserProfile);
         router.post("/register")
+              .handler(AuthRouter::AuthCode)
               .handler(UserRouter::UserRegister);
         router.post("/login")
               .handler(AuthRouter::AuthCode)

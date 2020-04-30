@@ -18,6 +18,14 @@ public class RecommendUtils {
      * 时间更新权重最大值
      */
     static int maxUpdateWeight = maxTime * timeWeight;
+    /**
+     * 正反馈权值最小时限
+     */
+    static int positiveFeedbackTime = 10;
+    /**
+     * 负反馈权值最大时限
+     */
+    static int negativeFeedbackTime = 5;
     
     /**
      * 重新计算用户偏好权重
@@ -29,7 +37,11 @@ public class RecommendUtils {
     public static JsonObject RecomputeWeight(JsonObject weight, int category, int second) {
         JsonObject jsonObject = ScaleWeight(weight);
         Integer current = jsonObject.getInteger(String.valueOf(category));
-        current += Math.min(second * timeWeight, maxUpdateWeight);
+        if (second >= positiveFeedbackTime) {
+            current += Math.min(second * timeWeight, maxUpdateWeight);
+        } else if (second <= negativeFeedbackTime) {
+            current -= Math.min(second * timeWeight, maxUpdateWeight);
+        }
         jsonObject.put(String.valueOf(category), current);
         return NormalizeWeight(jsonObject);
     }

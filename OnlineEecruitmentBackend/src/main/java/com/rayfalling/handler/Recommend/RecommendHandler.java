@@ -1,6 +1,7 @@
 package com.Rayfalling.handler.Recommend;
 
 import com.Rayfalling.Shared;
+import com.Rayfalling.middleware.Response.JsonResponse;
 import com.Rayfalling.middleware.Utils.Recommend.RecommendUtils;
 import com.Rayfalling.middleware.Utils.sql.SqlQuery;
 import com.Rayfalling.middleware.data.Recommend.*;
@@ -13,10 +14,12 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.Rayfalling.handler.DatabaseConnection.PgConnectionSingle;
 
@@ -147,9 +150,7 @@ public class RecommendHandler {
         }
         RecommendUser recommendUser = RecommendUserStorage.find(userId);
         JsonObject weight = recommendUser.getWeight();
-        if (second >= 5) {
-            recommendUser.updateWeight(RecommendUtils.RecomputeWeight(weight, category, second));
-        }
+        recommendUser.updateWeight(RecommendUtils.RecomputeWeight(weight, category, second));
     }
     
     /**
@@ -161,10 +162,36 @@ public class RecommendHandler {
     
     /**
      * 获取推荐列表
-     * @param userId   用户Id
+     *
+     * @param userId 用户Id
      */
     public static Single<JsonArray> Recommend(int userId) {
-    //todo here
+        JsonObject weight;
+        if (userId == -1) {
+            weight = createNewWeight();
+        } else {
+            if (RecommendUserStorage.exist(userId))
+                weight = RecommendUserStorage.find(userId).getWeight();
+            else {
+                weight = createNewWeight();
+                RecommendUser recommendUser = new RecommendUser(userId, weight);
+                RecommendUserStorage.add(recommendUser);
+            }
+        }
+        
+        
+        
         return Single.just(new JsonArray());
+    }
+    
+    public static @NotNull JsonObject createNewWeight() {
+        JsonObject weight = new JsonObject();
+        List<Integer> categoryList = PositionStorage.getPositionList().parallelStream()
+                                                    .map(Position::getLabel)
+                                                    .distinct().collect(Collectors.toList());
+        for (Integer integer : categoryList) {
+            weight.put(String.valueOf(integer), 1.0f / categoryList.size());
+        }
+        return weight;
     }
 }
