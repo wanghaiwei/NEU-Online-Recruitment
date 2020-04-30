@@ -67,7 +67,7 @@ public class RecommendRouter {
             }
             return Single.just(params);
         }).flatMap(param -> {
-            return RecommendHandler.Recommend(param.getInteger("userId"));
+            return RecommendHandler.Recommend(param.getInteger("userId"), param.getInteger("position_id"));
         }).flatMap(jsonArray -> {
             JsonResponse.RespondSuccess(context, jsonArray);
             return Single.just(jsonArray);

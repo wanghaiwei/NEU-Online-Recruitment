@@ -1,6 +1,7 @@
 package com.Rayfalling.handler.Recommend;
 
 import com.Rayfalling.Shared;
+import com.Rayfalling.middleware.Extensions.DataBaseExt;
 import com.Rayfalling.middleware.Response.JsonResponse;
 import com.Rayfalling.middleware.Utils.Recommend.RecommendUtils;
 import com.Rayfalling.middleware.Utils.sql.SqlQuery;
@@ -16,8 +17,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -134,8 +134,6 @@ public class RecommendHandler {
         }).subscribe();
     }
     
-    //TODO 实现推荐权重计算和推荐
-    
     /**
      * 更新用户权重值
      *
@@ -157,7 +155,9 @@ public class RecommendHandler {
      * 更新职位关系映射表
      */
     public static void UpdatePositionMap(int previous, int next) {
-        RecommendMapStorage.find(previous, next).hit();
+        if (RecommendMapStorage.exist(previous, next))
+            RecommendMapStorage.find(previous, next).hit();
+        else RecommendMapStorage.add(new RecommendMap(previous, next, 1));
     }
     
     /**
@@ -165,7 +165,7 @@ public class RecommendHandler {
      *
      * @param userId 用户Id
      */
-    public static Single<JsonArray> Recommend(int userId) {
+    public static Single<JsonArray> Recommend(int userId, int positionId) {
         JsonObject weight;
         if (userId == -1) {
             weight = createNewWeight();
@@ -179,12 +179,39 @@ public class RecommendHandler {
             }
         }
         
+        List<Position> RecommendList = RecommendUtils.generateRecommendList(weight, positionId);
+        JsonArray RecommendId = new JsonArray();
+        for (Position position : RecommendList) {
+            RecommendId.add(position.getId());
+        }
         
-        
-        return Single.just(new JsonArray());
+        return PgConnectionSingle().flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("RecommendList"),
+                Tuple.of(DataBaseExt.getQueryString(RecommendId))))
+                                   .map(pgRowSet -> {
+                                       return DataBaseExt.mapJsonArray(pgRowSet, row -> {
+                                           return new JsonObject().put("id", row.getInteger("id"))
+                                                                  .put("name", row.getString("name"))
+                                                                  .put("grade", row.getInteger("grade"))
+                                                                  .put("company", row.getString("company"))
+                                                                  .put("location", row.getString("location"))
+                                                                  .put("post_mail", row.getString("post_mail"))
+                                                                  .put("description", row.getString("description"))
+                                                                  .put("post_time", DataBaseExt
+                                                                                            .getLocalDateTimeToTimestamp(row, "description"))
+                                                                  .put("position_category_id", row.getString("position_category_id"));
+                                       });
+                                   })
+                                   .doOnError(err -> {
+                                       Shared.getDatabaseLogger().error(err);
+                                       err.printStackTrace();
+                                   });
     }
     
-    public static @NotNull JsonObject createNewWeight() {
+    /**
+     * 创建新的用户权值
+     * 默认用户喜好为平均分配
+     */
+    private static @NotNull JsonObject createNewWeight() {
         JsonObject weight = new JsonObject();
         List<Integer> categoryList = PositionStorage.getPositionList().parallelStream()
                                                     .map(Position::getLabel)

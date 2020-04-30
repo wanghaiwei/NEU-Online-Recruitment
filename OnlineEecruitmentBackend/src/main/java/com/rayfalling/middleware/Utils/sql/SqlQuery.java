@@ -66,6 +66,7 @@ public class SqlQuery {
         SqlMap.put("AdminConfirmAuth", "admin/confirm.sql");
     
         /* Recommend 相关Map */
+        SqlMap.put("RecommendList", "recommend/list.sql");
         SqlMap.put("RecommendSaveMap", "recommend/save_map.sql");
         SqlMap.put("RecommendSaveUser", "recommend/save_user.sql");
         SqlMap.put("RecommendLoadUser", "recommend/load_user.sql");
