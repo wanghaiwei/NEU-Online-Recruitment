@@ -1,10 +1,12 @@
 package com.Rayfalling.verticle;
 
 import com.Rayfalling.Shared;
+import com.Rayfalling.middleware.data.TimerEvent;
 import io.reactivex.Single;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
+import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.eventbus.MessageConsumer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,25 +17,22 @@ import java.util.ArrayList;
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class TimerVerticle extends AbstractVerticle {
     private static final ArrayList<Long> timers = new ArrayList<>();
+    private static Long delay = 0L;
     private final Logger logger = LogManager.getLogger("Timer");
-    MessageConsumer<Handler<Long>> messageConsumer;
+    
+    public synchronized static Single<Boolean> register(TimerEvent event) {
+        return Single.just(event).flatMap(e -> {
+            long timerId = Shared.getVertx().setTimer(delay, id -> event.event());
+            timers.add(timerId);
+            return Single.just(true);
+        }).onErrorReturnItem(false);
+    }
     
     @Override
     public void start(@NotNull Promise<Void> startPromise) {
-        Single.just(true).flatMap(__ ->{
-            messageConsumer = Shared.getVertx().eventBus().<Handler<Long>>consumer("register.timer").handler(msg -> {
-                long timerId = Shared.getVertx().setTimer(config().getInteger("delay"), msg.body());
-                timers.add(timerId);
-            });
-    
-            messageConsumer.completionHandler(res -> {
-                if (res.succeeded()) {
-                    logger.info("Timer server handler register success");
-                } else {
-                    logger.error("Timer server handler registration failed!");
-                }
-            });
-            return Single.just(messageConsumer);
+        Single.just(true).flatMap(__ -> {
+            delay = config().getLong("delay");
+            return Single.just(true);
         }).subscribe(res -> {
             startPromise.complete();
         }, startPromise::fail);

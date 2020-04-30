@@ -68,6 +68,7 @@ public class SqlQuery {
         /* Recommend 相关Map */
         SqlMap.put("RecommendSaveMap", "recommend/save_map.sql");
         SqlMap.put("RecommendSaveUser", "recommend/save_user.sql");
+        SqlMap.put("RecommendLoadUser", "recommend/load_user.sql");
         SqlMap.put("RecommendLoadPosition", "recommend/load_position.sql");
     }
     

@@ -27,7 +27,6 @@ public class TokenStorage {
      *
      * @param token 用户Token
      */
-    
     public static Token find(Token token) {
         return tokenList.stream()
                         .filter(obj -> obj.equals(token))
@@ -58,7 +57,7 @@ public class TokenStorage {
      *
      * @param token 用户Token
      */
-    public static void add(Token token) {
+    synchronized public static void add(Token token) {
         tokenList.add(token);
     }
     
@@ -67,7 +66,7 @@ public class TokenStorage {
      *
      * @param username 用户名
      */
-    public static void remove(String username) {
+    synchronized public static void remove(String username) {
         tokenList.stream()
                  .filter(obj -> obj.getUsername().equals(username))
                  .findFirst()

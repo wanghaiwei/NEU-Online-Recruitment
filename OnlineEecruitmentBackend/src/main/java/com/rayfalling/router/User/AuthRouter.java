@@ -44,7 +44,13 @@ public class AuthRouter {
             Shared.getRouterLogger()
                   .warn(context.normalisedPath() + " " + PresetMessage.ERROR_TOKEN_FAKED.toString());
         }
-        Token storeToken = TokenStorage.find(sessionToken);
+        Token storeToken = TokenStorage.find(cookieToken);
+        if(storeToken == null){
+            JsonResponse.RespondPreset(context, PresetMessage.USER_NOT_LOGIN_ERROR);
+            Shared.getRouterLogger()
+                  .warn(context.normalisedPath() + " " + PresetMessage.USER_NOT_LOGIN_ERROR.toString());
+        }
+        
         if (storeToken.isExpired()) {
             JsonResponse.RespondPreset(context, PresetMessage.ERROR_TOKEN_EXPIRED);
             Shared.getRouterLogger()

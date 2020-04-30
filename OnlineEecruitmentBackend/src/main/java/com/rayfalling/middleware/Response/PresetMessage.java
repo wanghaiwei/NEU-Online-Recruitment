@@ -55,6 +55,7 @@ public enum PresetMessage {
     PHONE_FORMAT_ERROR(50019, "phone format incorrect", "手机号格式错误"),
     OLD_PASSWORD_INCORRECT_ERROR(50020, "old password format incorrect", "旧密码错误或用户不存在"),
     MAIL_FORMAT_ERROR(50021, "mail format incorrect", "邮箱格式错误"),
+    USER_NOT_LOGIN_ERROR(50021, "user not login", "用户未登录"),
     ;
     
     int code;

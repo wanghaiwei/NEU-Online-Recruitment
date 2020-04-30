@@ -47,10 +47,13 @@ public class StartUp {
                   .doOnSubscribe(disposable -> logger.info("Starting TimerVerticle..."))
                   .doOnSuccess(res -> {
                       TimerVerticleDeploymentID = res;
+                      logger.info("TimerVerticle instances startup succeeded.");
+                  })
+                  .doAfterSuccess(res ->{
                       //Register all timer at here to avoid
                       //null eventbus handler when class init
+                      logger.info("Start registering timer event.");
                       RegisterHandler.Register();
-                      logger.info("TimerVerticle instances startup succeeded.");
                   })
                   .subscribe(res -> {
                 

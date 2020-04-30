@@ -1,7 +1,10 @@
 package com.Rayfalling.middleware.data.Recommend;
 
+import java.lang.reflect.Array;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Optional;
 
 public class RecommendMapStorage {
     static HashSet<RecommendMap> recommendMapList;
@@ -51,7 +54,7 @@ public class RecommendMapStorage {
      *
      * @param recommendMap map
      */
-    public static void add(RecommendMap recommendMap) {
+    synchronized public static void add(RecommendMap recommendMap) {
         recommendMapList.add(recommendMap);
     }
     
@@ -61,7 +64,7 @@ public class RecommendMapStorage {
      * @param previous 先前的Id
      * @param next     后面的Id
      */
-    public static void remove(int previous, int next) {
+    synchronized public static void remove(int previous, int next) {
         recommendMapList.stream()
                         .filter(map -> map.getNextId() == next && map.getSourceId() == previous)
                         .findFirst()

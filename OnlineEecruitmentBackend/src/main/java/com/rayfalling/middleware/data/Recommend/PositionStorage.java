@@ -1,5 +1,7 @@
 package com.Rayfalling.middleware.data.Recommend;
 
+import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.HashSet;
 
 public class PositionStorage {
@@ -14,11 +16,11 @@ public class PositionStorage {
     }
     
     /**
-     * 查找{@link RecommendMap}
+     * 查找{@link Position}
      *
      * @param id 职位Id
      */
-    public static Position find(int id) {
+    synchronized public static Position find(int id) {
         return positionList.stream()
                            .filter(position -> position.getId() == id)
                            .findFirst().orElse(null);
@@ -29,7 +31,7 @@ public class PositionStorage {
      *
      * @param id 职位Id
      */
-    public static boolean exist(int id) {
+    synchronized public static boolean exist(int id) {
         return positionList.stream().anyMatch(position -> position.getId() == id);
     }
     
@@ -38,7 +40,7 @@ public class PositionStorage {
      *
      * @param position 职位
      */
-    public static boolean exist(Position position) {
+    synchronized public static boolean exist(Position position) {
         return positionList.stream().anyMatch(item -> item.equals(position));
     }
     
@@ -47,19 +49,32 @@ public class PositionStorage {
      *
      * @param position 职位
      */
-    public static void add(Position position) {
+    synchronized public static void add(Position position) {
         positionList.add(position);
     }
     
     /**
-     * 移除{@link RecommendMap}
+     * 移除{@link Position}
      *
      * @param id 职位Id
      */
-    public static void remove(int id) {
+    synchronized public static void remove(int id) {
         positionList.stream()
                     .filter(position -> position.getId() == id)
                     .findFirst()
                     .ifPresent(map -> positionList.remove(map));
+    }
+    
+    synchronized public static void RemoveOutdated() {
+        Position[] array = new Position[positionList.size()];
+        positionList.toArray(array);
+        Arrays.sort(array, (itemA, itemB) -> (int) (Timestamp.valueOf(itemA.getLocalDateTime()).getTime()
+                                                    - Timestamp.valueOf(itemB.getLocalDateTime()).getTime()));
+        if (array.length >= 500) {
+            positionList.clear();
+            Arrays.stream(array).skip(array.length - 500).forEach(item -> {
+                positionList.add(item);
+            });
+        }
     }
 }

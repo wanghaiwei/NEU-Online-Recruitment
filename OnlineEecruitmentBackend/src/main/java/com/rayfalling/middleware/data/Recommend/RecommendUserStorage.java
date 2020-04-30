@@ -50,7 +50,7 @@ public class RecommendUserStorage {
      *
      * @param recommendUser user
      */
-    public static void add(RecommendUser recommendUser) {
+    synchronized public static void add(RecommendUser recommendUser) {
         recommendUsers.add(recommendUser);
     }
     
@@ -59,7 +59,7 @@ public class RecommendUserStorage {
      *
      * @param userId 用户Id
      */
-    public static void remove(int userId) {
+    synchronized public static void remove(int userId) {
         recommendUsers.stream()
                       .filter(map -> map.getUserId() == userId)
                       .findFirst()

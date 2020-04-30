@@ -1,16 +1,15 @@
 package com.Rayfalling.middleware.data.Recommend;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class RecommendMap {
     //正在浏览的职位
-    private int sourceId = 0;
-    
+    private final int sourceId;
     //推荐的职位
-    private int nextId = 0;
-    
+    private final int nextId;
     //命中次数
-    private int hitCount = 0;
+    private int hitCount;
     
     public RecommendMap(int sourceId, int nextId, int hitCount) {
         this.sourceId = sourceId;
@@ -29,6 +28,8 @@ public class RecommendMap {
     public int getSourceId() {
         return sourceId;
     }
+    
+   
     
     public void hit() {
         hitCount++;

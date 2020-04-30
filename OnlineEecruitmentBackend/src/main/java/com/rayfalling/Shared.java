@@ -15,7 +15,7 @@ public class Shared {
     /**
      * 工程 Postgresql 数据库连接池对象
      */
-    private static PgPool pgPool;
+    private static PgPool pgPool = null;
     
     public static Logger getDatabaseLogger() {
         return DatabaseLogger;

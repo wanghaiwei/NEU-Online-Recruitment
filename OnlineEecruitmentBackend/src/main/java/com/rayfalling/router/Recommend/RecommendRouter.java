@@ -5,6 +5,7 @@ import com.Rayfalling.handler.Recommend.RecommendHandler;
 import com.Rayfalling.middleware.Response.JsonResponse;
 import com.Rayfalling.middleware.Response.PresetMessage;
 import com.Rayfalling.middleware.Utils.Common;
+import com.Rayfalling.middleware.data.Token;
 import com.Rayfalling.middleware.data.VerifyCode;
 import com.Rayfalling.router.User.AuthRouter;
 import com.Rayfalling.router.Verify.VerityRouter;
@@ -28,10 +29,8 @@ public class RecommendRouter {
               .handler(AuthRouter::AuthToken)
               .handler(RecommendRouter::RecommendIndex);
         router.post("/list")
-//              .handler(AuthRouter::AuthToken)
               .handler(RecommendRouter::RecommendList);
         router.post("/record")
-              .handler(AuthRouter::AuthToken)
               .handler(RecommendRouter::RecommendRecord);
         
         for (Route route : router.getRoutes()) {
@@ -55,7 +54,23 @@ public class RecommendRouter {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void RecommendList(@NotNull RoutingContext context) {
         getJsonObjectSingle(context).flatMap(params -> {
+            try {
+                Token sessionToken = context.session().get("token");
+                if (sessionToken != null) {
+                    params.put("userId", sessionToken.getId());
+                } else {
+                    params.put("userId", -1);
+                }
+            } catch (Exception e) {
+                params.put("userId", -1);
+                return Single.just(params);
+            }
             return Single.just(params);
+        }).flatMap(param -> {
+            return RecommendHandler.Recommend(param.getInteger("userId"));
+        }).flatMap(jsonArray -> {
+            JsonResponse.RespondSuccess(context, jsonArray);
+            return Single.just(jsonArray);
         }).doOnError(err -> {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_UNKNOWN);
@@ -75,9 +90,30 @@ public class RecommendRouter {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void RecommendRecord(@NotNull RoutingContext context) {
         getJsonObjectSingle(context).flatMap(params -> {
-            
+            int category = params.getInteger("category");
+            int second = params.getInteger("second");
+            try {
+                Token sessionToken = context.session().get("token");
+                if (sessionToken != null) {
+                    RecommendHandler.UpdateUserWeight(sessionToken.getId(), category, second);
+                } else {
+                    return Single.just(params);
+                }
+            } catch (Exception e) {
+                Shared.getRouterLogger().debug("User not login");
+                return Single.just(params);
+            }
             return Single.just(params);
+        }).flatMap(params -> {
+            int previous = params.getInteger("previous");
+            int next = params.getInteger("next");
+            RecommendHandler.UpdatePositionMap(previous, next);
+            return Single.just(params);
+        }).flatMap(jsonObject -> {
+            JsonResponse.RespondSuccess(context, "Record Success");
+            return Single.just(jsonObject);
         }).doOnError(err -> {
+            Shared.getRouterLogger().debug(err.getMessage());
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_UNKNOWN);
                 Shared.getRouterLogger()

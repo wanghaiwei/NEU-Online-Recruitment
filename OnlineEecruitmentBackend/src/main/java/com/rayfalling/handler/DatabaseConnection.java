@@ -2,6 +2,7 @@ package com.Rayfalling.handler;
 
 import com.Rayfalling.Shared;
 import io.reactiverse.reactivex.pgclient.PgConnection;
+import io.reactiverse.reactivex.pgclient.PgPool;
 import io.reactivex.Single;
 
 public class DatabaseConnection {
