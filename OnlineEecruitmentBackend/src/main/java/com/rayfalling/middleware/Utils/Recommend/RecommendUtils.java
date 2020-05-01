@@ -139,16 +139,17 @@ public class RecommendUtils {
                                    .filter(position -> position.getLabel() == ((JsonObject) object)
                                                                                       .getInteger("category"))
                                    .sorted((o1, o2) -> {
-                                       int o1Score = Math.toIntExact(o1.getTimestamp() % 100000), o2Score = Math.toIntExact(o2.getTimestamp() % 100000);
+                                       int o1Score = (int) (o1.getTimestamp() - System.currentTimeMillis()) / 100000,
+                                               o2Score = (int) (o2.getTimestamp() - System.currentTimeMillis()) / 100000;
                                        if (RecommendMapStorage.exist(positionId, o1.getId())) {
                                            o1Score += RecommendMapStorage.find(positionId, o1.getId())
-                                                                         .getHitCount() * 200;
+                                                                         .getHitCount() * 5;
                                        }
                                        if (RecommendMapStorage.exist(positionId, o2.getId())) {
                                            o2Score += RecommendMapStorage.find(positionId, o2.getId())
-                                                                         .getHitCount() * 200;
+                                                                         .getHitCount() * 5 ;
                                        }
-                                       return o2Score - o1Score;
+                                       return o2Score - o1Score + new Random().nextInt() % 100;
                                    }).limit((long) (((JsonObject) object).getFloat("weight") * recommendSize))
                                    .collect(Collectors.toList()));
         }

@@ -25,19 +25,20 @@ BEGIN
 
     BEGIN
         QUOTA = (select quota from user_quota where uid = position_post_user_id);
+        CNT = (select count(*) from position_info where post_user_id = position_post_user_id);
         IDENTITY = (select identity from "authentication_info" where user_id = position_post_user_id);
         if IDENTITY = 1 Then
-            if QUOTA + 1 > 5 Then
-                QUOTA = 5;
+            if CNT > 5 Then
+                QUOTA = 0;
             else
-                QUOTA = QUOTA + 1;
+                QUOTA = 5 - CNT;
             end if;
         end if;
         if IDENTITY = 0 Then
-            if QUOTA + 1 > 1 Then
-                QUOTA = 1;
+            if CNT > 1 Then
+                QUOTA = 0;
             else
-                QUOTA = QUOTA + 1;
+                QUOTA = 1 - CNT;
             end if;
         end if;
         update "user_quota" set quota = QUOTA where uid = position_post_user_id;

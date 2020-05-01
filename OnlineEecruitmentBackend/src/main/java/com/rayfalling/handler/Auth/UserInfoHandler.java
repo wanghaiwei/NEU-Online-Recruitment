@@ -96,8 +96,4 @@ public class UserInfoHandler {
                            err.printStackTrace();
                        });
     }
-    
-    //TODO 修正更新个人信息时发布职位额度问题
-    
-    
 }
