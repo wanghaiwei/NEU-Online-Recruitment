@@ -19,10 +19,11 @@ public class JsonResponse {
     private static void RespondJson(RoutingContext routingContext, int code, int status, Object data) {
         if (!(data instanceof JsonObject) && !(data instanceof JsonArray))
             data = JsonObject.mapFrom(data);
-        routingContext.response()
-                      .putHeader("Content-Type", "application/json")
-                      .setStatusCode(status)
-                      .end(new JsonObject().put("code", code).put("data", data).encode());
+        if (!routingContext.response().ended())
+            routingContext.response()
+                          .putHeader("Content-Type", "application/json")
+                          .setStatusCode(status)
+                          .end(new JsonObject().put("code", code).put("data", data).encode());
     }
     
     /**

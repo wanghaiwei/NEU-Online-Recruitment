@@ -86,10 +86,10 @@ public class UserInfoHandler {
                        .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("UserProfile"), Tuple.of(data.getInteger("user_id"))))
                        .map(res -> {
                            Row row = DataBaseExt.oneOrNull(res);
-                           return row == null ? null : new JsonObject()
-                                                               .put("avatar", row.getString("avatar"))
-                                                               .put("nickname", row.getString("nickname"))
-                                                               .put("description", row.getString("description"));
+                           return row == null ? new JsonObject() : new JsonObject()
+                                                                           .put("avatar", row.getString("avatar"))
+                                                                           .put("nickname", row.getString("nickname"))
+                                                                           .put("description", row.getString("description"));
                        })
                        .doOnError(err -> {
                            Shared.getDatabaseLogger().error(err);

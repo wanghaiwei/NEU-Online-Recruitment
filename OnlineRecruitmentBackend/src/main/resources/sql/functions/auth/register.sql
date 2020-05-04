@@ -18,7 +18,7 @@ BEGIN
     else
         insert into "user" (password, phone) values (user_password, user_phone) returning id into UserID;
         insert into user_credit (user_id, credit) values (UserID, 10);
-        RESULT = 0;
+        RESULT = UserID;
     end if;
     return RESULT;
 END;

@@ -98,10 +98,12 @@ public class AuthRouter {
                     Shared.getRouterLogger().warn(context.normalisedPath() + PresetMessage.ERROR_UNKNOWN.toString());
                 }
             } else {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_UNKNOWN);
-                Shared.getRouterLogger().warn(context.normalisedPath() + PresetMessage.ERROR_UNKNOWN.toString());
                 //make result to true while try password login
                 result = jsonObject.containsKey("type") && jsonObject.getString("type").equals("password");
+                if (!result) {
+                    JsonResponse.RespondPreset(context, PresetMessage.ERROR_UNKNOWN);
+                    Shared.getRouterLogger().warn(context.normalisedPath() + PresetMessage.ERROR_UNKNOWN.toString());
+                }
             }
             context.put("VerifyCode", result);
             return Single.just(result);

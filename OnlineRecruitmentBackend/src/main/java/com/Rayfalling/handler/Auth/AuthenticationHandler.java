@@ -28,8 +28,8 @@ public class AuthenticationHandler {
                            Row row = DataBaseExt.oneOrNull(res);
                            if (row == null)
                                return -2;
-                           else if (row.getInteger(0) == 0)
-                               return 0;
+                           else if (row.getInteger(0) > 0)
+                               return row.getInteger(0);
                            else if (row.getInteger(0) == -1)
                                return -1;
                            return -2;

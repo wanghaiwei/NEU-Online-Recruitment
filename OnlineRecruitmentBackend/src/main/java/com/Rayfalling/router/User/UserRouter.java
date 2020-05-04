@@ -19,6 +19,8 @@ import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import static com.Rayfalling.router.MainRouter.getJsonObjectSingle;
 
 /**
@@ -26,6 +28,7 @@ import static com.Rayfalling.router.MainRouter.getJsonObjectSingle;
  *
  * @author Rayfalling
  */
+@SuppressWarnings("DuplicatedCode")
 public class UserRouter {
     private static final Router router = Router.router(Shared.getVertx());
     
@@ -91,10 +94,12 @@ public class UserRouter {
      */
     @SuppressWarnings(value = "ResultOfMethodCallIgnored")
     private static void UserRegister(@NotNull RoutingContext context) {
+        AtomicReference<String> username = new AtomicReference<>();
         getJsonObjectSingle(context).map(params -> {
             //check param is null
             String phone = params.getString("phone", "");
             String password = params.getString("password", "");
+            username.set(phone);
             
             if (password.equals("") || phone.equals("")) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON_PARAM);
@@ -110,9 +115,7 @@ public class UserRouter {
             
             return new JsonObject().put("phone", phone).put("password", password);
         }).flatMap(params -> AuthenticationHandler.DatabaseUserRegister(params).map(result -> {
-            if (result == 0) {
-                JsonResponse.RespondPreset(context, PresetMessage.SUCCESS);
-            } else if (result == -1) {
+            if (result == -1) {
                 JsonResponse.RespondPreset(context, PresetMessage.PHONE_REGISTERED_ERROR);
                 Shared.getRouterLogger()
                       .warn(context.normalisedPath() + " " + PresetMessage.PHONE_REGISTERED_ERROR.toString());
@@ -122,7 +125,21 @@ public class UserRouter {
             }
             
             return result;
-        })).doOnError(err -> {
+        })).flatMap(param -> {
+            return AuthenticationHandler.DatabaseUserId(new JsonObject().put("username", username.get()))
+                                        .flatMap(result -> Single.just(new JsonObject().put("id", result)
+                                                                                       .put("phone", username.get())));
+        }).flatMap(UserInfoHandler::DatabaseUserQueryIdentity).flatMap(param -> {
+            Identity identity = Identity.mapFromDatabase(param.getInteger("user_identity"), param.getInteger("auth_identity"));
+            
+            Token token = new Token(param.getInteger("id"), param.getString("phone"), identity);
+            TokenStorage.add(token);
+            context.session().put("token", token);
+            context.addCookie(Cookie.cookie("token", EncryptUtils.EncryptFromToken(token)));
+            JsonResponse.RespondSuccess(context, new JsonObject().put("msg", "Register Success")
+                                                                 .put("token", EncryptUtils.EncryptFromToken(token)));
+            return Single.just(token);
+        }).doOnError(err -> {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
                 Shared.getRouterLogger()
@@ -209,7 +226,7 @@ public class UserRouter {
             context.session().put("token", token);
             context.addCookie(Cookie.cookie("token", EncryptUtils.EncryptFromToken(token)));
             JsonResponse.RespondSuccess(context, new JsonObject().put("user_id", param.getInteger("id"))
-                                                                 .put("msg","Login Success")
+                                                                 .put("msg", "Login Success")
                                                                  .put("token", EncryptUtils.EncryptFromToken(token)));
             Shared.getRouterLogger()
                   .info(context.normalisedPath() + " " + param.getString("phone") + " Login");
@@ -260,10 +277,10 @@ public class UserRouter {
         getJsonObjectSingle(context).flatMap(params -> {
             return Single.just(new JsonObject().put("user_id", params.getInteger("user_id")));
         }).flatMap(UserInfoHandler::DatabaseUserProfile).flatMap(result -> {
-            if (result == null) {
-                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+            if (result.isEmpty()) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
                 Shared.getRouterLogger()
-                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_REQUEST_JSON_PARAM.toString());
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
             } else {
                 JsonResponse.RespondSuccess(context, result);
                 return Single.just(result);
