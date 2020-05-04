@@ -28,18 +28,18 @@ public class AuthRouter {
      * 验证用户Token
      */
     public static void AuthToken(@NotNull RoutingContext context) {
-        Token sessionToken = null;
+        Token postToken = null;
         Token cookieToken = null;
         
         try {
-            sessionToken = context.session().get("token");
+            postToken = EncryptUtils.Decrypt2Token(context.getBodyAsJson().getString("token"));
             cookieToken = EncryptUtils.Decrypt2Token(context.getCookie("token").getValue());
         } catch (Exception e) {
             JsonResponse.RespondPreset(context, PresetMessage.ERROR_UNKNOWN);
             Shared.getRouterLogger().fatal(e.getMessage());
         }
-        if (!TokenStorage.exist(sessionToken) || !TokenStorage.exist(cookieToken)
-            || Objects.requireNonNull(sessionToken).getId() == -1) {
+        if (!TokenStorage.exist(postToken) || !TokenStorage.exist(cookieToken)
+            || Objects.requireNonNull(postToken).getId() == -1) {
             JsonResponse.RespondPreset(context, PresetMessage.ERROR_TOKEN_FAKED);
             Shared.getRouterLogger()
                   .warn(context.normalisedPath() + " " + PresetMessage.ERROR_TOKEN_FAKED.toString());

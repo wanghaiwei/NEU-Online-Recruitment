@@ -208,7 +208,9 @@ public class UserRouter {
             TokenStorage.add(token);
             context.session().put("token", token);
             context.addCookie(Cookie.cookie("token", EncryptUtils.EncryptFromToken(token)));
-            JsonResponse.RespondSuccess(context, "Login successful");
+            JsonResponse.RespondSuccess(context, new JsonObject().put("user_id", param.getInteger("id"))
+                                                                 .put("msg","Login Success")
+                                                                 .put("token", EncryptUtils.EncryptFromToken(token)));
             Shared.getRouterLogger()
                   .info(context.normalisedPath() + " " + param.getString("phone") + " Login");
             return Single.just(token);

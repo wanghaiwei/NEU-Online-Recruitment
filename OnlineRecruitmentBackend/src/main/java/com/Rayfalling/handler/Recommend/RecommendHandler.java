@@ -39,7 +39,7 @@ public class RecommendHandler {
         
         List<Tuple> userTuples = new LinkedList<>();
         RecommendUserStorage.getRecommendUsers().forEach(item -> {
-            mapTuples.add(Tuple.of(item.getUserId(), item.getWeight().encode()));
+            userTuples.add(Tuple.of(item.getUserId(), item.getWeight().encode()));
         });
         
         PgConnectionSingle().flatMap(conn -> conn.rxPreparedBatch(SqlQuery.getQuery("RecommendSaveMap"), mapTuples))
@@ -48,7 +48,7 @@ public class RecommendHandler {
                                 err.printStackTrace();
                             })
                             .doAfterSuccess(res -> {
-                                logger.error("Auto save map success");
+                                logger.info("Auto save map success");
                             }).subscribe();
         
         PgConnectionSingle().flatMap(conn -> conn.rxPreparedBatch(SqlQuery.getQuery("RecommendSaveUser"), userTuples))
@@ -57,7 +57,7 @@ public class RecommendHandler {
                                 err.printStackTrace();
                             })
                             .doAfterSuccess(res -> {
-                                logger.error("Auto save user weight success");
+                                logger.info("Auto save user weight success");
                             }).subscribe();
     };
     
@@ -120,7 +120,7 @@ public class RecommendHandler {
         }).map(pgRowSet -> {
             pgRowSet.forEach(row -> {
                 if (!RecommendUserStorage.exist(row.getInteger("user_id"))) {
-                    Object json = row.getJson("recommend").value();
+                    Json json = row.getJson("recommend");
                     RecommendUserStorage.add(new RecommendUser(row.getInteger("user_id"), JsonObject.mapFrom(json)));
                 } else {
                     RecommendUserStorage.find(row.getInteger("user_id"))
