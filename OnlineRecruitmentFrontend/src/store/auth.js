@@ -3,12 +3,14 @@ let auth = {
     state: {
         isLogin: false,
         current_user: "",
+        current_user_avatar: "",
         token: "",
     },
     mutations: {
         changeLoginStatus(state, payload) {
             state.isLogin = payload.state;
             state.current_user = payload.username;
+            state.current_user_avatar = payload.avatar;
         },
         changeUserToken(state, payload) {
             state.user_avatar = payload.token
@@ -34,7 +36,10 @@ let auth = {
         },
         Token: state => {
             return state.token
-        }
+        },
+        Avatar: state => {
+            return state.current_user_avatar
+        },
     }
 };
 

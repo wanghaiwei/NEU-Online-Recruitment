@@ -12,7 +12,6 @@ let store = new Vuex.Store({
     plugins: [
         createPersistedState({
             key: 'OnlineRecruitment',
-            storage: window.sessionStorage,
         })
     ]
 });

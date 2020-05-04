@@ -1,5 +1,4 @@
 import axios from 'axios'
-import {Message} from "element-ui";
 import route from "../utils/browser/jump"
 
 // 创建 axios 实例
@@ -34,12 +33,6 @@ service.interceptors.response.use(
     (response) => {
         let {data} = response;
         if (data.status !== 0) {
-            Message({
-                showClose: true,
-                duration: 3000,
-                message: `${data.data.message}`,
-                type: 'warning'
-            });
             return Promise.reject(data.data);
         }
         return Promise.resolve(data.data);
@@ -67,20 +60,8 @@ service.interceptors.response.use(
             }
         }
         if (status >= 500) {
-            Message({
-                showClose: true,
-                duration: 1500,
-                message: `${status}: ${statusText}`,
-                type: 'error'
-            });
             return Promise.reject(error.response)
         } else {
-            Message({
-                showClose: true,
-                duration: 1500,
-                message: `${status}: ${statusText}`,
-                type: 'error'
-            });
             return Promise.reject(info)
         }
     }

@@ -33,9 +33,9 @@ module.exports = {
          * https://cli.vuejs.org/zh/guide/html-and-static-assets.html#prefetch
          * 而且预渲染时生成的prefetch标签是modern版本的，低版本浏览器是不需要的
          */
-        // config.plugins.delete('prefetch');
-        // config.plugins.delete('preload');
-        // config.resolve.symlinks(true);
+        config.plugins.delete('prefetch');
+        config.plugins.delete('preload');
+        config.resolve.symlinks(true);
         config.module
             .rule('images')
             .use('url-loader')
@@ -44,10 +44,8 @@ module.exports = {
         config.resolve.alias
             .set('@', resolve('src'))
             .set('@assets', resolve('src/assets'))
-            .set('@config', resolve('src/globalFlags/config'))
-            .set('@quill', resolve('node_modules/quill'))
-            .set('@components', resolve('src/components'))
-            .set('@views', resolve('src/views/Mobile'));
+            .set('components', resolve('src/components'))
+            .set('views', resolve('src/views'));
 
         if (process.env.NODE_ENV === 'production') {
             // 为生产环境修改配置...process.env.NODE_ENV !== 'development'
@@ -72,14 +70,12 @@ module.exports = {
             //Webpack包文件分析器(https://github.com/webpack-contrib/webpack-bundle-analyzer)
             new BundleAnalyzerPlugin(),
             //优化moment打包过大
-            new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)
         ];
         //开发环境
         let pluginsDev = [
             //Webpack包文件分析器
             new BundleAnalyzerPlugin(),
             //优化moment打包过大
-            new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)
         ];
         // 为生产环境修改配置...process.env.NODE_ENV !== 'development'
         if (process.env.NODE_ENV === 'production') {
@@ -98,9 +94,7 @@ module.exports = {
         loaderOptions: {
             sass: {
                 //设置css中引用文件的路径，引入通用使用的scss文件（如包含的@mixin）
-                prependData: `$baseUrl: "/";
-		                      @import '@/assets/scss/var.scss';
-                      `,
+                prependData: `$baseUrl: "/";`,
                 sassOptions: {
                     outputStyle: 'expanded'
                 }
@@ -117,23 +111,10 @@ module.exports = {
         hotOnly: true, // 热更新
         proxy: {
             "^/api/*": {
-                // target: "http://192.168.1.162:8080/",
-                // target: "http://127.0.0.1:8081/",
-                // target: "http://219.216.67.233:8080/",
-                target: "http://danceman.cn/",
+                target: "http://127.0.0.1:8188/",
                 changeOrigin: true,
                 secure: true
             },
         }
     },
-
-    // 第三方插件配置 https://www.npmjs.com/package/vue-cli-plugin-style-resources-loader
-    pluginOptions: {
-        'style-resources-loader': {//https://github.com/yenshih/style-resources-loader
-            preProcessor: 'scss',//声明类型
-            'patterns': [
-                path.resolve(__dirname, './src/assets/scss/var.scss'),
-            ],
-        }
-    }
 };
