@@ -1,7 +1,8 @@
+<!--suppress ALL -->
 <template>
     <div>
         <div class="whole">
-            <img alt="" src="~@assets/pictures/login_bg.jpg"/>
+            <img alt="" src="~@assets/pictures/background.jpg"/>
             <div class="mask"></div>
         </div>
         <div class="tip">
@@ -69,8 +70,7 @@
         top: 0;
         left: 0;
         background: #000;
-        opacity: 0.6;
-        filter: alpha(opacity=60);
+        filter: opacity(0.3);
     }
 
     .tip {

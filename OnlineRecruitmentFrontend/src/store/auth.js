@@ -4,16 +4,18 @@ let auth = {
         isLogin: false,
         current_user: "",
         current_user_avatar: "",
+        nickname: "",
         token: "",
     },
     mutations: {
         changeLoginStatus(state, payload) {
             state.isLogin = payload.state;
+            state.nickname = payload.nickname;
             state.current_user = payload.username;
             state.current_user_avatar = payload.avatar;
         },
         changeUserToken(state, payload) {
-            state.user_avatar = payload.token
+            state.token = payload.token
         }
     },
     actions: {

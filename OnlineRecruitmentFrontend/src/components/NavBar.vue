@@ -13,12 +13,12 @@
             </MenuItem>
         </div>
         <div class="header-user">
-            <Avatar v-if="!isLogin" icon="ios-person" @click="this.$utils.browser.route.jump('/login')"/>
+            <Avatar v-if="!isLogin" icon="ios-person" @click.native="$utils.browser.route.jump('/login')"/>
             <Dropdown v-else>
                 <Avatar src=""/>
                 <DropdownMenu slot="list">
                     <DropdownItem>个人中心</DropdownItem>
-                    <DropdownItem>退出</DropdownItem>
+                    <DropdownItem @click.native="logout">退出</DropdownItem>
                 </DropdownMenu>
             </Dropdown>
         </div>
@@ -31,11 +31,12 @@
         name: "NavBar",
         watch: {
             "$route"(to, from) {
-                console.log(to)
                 if (to.path === '/' || to.path === '/index') {
                     this.active_name = "position"
                 } else if (to.path === '/group') {
                     this.active_name = "group"
+                } else {
+                    this.active_name = ""
                 }
             }
         },
@@ -67,9 +68,18 @@
                     this.active_name = ''
                 }
             },
+            async logout() {
+                let response = await this.$api.auth.logout({}, {});
+                if (response) {
+                    this.$store.dispatch("auth/changeToken", "")
+                    this.$store.dispatch("auth/changeLogin", {state: false, username: "", nickname: "", avatar: ""})
+                    this.$Message.success("注销成功")
+                }
+            }
         },
         mounted() {
-        }
+            this.active_name = ''
+        },
     }
 </script>
 
@@ -89,11 +99,11 @@
     .header-nav {
         width: 240px;
         margin: 0 auto;
-        margin-left: 120px;
+        margin-left: 140px;
     }
 
     .header-user {
-        width: 64px;
+        width: 32px;
         margin: 0 auto;
         margin-right: 20px;
         cursor: pointer;

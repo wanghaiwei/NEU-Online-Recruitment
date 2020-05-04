@@ -32,16 +32,13 @@ service.interceptors.request.use(
 service.interceptors.response.use(
     (response) => {
         let {data} = response;
-        if (data.status !== 0) {
+        if (data.code !== 0) {
+            console.log(data.data);
             return Promise.reject(data.data);
         }
         return Promise.resolve(data.data);
     },
     async (error) => {
-        //响应分享链接404状态码
-        if (error.response.status === 404)
-            await route.jump(`/404`);
-
         //Normal operation
         let info = {},
             {status, msg, data, statusText} = error.response;
