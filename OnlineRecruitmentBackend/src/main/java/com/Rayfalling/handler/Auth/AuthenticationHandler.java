@@ -101,28 +101,6 @@ public class AuthenticationHandler {
     }
     
     /**
-     * 数据库用户更新密码
-     *
-     * @param data 传入参数，包含"phone","pwd_new"和"pwd_old"的JsonObject
-     * @return 执行状态
-     * @author Rayfalling
-     */
-    public static Single<Integer> DatabaseUpdatePwd(@NotNull JsonObject data) {
-        Tuple tuple = Tuple.of(data.getString("phone"), data.getString("pwd_old"), data.getString("pwd_new"));
-        
-        return PgConnectionSingle()
-                       .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("AuthUpdatePwd"), tuple))
-                       .map(res -> {
-                           Row row = DataBaseExt.oneOrNull(res);
-                           return row != null ? row.getInteger(0) : -1;
-                       })
-                       .doOnError(err -> {
-                           Shared.getDatabaseLogger().error(err);
-                           err.printStackTrace();
-                       });
-    }
-    
-    /**
      * 数据库用户提交认证
      *
      * @param data 传入参数，包含"username","identity","company","position","mail","mail_can_verify"和"company_serial"的JsonObject

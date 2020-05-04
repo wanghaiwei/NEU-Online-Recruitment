@@ -13,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 import static com.Rayfalling.handler.DatabaseConnection.PgConnectionSingle;
 
 public class PostHandler {
-    
     /**
      * 数据库用户查询圈子动态
      *
@@ -23,7 +22,7 @@ public class PostHandler {
     public static Single<JsonArray> DatabaseFetchAll(@NotNull JsonObject data) {
         Tuple tuple = Tuple.of(data.getInteger("group_id"), data.getString("sort_col").equals("hottest") ? 0 : 1);
         return PgConnectionSingle()
-                       .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("PositionNew"), Tuple.of(tuple)))
+                       .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("PostFetchAll"), Tuple.of(tuple)))
                        .map(res -> {
                            return DataBaseExt.mapJsonArray(res, row -> {
                                return new JsonObject().put("id", row.getInteger("id"))

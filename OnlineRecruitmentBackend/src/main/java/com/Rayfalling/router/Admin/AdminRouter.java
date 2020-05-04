@@ -47,6 +47,9 @@ public class AdminRouter {
         router.post("/post/top").handler(AuthRouter::AuthToken)
               .handler(AdminRouter::AdminAuthAdmin)
               .handler(AdminRouter::AdminPinPost);
+        router.post("/user/make-super").handler(AuthRouter::AuthToken)
+              .handler(AdminRouter::AdminAuthAdmin)
+              .handler(AdminRouter::AdminMakeUserSuper);
         
         /* 未实现的路由 */
         router.post("/update").handler(AuthRouter::AuthToken)
@@ -168,14 +171,14 @@ public class AdminRouter {
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void AdminUserBan(@NotNull RoutingContext context) {
-        getJsonObjectSingle(context).flatMap(AdminHandler::DatabaseQueryUser).doOnError(err -> {
+        getJsonObjectSingle(context).flatMap(AdminHandler::DatabaseAdminUserBan).doOnError(err -> {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
                 Shared.getRouterLogger()
                       .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
             }
         }).flatMap(result -> {
-            JsonResponse.RespondSuccess(context, result);
+            JsonResponse.RespondSuccess(context, "Baned user success");
             return Single.just(result);
         }).subscribe(res -> {
             Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
@@ -202,6 +205,27 @@ public class AdminRouter {
                       .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
             JsonResponse.RespondSuccess(context, "Pinned post success");
+            return Single.just(result);
+        }).subscribe(res -> {
+            Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
+        }, failure -> {
+            Shared.getRouterLogger().error(failure.getMessage());
+        });
+    }
+    
+    /**
+     * 添加新管理员路由
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private static void AdminMakeUserSuper(@NotNull RoutingContext context) {
+        getJsonObjectSingle(context).flatMap(AdminHandler::DatabaseAdminUserSuper).doOnError(err -> {
+            if (!context.response().ended()) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
+            }
+        }).flatMap(result -> {
+            JsonResponse.RespondSuccess(context, "Make user super admin success");
             return Single.just(result);
         }).subscribe(res -> {
             Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");

@@ -63,6 +63,7 @@ public class SqlQuery {
         SqlMap.put("AdminUserBan", "admin/ban.sql");
         SqlMap.put("AdminFetchAuth", "admin/auth.sql");
         SqlMap.put("AdminFetchUser", "admin/user.sql");
+        SqlMap.put("AdminUserSuper", "admin/super.sql");
         SqlMap.put("AdminConfirmAuth", "admin/confirm.sql");
     
         /* Recommend 相关Map */

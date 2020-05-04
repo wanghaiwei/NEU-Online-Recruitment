@@ -126,4 +126,24 @@ public class AdminHandler {
                            err.printStackTrace();
                        });
     }
+    
+    /**
+     * 数据库圈子置顶动态
+     *
+     * @return 包含成功的ID的 {@link JsonObject}
+     * @author Rayfalling
+     */
+    public static Single<Boolean> DatabaseAdminUserSuper(@NotNull JsonObject data) {
+        Tuple tuple = Tuple.of(data.getInteger("user_id"));
+        return PgConnectionSingle()
+                       .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("AdminUserSuper"), tuple))
+                       .map(res -> {
+                           Row row = DataBaseExt.oneOrNull(res);
+                           return row != null && row.getInteger(0) > 0;
+                       })
+                       .doOnError(err -> {
+                           Shared.getDatabaseLogger().error(err);
+                           err.printStackTrace();
+                       });
+    }
 }

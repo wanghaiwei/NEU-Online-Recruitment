@@ -355,7 +355,7 @@ public class UserRouter {
             String oldPassword = params.getString("pwd_old", "");
             String newPassword = params.getString("pwd_new", "");
             return new JsonObject().put("phone", phone).put("pwd_old", oldPassword).put("pwd_new", newPassword);
-        }).flatMap(AuthenticationHandler::DatabaseUpdatePwd).doOnError(err -> {
+        }).flatMap(UserInfoHandler::DatabaseUpdatePwd).doOnError(err -> {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
                 Shared.getRouterLogger()
