@@ -2652,7 +2652,7 @@ COPY public.position_recommend_data (id, position_id, next_id, hit_count) FROM s
 --
 
 COPY public.position_user_recommend (id, user_id, recommend) FROM stdin;
-1	1	{\r\n  "1": 0.1,\r\n  "2": 0.1\r\n}
+1	1	{\r\n      "1": 0.1,\r\n      "2": 0.1\r\n    }
 \.
 
 
@@ -2877,7 +2877,7 @@ SELECT pg_catalog.setval('public.position_recommend_data_id_seq', 1, false);
 -- Name: position_user_recommend_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.position_user_recommend_id_seq', 1, true);
+SELECT pg_catalog.setval('public.position_user_recommend_id_seq', 2, true);
 
 
 --
@@ -3286,10 +3286,24 @@ CREATE UNIQUE INDEX position_recommend_data_id_uindex ON public.position_recomme
 
 
 --
+-- Name: position_recommend_data_position_id_next_id_uindex; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX position_recommend_data_position_id_next_id_uindex ON public.position_recommend_data USING btree (position_id, next_id);
+
+
+--
 -- Name: position_user_recommend_id_uindex; Type: INDEX; Schema: public; Owner: postgres
 --
 
 CREATE UNIQUE INDEX position_user_recommend_id_uindex ON public.position_user_recommend USING btree (id);
+
+
+--
+-- Name: position_user_recommend_user_id_uindex; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX position_user_recommend_user_id_uindex ON public.position_user_recommend USING btree (user_id);
 
 
 --
