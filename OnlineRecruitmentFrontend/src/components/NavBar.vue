@@ -22,7 +22,6 @@
                 </DropdownMenu>
             </Dropdown>
         </div>
-
     </Menu>
 </template>
 
@@ -78,7 +77,13 @@
             }
         },
         mounted() {
-            this.active_name = ''
+            if (this.$route.path === '/' || this.$route.path === '/index') {
+                this.active_name = "position"
+            } else if (this.$route.path === '/group') {
+                this.active_name = "group"
+            } else {
+                this.active_name = ""
+            }
         },
     }
 </script>

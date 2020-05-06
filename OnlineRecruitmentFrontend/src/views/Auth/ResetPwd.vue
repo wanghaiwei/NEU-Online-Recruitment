@@ -1,13 +1,13 @@
 <!--suppress ALL -->
 <template>
     <div class="content">
-        <div class="register-background">
+        <div class="reset-background">
             <img alt="" src="~@assets/pictures/background.jpg"/>
             <div class="mask"></div>
         </div>
-        <Card class="register-card">
+        <Card class="reset-card">
             <h1 slot="title">登录</h1>
-            <Form ref="register">
+            <Form ref="reset">
                 <FormItem prop="user">
                     <Input type="text" size="large" v-model="phone" placeholder="手机号">
                         <Icon type="ios-person-outline" slot="prepend"></Icon>
@@ -16,26 +16,23 @@
                         </Button>
                     </Input>
                 </FormItem>
-                <FormItem prop="password">
-                    <Input type="password" size="large" v-model="password" placeholder="密码">
-                        <Icon type="ios-lock-outline" slot="prepend"></Icon>
-                    </Input>
-                </FormItem>
-                <FormItem prop="password-confirm">
-                    <Input type="password" size="large" v-model="password_confirm" placeholder="确认密码">
-                        <Icon type="ios-lock-outline" slot="prepend"></Icon>
-                    </Input>
-                </FormItem>
                 <FormItem prop="code">
                     <Input type="text" size="large" v-model="code" placeholder="验证码">
                         <Icon type="ios-lock-outline" slot="prepend"></Icon>
                     </Input>
                 </FormItem>
-                <FormItem class="register-button">
-                    <Button type="success" size="large" long @click.native="register">注册</Button>
+                <FormItem prop="password-confirm">
+                    <Input type="password" size="large" v-model="password" placeholder="新密码">
+                        <Icon type="ios-lock-outline" slot="prepend"></Icon>
+                    </Input>
                 </FormItem>
-                <FormItem class="register-button-group">
+                <FormItem class="reset-button">
+                    <Button type="success" size="large" long @click.native="reset">提交</Button>
+                </FormItem>
+                <FormItem class="reset-button-group">
                     <Button size="small" type="text" @click.native="$utils.browser.route.jump('/login')">登录</Button>
+                    <Button size="small" type="text" @click.native="$utils.browser.route.jump('/register')">注册
+                    </Button>
                 </FormItem>
             </Form>
         </Card>
@@ -46,15 +43,14 @@
     import Crypto from 'crypto';
 
     export default {
-        name: "Register",
+        name: "reset",
         data() {
             return {
                 phone: "",
                 code: "",
                 password: "",
-                password_confirm: "",
                 codeTips: "获取验证码",
-                smsTimer: 0,
+                smsTimer: 0
             }
         },
         methods: {
@@ -72,23 +68,25 @@
                     }
                 }, 1000);
             },
-            async register() {
-                let request = {};
-                if (this.password != this.password_confirm) {
-                    return this.$Message.error("密码不一致")
-                }
+            async reset() {
+                let request = {}
                 request.phone = this.phone;
                 request.code = this.code;
-                request.password = Crypto.createHash("md5").update(this.password).digest('hex');
-                let response = await this.$api.auth.register({}, request).catch(error => {
-                    this.$Message.error("登录失败");
+                request.pwd_new = Crypto.createHash("md5").update(this.password).digest('hex');
+                let response = await this.$api.auth.reset({}, request).catch(error => {
+                    this.$Message.error("重置失败");
                     console.log(error)
                 });
+                let user_profile = {};
                 if (response) {
-                    this.$Message.info("注册成功");
-                    await this.$store.dispatch("auth/changeToken", response.token);
+                    user_profile.username = request.phone;
+                    user_profile.state = true;
+                    this.$Message.success("重置成功");
+                    await this.$utils.browser.route.jump('/login');
+                } else {
+                    this.$Message.error("重置失败");
+                    console.log(response.msg)
                 }
-                //todo jump update user info
             },
         },
     }
@@ -102,7 +100,7 @@
         justify-content: center;
     }
 
-    .register-background {
+    .reset-background {
         width: 100%;
         height: 100%;
         line-height: 100%;
@@ -112,7 +110,7 @@
         overflow: hidden;
     }
 
-    .register-background img {
+    .reset-background img {
         width: 100%;
         height: 100%;
     }
@@ -127,12 +125,12 @@
         filter: opacity(0.3);
     }
 
-    .register-card {
-        width: 360px;
-        height: 460px;
+    .reset-card {
+        width: 320px;
+        height: 400px;
     }
 
-    .register-button-group {
+    .reset-button-group {
         height: 100%;
         display: flex;
         align-items: center;

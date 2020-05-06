@@ -17,4 +17,10 @@ const goBack = async function () {
     router.goBack();
 };
 
-export default {jump: jumpRouter, goBack};
+const fetchParam = async function (path) {
+    if (router && path) {
+        return router.match(path).meta.params;
+    }
+};
+
+export default {jump: jumpRouter, goBack, fetchParam};

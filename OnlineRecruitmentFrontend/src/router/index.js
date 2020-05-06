@@ -25,7 +25,7 @@ let router = new Router({
             path: '/index',
             component: () => import(/* webpackChunkName: "Index" */ '../views/Index.vue'),
             meta: {
-                title: "首页"
+                title: "职位列表"
             }
         }, ...auth, ...personal, {
             path: '*',

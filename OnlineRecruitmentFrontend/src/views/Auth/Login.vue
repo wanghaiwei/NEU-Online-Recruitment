@@ -30,8 +30,8 @@
                                 </Button>
                             </Input>
                         </FormItem>
-                        <FormItem prop="password">
-                            <Input type="password" size="large" v-model="code" placeholder="验证码">
+                        <FormItem prop="code">
+                            <Input type="text" size="large" v-model="code" placeholder="验证码">
                                 <Icon type="ios-lock-outline" slot="prepend"></Icon>
                             </Input>
                         </FormItem>
