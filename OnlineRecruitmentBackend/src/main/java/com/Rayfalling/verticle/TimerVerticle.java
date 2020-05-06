@@ -22,7 +22,7 @@ public class TimerVerticle extends AbstractVerticle {
     
     public synchronized static Single<Boolean> register(TimerEvent event) {
         return Single.just(event).flatMap(e -> {
-            long timerId = Shared.getVertx().setTimer(delay, id -> event.event());
+            long timerId = Shared.getVertx().setPeriodic(delay, id -> event.event());
             timers.add(timerId);
             return Single.just(true);
         }).onErrorReturnItem(false);

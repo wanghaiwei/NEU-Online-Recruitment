@@ -82,8 +82,10 @@ public class GroupHandler {
     public static Single<JsonArray> DatabaseSearchGroup(@NotNull JsonObject data) {
         Tuple tuple = Tuple.of(DataBaseExt.getQueryString(data.getString("content")),
                 DataBaseExt.getQueryString(data.getJsonArray("group_category_id")));
+        String storeSql = SqlQuery.getQuery("PositionSearch");
+        String sql = DataBaseExt.prepareQuery(storeSql, tuple);
         return PgConnectionSingle()
-                       .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("GroupSearch"), Tuple.of(tuple)))
+                       .flatMap(conn -> conn.rxQuery(sql))
                        .map(res -> {
                            return DataBaseExt.mapJsonArray(res, row -> {
                                return new JsonObject().put("id", row.getInteger("id"))

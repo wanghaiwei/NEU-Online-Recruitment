@@ -3,6 +3,7 @@ package com.Rayfalling.middleware.Extensions;
 import com.Rayfalling.Shared;
 import io.reactiverse.reactivex.pgclient.PgRowSet;
 import io.reactiverse.reactivex.pgclient.Row;
+import io.reactiverse.reactivex.pgclient.Tuple;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.jetbrains.annotations.Contract;
@@ -14,6 +15,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.LinkedList;
+import java.util.List;
 
 public class DataBaseExt {
     
@@ -124,7 +127,7 @@ public class DataBaseExt {
      * @author Rayfalling
      */
     public static @NotNull String getQueryString(@NotNull JsonArray jsonArray) {
-        return jsonArray.encode().replace('[', '{').replace(']', '}');
+        return jsonArray.encode().replace("[", "'{").replace("]", "}'");
     }
     
     /**
@@ -135,6 +138,18 @@ public class DataBaseExt {
      */
     @Contract(pure = true)
     public static @NotNull String getQueryString(String queryStr) {
-        return "%" + queryStr + "%";
+        return "'%" + queryStr + "%'";
+    }
+    
+    
+    /**
+     * 创建查询语句，以拼接的方式
+     */
+    public static @NotNull String prepareQuery(String sql, @NotNull Tuple tuple) {
+        sql = sql.replace("\r\n", " ").replace("\n", " ");
+        for (int index = 0; index < tuple.size(); index++) {
+            sql = sql.replace("$" + (index + 1), (String) tuple.getValue(index));
+        }
+        return sql;
     }
 }

@@ -36,23 +36,29 @@ public class PositionHandler {
      * @return 查询结果
      * @author Rayfalling
      */
+    @SuppressWarnings("DuplicatedCode")
     public static Single<JsonArray> DatabaseSearchPosition(@NotNull JsonObject data) {
         Tuple tuple = Tuple.of(DataBaseExt.getQueryString(data.getString("content")),
                 DataBaseExt.getQueryString(data.getString("location")),
                 DataBaseExt.getQueryString(data.getJsonArray("position_category_id")),
                 DataBaseExt.getQueryString(data.getJsonArray("grade")));
+        String storeSql = SqlQuery.getQuery("PositionSearch");
+        String sql = DataBaseExt.prepareQuery(storeSql, tuple);
+        
         return PgConnectionSingle()
-                       .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("PositionSearch"), tuple))
-                       .map(res -> DataBaseExt.mapJsonArray(res, row -> new JsonObject().put("id", row.getInteger("id"))
-                                                                                        .put("name", row.getString("name"))
-                                                                                        .put("grade", row.getInteger("grade"))
-                                                                                        .put("company", row.getString("company"))
-                                                                                        .put("location", row.getString("location"))
-                                                                                        .put("post_mail", row.getString("post_mail"))
-                                                                                        .put("description", row.getString("description"))
-                                                                                        .put("post_time", DataBaseExt
-                                                                                                                  .getLocalDateTimeToTimestamp(row, "description"))
-                                                                                        .put("position_category_id", row.getString("position_category_id"))))
+                       .flatMap(conn -> conn.rxQuery(sql))
+                       .map(res -> DataBaseExt.mapJsonArray(res, row -> {
+                           return new JsonObject().put("id", row.getInteger("id"))
+                                                  .put("name", row.getString("name"))
+                                                  .put("grade", row.getInteger("grade"))
+                                                  .put("company", row.getString("company"))
+                                                  .put("location", row.getString("location"))
+                                                  .put("post_mail", row.getString("post_mail"))
+                                                  .put("description", row.getString("description"))
+                                                  .put("post_time", DataBaseExt
+                                                                            .getLocalDateTimeToTimestamp(row, "post_time"))
+                                                  .put("position_category_id", row.getString("position_category_id"));
+                       }))
                        .doOnError(err -> {
                            Shared.getDatabaseLogger().error(err);
                            err.printStackTrace();
