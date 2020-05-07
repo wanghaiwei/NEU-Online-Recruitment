@@ -1,6 +1,8 @@
 package com.Rayfalling.middleware.Response;
 
 import com.Rayfalling.Shared;
+import com.Rayfalling.middleware.Utils.Security.EncryptUtils;
+import com.Rayfalling.middleware.data.Token;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.ext.web.RoutingContext;
@@ -19,11 +21,16 @@ public class JsonResponse {
     private static void RespondJson(RoutingContext routingContext, int code, int status, Object data) {
         if (!(data instanceof JsonObject) && !(data instanceof JsonArray))
             data = JsonObject.mapFrom(data);
-        if (!routingContext.response().ended())
+        if (!routingContext.response().ended()) {
+            Token token = routingContext.session().get("token");
             routingContext.response()
                           .putHeader("Content-Type", "application/json")
                           .setStatusCode(status)
-                          .end(new JsonObject().put("code", code).put("data", data).encode());
+                          .end(new JsonObject().put("code", code)
+                                               .put("data", data)
+                                               .put("token", token == null ? "" : EncryptUtils.EncryptFromToken(token))
+                                               .encode());
+        }
     }
     
     /**

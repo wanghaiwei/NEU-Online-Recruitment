@@ -29,22 +29,21 @@ public class AuthRouter {
      */
     public static void AuthToken(@NotNull RoutingContext context) {
         Token postToken = null;
-        Token cookieToken = null;
         
         try {
             postToken = EncryptUtils.Decrypt2Token(context.getBodyAsJson().getString("token"));
-            cookieToken = EncryptUtils.Decrypt2Token(context.getCookie("token").getValue());
         } catch (Exception e) {
             JsonResponse.RespondPreset(context, PresetMessage.ERROR_UNKNOWN);
             Shared.getRouterLogger().fatal(e.getMessage());
         }
-        if (!TokenStorage.exist(postToken) || !TokenStorage.exist(cookieToken)
-            || Objects.requireNonNull(postToken).getId() == -1) {
+        
+        if (!TokenStorage.exist(postToken) || Objects.requireNonNull(postToken).getId() == -1) {
             JsonResponse.RespondPreset(context, PresetMessage.ERROR_TOKEN_FAKED);
             Shared.getRouterLogger()
                   .warn(context.normalisedPath() + " " + PresetMessage.ERROR_TOKEN_FAKED.toString());
         }
-        Token storeToken = TokenStorage.find(cookieToken);
+        
+        Token storeToken = TokenStorage.find(postToken);
         if (storeToken == null) {
             JsonResponse.RespondPreset(context, PresetMessage.USER_NOT_LOGIN_ERROR);
             Shared.getRouterLogger()
@@ -55,10 +54,7 @@ public class AuthRouter {
                   .warn(context.normalisedPath() + " " + PresetMessage.ERROR_TOKEN_FAKED.toString());
         } else {
             storeToken.UpdateSession();
-            context.session().remove("token");
             context.session().put("token", storeToken);
-            context.removeCookie("token");
-            context.addCookie(Cookie.cookie("token", EncryptUtils.EncryptFromToken(storeToken)));
         }
         
         context.next();

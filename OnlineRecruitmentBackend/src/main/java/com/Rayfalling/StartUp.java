@@ -49,7 +49,7 @@ public class StartUp {
                       TimerVerticleDeploymentID = res;
                       logger.info("TimerVerticle instances startup succeeded.");
                   })
-                  .doAfterSuccess(res ->{
+                  .doAfterSuccess(res -> {
                       //Register all timer at here to avoid
                       //null eventbus handler when class init
                       logger.info("Start registering timer event.");
@@ -221,7 +221,7 @@ public class StartUp {
                     logger.fatal(res.cause());
                 }
             });
-    
+            
             return Single.just(shared);
         }).subscribe(res -> {
             logger.info("Stop operation finished successfully.");

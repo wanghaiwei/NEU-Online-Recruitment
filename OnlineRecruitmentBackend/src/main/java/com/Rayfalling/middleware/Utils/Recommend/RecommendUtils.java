@@ -39,7 +39,7 @@ public class RecommendUtils {
     /**
      * 生成的推荐列表
      */
-    static int recommendSize = 10;
+    static int recommendSize = 5;
     
     public static void setRecommendSize(int recommendSize) {
         RecommendUtils.recommendSize = recommendSize;

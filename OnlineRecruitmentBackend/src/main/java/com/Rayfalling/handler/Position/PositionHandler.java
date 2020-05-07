@@ -57,7 +57,7 @@ public class PositionHandler {
                                                   .put("description", row.getString("description"))
                                                   .put("post_time", DataBaseExt
                                                                             .getLocalDateTimeToTimestamp(row, "post_time"))
-                                                  .put("position_category_id", row.getString("position_category_id"));
+                                                  .put("position_category_id", row.getInteger("position_category_id"));
                        }))
                        .doOnError(err -> {
                            Shared.getDatabaseLogger().error(err);

@@ -68,10 +68,11 @@ public class RecommendHandler {
         PgConnectionSingle().flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("RecommendLoadPosition")))
                             .flatMap(pgRowSet -> {
                                 pgRowSet.forEach(row -> {
-                                    PositionStorage
-                                            .add(new Position(row.getInteger("id"),
-                                                    row.getInteger("position_category_id"),
-                                                    row.getLocalDateTime("post_time")));
+                                    if (!PositionStorage.exist(row.getInteger("id")))
+                                        PositionStorage
+                                                .add(new Position(row.getInteger("id"),
+                                                        row.getInteger("position_category_id"),
+                                                        row.getLocalDateTime("post_time")));
                                 });
                                 return Single.just(pgRowSet);
                             })
@@ -92,12 +93,14 @@ public class RecommendHandler {
     
     public static void RegisterRecommendTimer() {
         TimerVerticle.register(AutoSave).subscribe(res -> {
-            logger.info("Register timer for recommendation auto save successful");
+            if (res)
+                logger.info("Register timer for recommendation auto save successful");
         }, err -> {
             logger.error("Register timer for recommendation auto save failed");
         });
         TimerVerticle.register(AutoLoadPosition).subscribe(res -> {
-            logger.info("Register timer for recommendation auto load successful");
+            if (res)
+                logger.info("Register timer for recommendation auto load successful");
         }, err -> {
             logger.error("Register timer for recommendation auto load failed");
         });
@@ -165,6 +168,7 @@ public class RecommendHandler {
      *
      * @param userId 用户Id
      */
+    @SuppressWarnings("DuplicatedCode")
     public static Single<JsonArray> Recommend(int userId, int positionId) {
         JsonObject weight;
         if (userId == -1) {
@@ -185,8 +189,10 @@ public class RecommendHandler {
             RecommendId.add(position.getId());
         }
         
-        return PgConnectionSingle().flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("RecommendList"),
-                Tuple.of(DataBaseExt.getQueryString(RecommendId))))
+        String storeSql = SqlQuery.getQuery("RecommendList");
+        String sql = DataBaseExt.prepareQuery(storeSql, Tuple.of(DataBaseExt.getQueryString(RecommendId)));
+       
+        return PgConnectionSingle().flatMap(conn -> conn.rxQuery(sql))
                                    .map(pgRowSet -> {
                                        return DataBaseExt.mapJsonArray(pgRowSet, row -> {
                                            return new JsonObject().put("id", row.getInteger("id"))
@@ -197,8 +203,8 @@ public class RecommendHandler {
                                                                   .put("post_mail", row.getString("post_mail"))
                                                                   .put("description", row.getString("description"))
                                                                   .put("post_time", DataBaseExt
-                                                                                            .getLocalDateTimeToTimestamp(row, "description"))
-                                                                  .put("position_category_id", row.getString("position_category_id"));
+                                                                                            .getLocalDateTimeToTimestamp(row, "post_time"))
+                                                                  .put("position_category_id", row.getInteger("position_category_id"));
                                        });
                                    })
                                    .doOnError(err -> {

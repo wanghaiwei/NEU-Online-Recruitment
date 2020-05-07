@@ -135,9 +135,7 @@ public class UserRouter {
             Token token = new Token(param.getInteger("id"), param.getString("phone"), identity);
             TokenStorage.add(token);
             context.session().put("token", token);
-            context.addCookie(Cookie.cookie("token", EncryptUtils.EncryptFromToken(token)));
-            JsonResponse.RespondSuccess(context, new JsonObject().put("msg", "Register Success")
-                                                                 .put("token", EncryptUtils.EncryptFromToken(token)));
+            JsonResponse.RespondSuccess(context, new JsonObject().put("msg", "Register Success"));
             return Single.just(token);
         }).doOnError(err -> {
             if (!context.response().ended()) {
@@ -224,10 +222,8 @@ public class UserRouter {
             Token token = new Token(param.getInteger("id"), param.getString("phone"), identity);
             TokenStorage.add(token);
             context.session().put("token", token);
-            context.addCookie(Cookie.cookie("token", EncryptUtils.EncryptFromToken(token)));
             JsonResponse.RespondSuccess(context, new JsonObject().put("user_id", param.getInteger("id"))
-                                                                 .put("msg", "Login Success")
-                                                                 .put("token", EncryptUtils.EncryptFromToken(token)));
+                                                                 .put("msg", "Login Success"));
             Shared.getRouterLogger()
                   .info(context.normalisedPath() + " " + param.getString("phone") + " Login");
             return Single.just(token);
@@ -256,7 +252,6 @@ public class UserRouter {
             TokenStorage.remove(token.getUsername());
             
             context.session().remove("token");
-            context.removeCookie("token");
             
             JsonResponse.RespondSuccess(context, "Logout success.");
             Shared.getRouterLogger().info("User " + token.getUsername() + " Logout");
