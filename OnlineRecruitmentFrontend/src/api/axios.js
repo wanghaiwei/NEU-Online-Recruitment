@@ -1,5 +1,5 @@
 import axios from 'axios'
-import route from "../utils/browser/jump"
+import store from "../store"
 
 // 创建 axios 实例
 let service = axios.create({
@@ -30,12 +30,13 @@ service.interceptors.request.use(
 
 // 添加响应拦截器
 service.interceptors.response.use(
-    (response) => {
+    async (response) => {
         let {data} = response;
         if (data.code !== 0) {
             console.log(data.data);
             return Promise.reject(data.data);
         }
+        await store.dispatch("auth/changeToken", data.token)
         return Promise.resolve(data.data);
     },
     async (error) => {

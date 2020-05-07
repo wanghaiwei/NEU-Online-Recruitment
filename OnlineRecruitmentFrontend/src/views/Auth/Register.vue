@@ -86,7 +86,6 @@
                 });
                 if (response) {
                     this.$Message.info("注册成功");
-                    await this.$store.dispatch("auth/changeToken", response.token);
                 }
                 //todo jump update user info
             },

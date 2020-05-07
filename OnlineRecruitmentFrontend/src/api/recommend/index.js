@@ -1,15 +1,15 @@
 import http from '../index'
 import urls from './urls'
 
-function phoneVerify(urlOption, data) {
-    return http.post(urls.phoneVerify({...urlOption}), data)
+function list(urlOption, data) {
+    return http.post(urls.list({...urlOption}), data)
 }
 
-function mailVerify(urlOption, data) {
-    return http.post(urls.mailVerify({...urlOption}), data)
+function record(urlOption, data) {
+    return http.post(urls.record({...urlOption}), data)
 }
 
 export default {
-    phoneVerify,
-    mailVerify,
+    list,
+    record,
 }

@@ -5,7 +5,8 @@
             <NavBar/>
         </Header>
         <Content id="show-content">
-            <router-view/>
+            <router-view v-if="refreshing"></router-view>
+            <BackTop @click="backToTop"></BackTop>
         </Content>
     </Layout>
 </template>
@@ -13,11 +14,29 @@
 <script>
     export default {
         name: "App",
+        provide() {
+            return {
+                reload: this.refresh
+            }
+        },
         components: {
             NavBar: () => import(/* webpackChunkName: "NavBar" */ './components/NavBar'),
         },
         data() {
-            return {}
+            return {
+                refreshing: true
+            }
+        },
+        methods: {
+            refresh() {
+                this.refreshing = false;
+                this.$nextTick(() => {
+                    this.refreshing = true;
+                })
+            },
+            backToTop() {
+                this.$utils.scrollbar.scrollTo(0)
+            },
         },
         mounted() {
             this.$utils.scrollbar.initialise("#show-content");
@@ -31,7 +50,7 @@
 </script>
 
 <style scoped>
-    #app{
+    #app {
         background: #f5f7f9;
         position: relative;
     }

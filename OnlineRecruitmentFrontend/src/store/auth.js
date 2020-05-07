@@ -15,7 +15,7 @@ let auth = {
             state.current_user_avatar = payload.avatar;
         },
         changeUserToken(state, payload) {
-            state.token = payload.token
+            state.token = payload
         }
     },
     actions: {

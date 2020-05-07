@@ -1,16 +1,16 @@
 import baseUrl from '../baseUrl'
 
-const prefix = baseUrl + '/verify';
+const prefix = baseUrl + '/recommend';
 
-const phoneVerify = function () {
-    return `${prefix}/phone/new`;
+const list = function () {
+    return `${prefix}/list`;
 };
 
-const mailVerify = function () {
-    return `${prefix}/mail/new`;
+const record = function () {
+    return `${prefix}/record`;
 };
 
 export default {
-    phoneVerify,
-    mailVerify,
+    list,
+    record,
 }

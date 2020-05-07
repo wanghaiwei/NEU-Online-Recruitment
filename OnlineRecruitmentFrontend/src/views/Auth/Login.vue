@@ -95,7 +95,6 @@
                     user_profile.username = request.phone;
                     user_profile.state = true;
                     this.$Message.success("登录成功");
-                    await this.$store.dispatch("auth/changeToken", response.token);
                     let profile = await this.$api.auth.userProfile({}, {
                         "user_id": response.user_id
                     }).catch(error => {
