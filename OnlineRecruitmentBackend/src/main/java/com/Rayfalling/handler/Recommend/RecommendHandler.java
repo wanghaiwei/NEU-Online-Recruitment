@@ -2,14 +2,12 @@ package com.Rayfalling.handler.Recommend;
 
 import com.Rayfalling.Shared;
 import com.Rayfalling.middleware.Extensions.DataBaseExt;
-import com.Rayfalling.middleware.Response.JsonResponse;
 import com.Rayfalling.middleware.Utils.Recommend.RecommendUtils;
 import com.Rayfalling.middleware.Utils.sql.SqlQuery;
 import com.Rayfalling.middleware.data.Recommend.*;
 import com.Rayfalling.middleware.data.TimerEvent;
 import com.Rayfalling.verticle.TimerVerticle;
 import io.reactiverse.reactivex.pgclient.Tuple;
-import io.reactiverse.reactivex.pgclient.data.Json;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -123,8 +121,8 @@ public class RecommendHandler {
         }).map(pgRowSet -> {
             pgRowSet.forEach(row -> {
                 if (!RecommendUserStorage.exist(row.getInteger("user_id"))) {
-                    Json json = row.getJson("recommend");
-                    RecommendUserStorage.add(new RecommendUser(row.getInteger("user_id"), JsonObject.mapFrom(json)));
+                    String json = row.getJson("recommend").toString();
+                    RecommendUserStorage.add(new RecommendUser(row.getInteger("user_id"), new JsonObject(json)));
                 } else {
                     RecommendUserStorage.find(row.getInteger("user_id"))
                                         .updateWeight(JsonObject.mapFrom(row.getJson("recommend")));
@@ -191,7 +189,7 @@ public class RecommendHandler {
         
         String storeSql = SqlQuery.getQuery("RecommendList");
         String sql = DataBaseExt.prepareQuery(storeSql, Tuple.of(DataBaseExt.getQueryString(RecommendId)));
-       
+        
         return PgConnectionSingle().flatMap(conn -> conn.rxQuery(sql))
                                    .map(pgRowSet -> {
                                        return DataBaseExt.mapJsonArray(pgRowSet, row -> {
@@ -223,7 +221,7 @@ public class RecommendHandler {
                                                     .map(Position::getLabel)
                                                     .distinct().collect(Collectors.toList());
         for (Integer integer : categoryList) {
-            weight.put(String.valueOf(integer), 1.0f / categoryList.size());
+            weight.put(String.valueOf(integer), 1.0D / categoryList.size());
         }
         return weight;
     }

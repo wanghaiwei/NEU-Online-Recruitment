@@ -35,11 +35,11 @@ public class RecommendUtils {
     /**
      * TopK推荐
      */
-    static int topK = 2;
+    static int topK = 3;
     /**
      * 生成的推荐列表
      */
-    static int recommendSize = 5;
+    static int recommendSize = 10;
     
     public static void setRecommendSize(int recommendSize) {
         RecommendUtils.recommendSize = recommendSize;
@@ -54,7 +54,7 @@ public class RecommendUtils {
      */
     public static JsonObject RecomputeWeight(JsonObject weight, int category, int second) {
         JsonObject jsonObject = ScaleWeight(weight);
-        Integer current = jsonObject.getInteger(String.valueOf(category));
+        Double current = jsonObject.getDouble(String.valueOf(category));
         if (second >= positiveFeedbackTime) {
             current += Math.min(second * timeWeight, maxUpdateWeight);
         } else if (second <= negativeFeedbackTime) {
@@ -70,7 +70,7 @@ public class RecommendUtils {
     private static JsonObject ScaleWeight(@NotNull JsonObject weight) {
         JsonObject jsonObject = weight.copy();
         for (Map.Entry<String, Object> item : jsonObject) {
-            item.setValue((Integer) item.getValue() * 1000);
+            item.setValue((Double) item.getValue() * 1000);
         }
         return jsonObject;
     }
@@ -79,36 +79,35 @@ public class RecommendUtils {
      * 归一化用户权重
      */
     private static JsonObject NormalizeWeight(@NotNull JsonObject weight) {
-        int max = Integer.MAX_VALUE, min = Integer.MIN_VALUE;
-        for (Map.Entry<String, Object> item : weight) {
-            max = Math.max((Integer) item.getValue(), max);
-            min = Math.min((Integer) item.getValue(), min);
-        }
+        double total = 0.0D;
         JsonObject jsonObject = weight.copy();
         for (Map.Entry<String, Object> item : jsonObject) {
-            item.setValue(Normalize((Integer) item.getValue(), max, min));
+            total += (Double) item.getValue();
+        }
+        for (Map.Entry<String, Object> item : jsonObject) {
+            item.setValue((Double) item.getValue() / total);
         }
         return jsonObject;
     }
     
     /**
-     * 线性正则化
-     */
-    private static int Normalize(int value, int max, int min) {
-        return (value - min) / (max - min);
-    }
-    
-    /**
      * 生成推荐列表
      */
+    @SuppressWarnings("RedundantCast")
     public static @NotNull List<Position> generateRecommendList(@NotNull JsonObject weight, int positionId) {
-        PriorityQueue<Map.Entry<String, Object>> priorityQueue = new PriorityQueue<>(topK, (o1, o2) -> (int) ((Float) o2.getValue() - (Float) o1.getValue()));
+        PriorityQueue<Map.Entry<String, Object>> priorityQueue = new PriorityQueue<>(topK, (o1, o2) -> (int) ((Double) o2.getValue() - (Double) o1.getValue()));
         for (Map.Entry<String, Object> item : weight) {
             if (priorityQueue.size() < topK) {
                 priorityQueue.offer(item);
-            } else if (!priorityQueue.isEmpty() && (Float) priorityQueue.peek().getValue() > (Float) item.getValue()) {
+            } else if (!priorityQueue.isEmpty() && (Double) priorityQueue.peek()
+                                                                         .getValue() > (Double) item.getValue()) {
                 priorityQueue.poll();
                 priorityQueue.offer(item);
+            } else if (!priorityQueue.isEmpty() && priorityQueue.peek().getValue().equals(item.getValue())) {
+                if (new Random().nextInt() % 2 == 0) {
+                    priorityQueue.poll();
+                    priorityQueue.offer(item);
+                }
             }
         }
         
@@ -116,20 +115,20 @@ public class RecommendUtils {
         JsonArray recommendCandidate = new JsonArray();
         while (!priorityQueue.isEmpty()) {
             recommendCandidate.add(new JsonObject().put("category", Integer.valueOf(priorityQueue.peek().getKey()))
-                                                   .put("weight", (Float) Objects.requireNonNull(priorityQueue.peek())
-                                                                                 .getValue()));
+                                                   .put("weight", (Double) Objects.requireNonNull(priorityQueue.peek())
+                                                                                  .getValue()));
             priorityQueue.poll();
         }
         
         //获取TopK的总权重
-        Float totalWeight = 0F;
+        Double totalWeight = 0D;
         for (Object object : recommendCandidate) {
-            totalWeight += ((JsonObject) object).getFloat("weight");
+            totalWeight += ((JsonObject) object).getDouble("weight");
         }
         
         //更新选取权值
         for (Object object : recommendCandidate) {
-            ((JsonObject) object).put("weight", ((JsonObject) object).getFloat("weight") / totalWeight);
+            ((JsonObject) object).put("weight", ((JsonObject) object).getDouble("weight") / totalWeight);
         }
         
         List<Position> RecommendList = new LinkedList<>();
@@ -147,7 +146,7 @@ public class RecommendUtils {
                                        }
                                        if (RecommendMapStorage.exist(positionId, o2.getId())) {
                                            o2Score += RecommendMapStorage.find(positionId, o2.getId())
-                                                                         .getHitCount() * 5 ;
+                                                                         .getHitCount() * 5;
                                        }
                                        return o2Score - o1Score + new Random().nextInt() % 100;
                                    }).limit((long) (((JsonObject) object).getFloat("weight") * recommendSize))
