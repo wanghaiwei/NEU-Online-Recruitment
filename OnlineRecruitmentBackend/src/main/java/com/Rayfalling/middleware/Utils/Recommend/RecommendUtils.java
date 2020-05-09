@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 public class RecommendUtils {
     /**
-     * 时间更细权重
+     * 时间更新权重
      */
     static int timeWeight = 2;
     /**
@@ -35,7 +35,7 @@ public class RecommendUtils {
     /**
      * TopK推荐
      */
-    static int topK = 3;
+    static int topK = 2;
     /**
      * 生成的推荐列表
      */

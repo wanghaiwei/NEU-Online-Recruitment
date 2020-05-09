@@ -33,7 +33,7 @@ public class GroupRouter {
               .handler(GroupRouter::GroupIndex);
         
         /* 不需要鉴权的路由 */
-        router.get("/search")
+        router.post("/search")
               .handler(GroupRouter::GroupSearch);
         router.get("/info/all")
               .handler(GroupRouter::GroupInfoAll);
@@ -69,7 +69,7 @@ public class GroupRouter {
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void GroupCategoryAll(@NotNull RoutingContext context) {
-        getJsonObjectSingle(context).doOnError(err -> {
+        Single.just(context).doOnError(err -> {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON);
                 Shared.getRouterLogger()
@@ -95,7 +95,7 @@ public class GroupRouter {
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void GroupInfoAll(@NotNull RoutingContext context) {
-        getJsonObjectSingle(context).doOnError(err -> {
+        Single.just(context).doOnError(err -> {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_REQUEST_JSON);
                 Shared.getRouterLogger()

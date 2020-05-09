@@ -40,10 +40,15 @@ public class GroupHandler {
     public static Single<JsonArray> DatabaseQueryGroupInfo() {
         return PgConnectionSingle()
                        .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("GroupQueryInfo")))
-                       .map(res -> DataBaseExt.mapJsonArray(res, row -> new JsonObject().put("id", row.getInteger("id"))
-                                                                                        .put("avatar", row.getInteger("logo"))
-                                                                                        .put("description", row.getInteger("description"))
-                                                                                        .put("name", row.getString("name"))))
+                       .map(res -> {
+                           return DataBaseExt.mapJsonArray(res, row -> {
+                               return new JsonObject().put("id", row.getInteger("id"))
+                                                      .put("avatar", row.getString("logo"))
+                                                      .put("description", row.getString("description"))
+                                                      .put("name", row.getString("name"))
+                                                      .put("group_category_id", row.getInteger("group_category_id"));
+                           });
+                       })
                        .doOnError(err -> {
                            Shared.getDatabaseLogger().error(err);
                            err.printStackTrace();
@@ -82,7 +87,8 @@ public class GroupHandler {
     public static Single<JsonArray> DatabaseSearchGroup(@NotNull JsonObject data) {
         Tuple tuple = Tuple.of(DataBaseExt.getQueryString(data.getString("content")),
                 DataBaseExt.getQueryString(data.getJsonArray("group_category_id")));
-        String storeSql = SqlQuery.getQuery("PositionSearch");
+        
+        String storeSql = SqlQuery.getQuery("GroupSearch");
         String sql = DataBaseExt.prepareQuery(storeSql, tuple);
         return PgConnectionSingle()
                        .flatMap(conn -> conn.rxQuery(sql))
