@@ -10,7 +10,17 @@
                         <Time :time="position.post_time || new Date()" type="date"/>
                     </li>
                     <li>
-                        <span/>发布邮箱：{{position.post_mail}}
+                        <Icon type="ios-star-outline"/>
+                        收藏
+                    </li>
+                    <li>
+                        <span>发布邮箱：{{position.post_mail}}</span>
+                    </li>
+                    <li>
+                        <span>删除</span>
+                    </li>
+                    <li>
+                        <span>编辑</span>
                     </li>
                 </template>
                 <template slot="extra" class="position-img">
@@ -65,11 +75,10 @@
                         position_id: this.position.id,
                     };
                 let recommend = await this.$api.recommend.list({}, request);
-                if (recommend){
+                if (recommend) {
                     this.recommend = recommend;
                     this.recommend.sort((a, b) => b.post_time - a.post_time);
-                }
-                else
+                } else
                     this.recommend = [];
 
             },

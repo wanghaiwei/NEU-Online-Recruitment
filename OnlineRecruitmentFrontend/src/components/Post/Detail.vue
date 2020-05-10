@@ -18,7 +18,14 @@
             </ListItem>
         </List>
         <Divider>动态</Divider>
-        <List item-layout="vertical" :loading="onLoading">
+        <div style="float: right;">
+            <span @click="sort = 'hottest'" style="cursor: pointer"
+                  :style="{'color':sort == 'hottest' ? 'blue' : 'unset'}">最热</span>
+            <Divider type="vertical"/>
+            <span @click="sort = 'newest'" style="cursor: pointer"
+                  :style="{'color':sort == 'newest' ? 'blue' : 'unset'}">最新</span>
+        </div>
+        <List item-layout="vertical" :loading="onLoading" style="margin-top: 42px">
             <ListItem v-if="!onLoading" v-for="item in posts" :key="item.id">
                 <ListItemMeta :avatar="item.avatar" :title="item.nickname"/>
                 {{item.content}}
@@ -27,11 +34,16 @@
                         <Time :time="item.timestamp" type="date"/>
                     </li>
                     <li>
-                        <Icon type="ios-star-outline" /> {{item.favorite_number}}
+                        <Icon type="ios-star-outline"/>
+                        {{item.favorite_number}}
                     </li>
                     <li>
-                        <Icon type="ios-thumbs-up-outline" />
+                        <Icon type="ios-thumbs-up-outline"/>
                         {{item.like_number}}
+                    </li>
+                    <li>
+                        <Icon type="ios-chatboxes-outline"/>
+                        {{item.comment_number}}
                     </li>
                 </template>
             </ListItem>
@@ -57,6 +69,12 @@
                 onLoading: true,
             }
         },
+        watch: {
+            sort: function (val) {
+                this.onLoading = true;
+                this.fetchPost();
+            }
+        },
         methods: {
             async fetchPost() {
                 let post = await this.$api.post.all({}, {
@@ -68,19 +86,19 @@
                         this.fetchUserProfile(value)
                     })
                     this.posts = post;
-                    this.$nextTick(()=>{
+                    this.$nextTick(() => {
                         this.onLoading = true;
-                        setTimeout(()=>{
+                        setTimeout(() => {
                             this.onLoading = false;
-                        },1000);
+                        }, 1000);
                     })
-                } else{
+                } else {
                     this.posts = [];
-                    this.$nextTick(()=>{
+                    this.$nextTick(() => {
                         this.onLoading = true;
-                        setTimeout(()=>{
+                        setTimeout(() => {
                             this.onLoading = false;
-                        },1000);
+                        }, 1000);
                     })
                 }
             },

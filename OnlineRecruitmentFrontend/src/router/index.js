@@ -4,7 +4,7 @@ import HistoryStack from '../utils/browser/historyStack'
 import auth from "./auth";
 import group from "./group";
 import position from "./position";
-import personal from "./personal";
+import personal from "./user";
 
 Vue.use(Router);
 

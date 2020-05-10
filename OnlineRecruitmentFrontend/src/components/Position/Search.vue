@@ -2,14 +2,14 @@
 <template>
     <div>
         <Form ref="search" inline>
-            <FormItem prop="location">
+            <FormItem prop="grade">
                 <Select v-model="search.grade" multiple prefix="ios-book" placeholder="职位类型"
                         style="width:180px">
                     <Option v-for="item in grade" :value="item.id" :key="item.id">{{ item.label }}
                     </Option>
                 </Select>
             </FormItem>
-            <FormItem prop="location">
+            <FormItem prop="position_category_id">
                 <Select v-model="search.position_category_id" multiple prefix="ios-globe-outline"
                         placeholder="职位类型">
                     <Option v-for="item in categoryList" :value="item.id" :key="item.id">{{ item.name }}
