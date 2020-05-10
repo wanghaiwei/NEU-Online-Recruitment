@@ -6,7 +6,7 @@
             <div class="mask"></div>
         </div>
         <Card class="reset-card">
-            <h1 slot="title">登录</h1>
+            <h1 slot="title">忘记密码</h1>
             <Form ref="reset">
                 <FormItem prop="user">
                     <Input type="text" size="large" v-model="phone" placeholder="手机号">

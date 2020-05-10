@@ -30,7 +30,7 @@
                 this.time--;
                 if (this.time < 0) {
                     this.time = 0;
-                    this.$utils.browser.route.jump('/index')
+                    this.$utils.browser.route.jump('/')
                 }
             }
         },

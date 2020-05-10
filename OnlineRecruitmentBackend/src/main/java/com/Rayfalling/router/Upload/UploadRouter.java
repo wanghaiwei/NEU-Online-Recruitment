@@ -24,7 +24,7 @@ import java.util.Set;
  */
 public class UploadRouter {
     private static final Router router = Router.router(Shared.getVertx());
-    static String uploadPrefix = "upload/";
+    static String uploadPrefix = "/upload/";
     
     //静态初始化块
     static {
@@ -114,7 +114,7 @@ public class UploadRouter {
                 }, failure -> {
                     Shared.getRouterLogger().error(failure.getMessage());
                 });
-                fileList.put(fileUpload.name(), path);
+                fileList.put("/api" + fileUpload.name(), path);
             }
             JsonResponse.RespondJson(context, new JsonObject().put("filepath", fileList));
             

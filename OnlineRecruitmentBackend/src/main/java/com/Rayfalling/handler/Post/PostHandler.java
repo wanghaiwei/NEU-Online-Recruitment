@@ -22,7 +22,7 @@ public class PostHandler {
     public static Single<JsonArray> DatabaseFetchAll(@NotNull JsonObject data) {
         Tuple tuple = Tuple.of(data.getInteger("group_id"), data.getString("sort_col").equals("hottest") ? 0 : 1);
         return PgConnectionSingle()
-                       .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("PostFetchAll"), Tuple.of(tuple)))
+                       .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("PostFetchAll"), tuple))
                        .map(res -> {
                            return DataBaseExt.mapJsonArray(res, row -> {
                                return new JsonObject().put("id", row.getInteger("id"))
@@ -32,7 +32,7 @@ public class PostHandler {
                                                       .put("is_pinned", row.getBoolean("is_pinned"))
                                                       .put("like_number", row.getInteger("like_number"))
                                                       .put("comment_number", row.getInteger("comment_number"))
-                                                      .put("favourite_number", row.getInteger("favourite_number"))
+                                                      .put("favorite_number", row.getInteger("favorite_number"))
                                                       .put("timestamp", DataBaseExt
                                                                                 .getLocalDateTimeToTimestamp(row, "timestamp"));
                            });

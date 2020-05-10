@@ -30,7 +30,7 @@
         name: "NavBar",
         watch: {
             "$route"(to, from) {
-                if (to.path === '/' || to.path === '/index') {
+                if (to.path === '/' || to.path === '/position') {
                     this.active_name = "position"
                 } else if (to.path === '/group') {
                     this.active_name = "group"
@@ -56,7 +56,7 @@
             updateMenu(route) {
                 if (route === 'position') {
                     this.active_name = 'position'
-                    this.$utils.browser.route.jump('/')
+                    this.$utils.browser.route.jump('/position')
                 } else if (route === 'group') {
                     this.active_name = 'group'
                     this.$utils.browser.route.jump('/group')
@@ -77,7 +77,7 @@
             }
         },
         mounted() {
-            if (this.$route.path === '/' || this.$route.path === '/index') {
+            if (this.$route.path === '/' || this.$route.path === '/position') {
                 this.active_name = "position"
             } else if (this.$route.path === '/group') {
                 this.active_name = "group"

@@ -1,5 +1,23 @@
 let router = [
     {
+        path: '/position',
+        component: () => import(/* webpackChunkName: "Index" */ '../views/Index.vue'),
+        children: [{
+            path: '/',
+            components: {
+                main: () => import(/* webpackChunkName: "Index" */ '../components/Position/Search.vue'),
+                side: () => import(/* webpackChunkName: "Sidebar" */ '../components/Position/Sidebar.vue'),
+            },
+            meta: {
+                keepAlive: true,
+                title: "首页",
+            },
+        }],
+        meta: {
+            keepAlive: true,
+            title: "首页",
+        },
+    }, {
         path: '/position/detail',
         component: () => import(/* webpackChunkName: "Index" */ '../views/Index.vue'),
         meta: {
@@ -9,7 +27,7 @@ let router = [
             path: '/',
             components: {
                 main: () => import(/* webpackChunkName: "PositionDetail" */ '../components/Position/Detail.vue'),
-                side: () => import(/* webpackChunkName: "Sidebar" */ '../components/Sidebar.vue'),
+                side: () => import(/* webpackChunkName: "Sidebar" */ '../components/Position/Sidebar.vue'),
             }
         }],
     },

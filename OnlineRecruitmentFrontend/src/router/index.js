@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import HistoryStack from '../utils/browser/historyStack'
 import auth from "./auth";
+import group from "./group";
 import position from "./position";
 import personal from "./personal";
 
@@ -16,14 +17,14 @@ let router = new Router({
     mode: 'history',
     base: process.env.BASE_URL,
     routes: [
-         {
+        {
             path: '/',
             component: () => import(/* webpackChunkName: "Index" */ '../views/Index.vue'),
             children: [{
                 path: '/',
                 components: {
                     main: () => import(/* webpackChunkName: "Index" */ '../components/Position/Search.vue'),
-                    side: () => import(/* webpackChunkName: "Sidebar" */ '../components/Sidebar.vue'),
+                    side: () => import(/* webpackChunkName: "Sidebar" */ '../components/Position/Sidebar.vue'),
                 },
                 meta: {
                     keepAlive: true,
@@ -34,25 +35,7 @@ let router = new Router({
                 keepAlive: true,
                 title: "首页",
             },
-        }, {
-            path: '/index',
-            component: () => import(/* webpackChunkName: "Index" */ '../views/Index.vue'),
-            children: [{
-                path: '/',
-                components: {
-                    main: () => import(/* webpackChunkName: "Index" */ '../components/Position/Search.vue'),
-                    side: () => import(/* webpackChunkName: "Sidebar" */ '../components/Sidebar.vue'),
-                },
-                meta: {
-                    keepAlive: true,
-                    title: "首页",
-                },
-            }],
-            meta: {
-                keepAlive: true,
-                title: "首页",
-            },
-        },...auth, ...position, ...personal, {
+        }, ...auth, ...position, ...group, ...personal, {
             path: '*',
             redirect: '/404',
         }, {

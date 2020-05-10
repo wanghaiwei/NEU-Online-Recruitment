@@ -33,10 +33,8 @@ public class PostRouter {
               .handler(PostRouter::PostIndex);
         
         /* 不需要鉴权的路由 */
-        router.get("/all")
+        router.post("/all")
               .handler(PostRouter::FetchAll);
-        router.get("/category/all")
-              .handler(MainRouter::UnImplementedRouter);
         
         /* 需要鉴权的路由 */
         router.post("/new")

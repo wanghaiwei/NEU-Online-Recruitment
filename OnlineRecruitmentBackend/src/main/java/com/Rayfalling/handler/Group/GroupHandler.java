@@ -66,7 +66,7 @@ public class GroupHandler {
                 data.getString("group_description"), data.getInteger("group_category_id"),
                 data.getInteger("user_id"));
         return PgConnectionSingle()
-                       .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("GroupNew"), Tuple.of(tuple)))
+                       .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("GroupNew"), tuple))
                        .map(res -> {
                            Row row = DataBaseExt.oneOrNull(res);
                            return row != null ? row.getInteger(0) : -1;
@@ -117,7 +117,7 @@ public class GroupHandler {
         Tuple tuple = Tuple.of(DataBaseExt.getQueryString(data.getString("content")),
                 DataBaseExt.getQueryString(data.getJsonArray("group_category_id")));
         return PgConnectionSingle()
-                       .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("GroupJoin"), Tuple.of(tuple)))
+                       .flatMap(conn -> conn.rxPreparedQuery(SqlQuery.getQuery("GroupJoin"), tuple))
                        .map(res -> {
                            Row row = DataBaseExt.oneOrNull(res);
                            return row != null ? row.getInteger(0) : -1;

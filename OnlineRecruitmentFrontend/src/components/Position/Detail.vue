@@ -105,7 +105,7 @@
         async mounted() {
             let param = await this.$utils.browser.route.fetchParam(this.$route.path);
             if (param == undefined || param == [])
-                this.$utils.browser.route.jump('/index');
+                this.$utils.browser.route.jump('/');
             [this.position, this.grade, this.categoryList] = param;
             await this.fetchRecommend();
             this.loadTime = new Date().valueOf()

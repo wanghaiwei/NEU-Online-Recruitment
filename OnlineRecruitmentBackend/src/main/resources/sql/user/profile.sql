@@ -1,3 +1,3 @@
 select id, nickname, avatar, description
 from "user_info"
-where id = $1;
+where user_id = $1;

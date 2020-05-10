@@ -41,9 +41,11 @@
                         <Time :time="item.post_time" type="date"/>
                     </li>
                 </template>
-                <template slot="extra" class="position-img">
-                    <img :src="fetchCompanyImg(item.company)" onerror="this.src = '/company/no_nompany.png';"
-                         style="width: 280px;height: 140px; object-fit: scale-down;">
+                <template slot="extra">
+                    <div class="position-img">
+                        <img :src="fetchCompanyImg(item.company)" onerror="this.src = '/company/no_nompany.png';"
+                             style="width: 280px;height: 140px; object-fit: contain;">
+                    </div>
                 </template>
             </ListItem>
             <div style="text-align: center" slot="footer">
@@ -97,7 +99,7 @@
                     this.locationList = ["全部", ...new Set(this.locationList.concat(this.positionList.map(item => item.location)))];
                     this.page.totalSize = this.positionList.length
                     this.page.current = 1;
-                    this.page.list = this.positionList.slice(0, 1 * this.page.pageSize);
+                    this.page.list = this.positionList.slice(0, 1 * this.page.pageSize > this.page.totalSize ? this.page.totalSize : 1 * this.page.pageSize);
                 } else
                     this.positionList = [];
             },
@@ -141,8 +143,11 @@
         cursor: pointer;
     }
 
-    .position-img{
+    .position-img {
+width: 100%;
+        height: 100%;
         display: flex;
         align-items: center;
+        justify-content: center;
     }
 </style>
