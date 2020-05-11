@@ -196,7 +196,7 @@ BEGIN
                          from post
                          where group_id = post_group_id
                          group by post.id
-                         order by timestamp;
+                         order by timestamp desc;
         else
             RAISE Exception 'Unknown sort method';
         end if;
@@ -779,7 +779,7 @@ BEGIN
     else
         insert into "user" (password, phone) values (user_password, user_phone) returning id into UserID;
         insert into user_credit (user_id, credit) values (UserID, 10);
-        RESULT = 0;
+        RESULT = UserID;
     end if;
     return RESULT;
 END;
@@ -2260,7 +2260,16 @@ COPY public.authentication_info (id, user_id, identity, begin_time, end_time, co
 --
 
 COPY public."group" (id, name, logo, description, group_category_id, logo_last_update) FROM stdin;
-1	测试	没有logo.jpg	测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试	1	2020-04-24 15:14:09
+1	java学习交流圈	/api/upload/logo/2020/5/image1.png	本圈子专为Java开发方向学习者、求职者和从业者设立，方便用户交流Java开发方面的知识。	1	2020-04-20 00:00:00
+2	C++学习交流圈	/api/upload/logo/2020/5/image2.png	本圈子专为C++开发方向学习者、求职者和从业者设立，方便用户交流C++开发方面的知识。	1	2020-04-21 00:00:00
+3	算法学习交流圈	/api/upload/logo/2020/5/image3.png	本圈子专为算法开发方向学习者、求职者和从业者设立，方便用户交流算法开发方面的知识。	1	2020-04-22 00:00:00
+4	产品学习交流圈	/api/upload/logo/2020/5/image4.png	本圈子专为产品方向学习者、求职者和从业者设立，方便用户交流产品方面的知识。	1	2020-04-23 00:00:00
+5	运营学习交流圈	/api/upload/logo/2020/5/image5.png	本圈子专为运营方向学习者、求职者和从业者设立，方便用户交流运营方面的知识。	1	2020-04-24 00:00:00
+6	腾讯春招圈	/api/upload/logo/2020/5/image6.png	本圈子供腾讯春招求职者使用，用于交流求职招聘消息，求职招聘进度，笔试面试offer信息等内容。	2	2020-04-25 00:00:00
+7	阿里春招圈	/api/upload/logo/2020/5/image7.png	本圈子供阿里春招求职者使用，用于交流求职招聘消息，求职招聘进度，笔试面试offer信息等内容。	2	2020-04-26 00:00:00
+8	字节跳动春招圈	/api/upload/logo/2020/5/image8.png	本圈子供字节跳动春招求职者使用，用于交流求职招聘消息，求职招聘进度，笔试面试offer信息等内容。	2	2020-04-27 00:00:00
+9	美团春招圈	/api/upload/logo/2020/5/image9.png	本圈子供美团春招求职者使用，用于交流求职招聘消息，求职招聘进度，笔试面试offer信息等内容。	2	2020-04-28 00:00:00
+10	小米春招圈	/api/upload/logo/2020/5/image10.png	本圈子供小米春招求职者使用，用于交流求职招聘消息，求职招聘进度，笔试面试offer信息等内容。	2	2020-04-29 00:00:00
 \.
 
 
@@ -2644,6 +2653,21 @@ COPY public.position_recommend_data (id, position_id, next_id, hit_count) FROM s
 98	148	198	98
 99	149	199	99
 100	150	200	100
+101	5	101	1
+102	9	116	1
+103	75	85	1
+104	116	75	1
+105	3	135	1
+106	2	51	1
+107	21	115	1
+108	115	174	1
+109	174	74	1
+110	3	59	1
+111	180	124	1
+112	109	100	1
+113	124	109	1
+114	59	93	1
+115	3	180	1
 \.
 
 
@@ -2652,7 +2676,7 @@ COPY public.position_recommend_data (id, position_id, next_id, hit_count) FROM s
 --
 
 COPY public.position_user_recommend (id, user_id, recommend) FROM stdin;
-1	1	{\r\n      "1": 0.1,\r\n      "2": 0.1\r\n    }
+1	21	"{\\"5\\":0.14285715,\\"3\\":0.14285715,\\"6\\":0.14285715,\\"2\\":0.14285715,\\"4\\":0.14285715,\\"1\\":0.14285715,\\"7\\":0.14285715}"
 \.
 
 
@@ -2661,6 +2685,21 @@ COPY public.position_user_recommend (id, user_id, recommend) FROM stdin;
 --
 
 COPY public.post (id, content, group_id, user_id, like_number, comment_number, favorite_number, is_pinned, "timestamp") FROM stdin;
+11	求问csig面试流程。。。	6	21	7	12	47	f	2020-05-06 00:00:00
+10	刚面完pcg二面，面了半个小时。	6	21	5	46	36	f	2020-05-05 00:00:00
+9	腾讯IEG运营面试一般都问什么问题呀？	6	21	1	7	24	f	2020-05-04 00:00:00
+8	大家的腾讯面试流程都结束了吗……是不是现在还没消息就等于挂了啊？	6	21	6	19	17	f	2020-05-03 00:00:00
+15	每日leetcode，加油！	6	21	15	25	36	f	2020-05-10 00:00:00
+14	面试之前一定要好好看算法啊！	6	21	26	29	33	f	2020-05-09 00:00:00
+13	等我上岸，一定写面经回馈大家！	6	21	22	15	25	f	2020-05-08 00:00:00
+12	许愿HR面顺顺利利~	6	21	17	10	13	f	2020-05-07 00:00:00
+3	许愿腾讯offer call！	6	21	3	26	9	f	2020-04-28 00:00:00
+2	有人做过腾讯笔试吗？题目类型是什么？	6	21	1	5	7	f	2020-04-27 00:00:00
+1	有投递腾讯春招的同学吗？	6	21	12	13	6	f	2020-04-26 00:00:00
+7	之前被捞起来不面直接零点灰掉了，昨天又被同一岗位约初试。	6	21	9	8	19	f	2020-05-02 00:00:00
+6	刚刚被腾讯音乐电话面试了，前面说了半天挺好的，然后问了一个股票买卖问题，给他描述了dp解法之后，居然问我是不是在网上搜索的。\n	6	21	21	23	18	t	2020-05-01 00:00:00
+5	腾讯春招已经开始，想要投递的头寻抓紧！	6	21	44	11	14	f	2020-04-30 00:00:00
+4	许愿oc，4.17晚上hr面，马上变成已完成。	6	21	52	6	11	f	2020-04-29 00:00:00
 \.
 
 
@@ -2745,6 +2784,8 @@ COPY public."user" (id, password, phone, identity) FROM stdin;
 18	ab9911223344	13898301128	100
 19	ab0011223344	13898301129	100
 20	ab0123456789	13898301130	100
+21	e10adc3949ba59abbe56e057f20f883e	18262258003	0
+23	e10adc3949ba59abbe56e057f20f883e	17704226314	101
 \.
 
 
@@ -2753,6 +2794,7 @@ COPY public."user" (id, password, phone, identity) FROM stdin;
 --
 
 COPY public.user_credit (id, user_id, credit, banned_begin_time) FROM stdin;
+2	23	10	\N
 \.
 
 
@@ -2769,6 +2811,7 @@ COPY public.user_follow (id, uid, fid) FROM stdin;
 --
 
 COPY public.user_info (id, user_id, nickname, nikename_last_update, gender, description, avatar, expected_career_id, register_time) FROM stdin;
+1	21	墨笙	2020-05-09 17:10:24	男	没有说明	/api/upload/avatar/2020/4/21.jpg	1	2020-05-09 17:10:55
 \.
 
 
@@ -2828,7 +2871,7 @@ SELECT pg_catalog.setval('public.group_category_id_seq', 4, true);
 -- Name: group_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.group_id_seq', 1, true);
+SELECT pg_catalog.setval('public.group_id_seq', 10, true);
 
 
 --
@@ -2870,14 +2913,14 @@ SELECT pg_catalog.setval('public.position_category_id_seq', 7, true);
 -- Name: position_recommend_data_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.position_recommend_data_id_seq', 1, false);
+SELECT pg_catalog.setval('public.position_recommend_data_id_seq', 124, true);
 
 
 --
 -- Name: position_user_recommend_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.position_user_recommend_id_seq', 2, true);
+SELECT pg_catalog.setval('public.position_user_recommend_id_seq', 271, true);
 
 
 --
@@ -2891,7 +2934,7 @@ SELECT pg_catalog.setval('public.post_comment_id_seq', 1, false);
 -- Name: post_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.post_id_seq', 2, true);
+SELECT pg_catalog.setval('public.post_id_seq', 4, true);
 
 
 --
@@ -2933,7 +2976,7 @@ SELECT pg_catalog.setval('public.report_reply_id_seq', 1, false);
 -- Name: user_credit_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.user_credit_id_seq', 1, false);
+SELECT pg_catalog.setval('public.user_credit_id_seq', 2, true);
 
 
 --
@@ -2947,14 +2990,14 @@ SELECT pg_catalog.setval('public.user_follow_id_seq', 1, false);
 -- Name: user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.user_id_seq', 13, true);
+SELECT pg_catalog.setval('public.user_id_seq', 24, false);
 
 
 --
 -- Name: user_info_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.user_info_id_seq', 1, false);
+SELECT pg_catalog.setval('public.user_info_id_seq', 1, true);
 
 
 --
