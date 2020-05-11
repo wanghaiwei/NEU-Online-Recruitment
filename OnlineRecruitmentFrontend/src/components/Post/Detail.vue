@@ -27,7 +27,12 @@
         </div>
         <List item-layout="vertical" :loading="onLoading" style="margin-top: 42px">
             <ListItem v-if="!onLoading" v-for="item in posts" :key="item.id">
-                <ListItemMeta :avatar="item.avatar" :title="item.nickname"/>
+                <ListItemMeta :avatar="item.avatar">
+                    <template slot="title">
+                        <span>{{item.nickname}}</span>
+                        <Icon type="ios-pin" v-if="item.is_pinned"/>
+                    </template>
+                </ListItemMeta>
                 {{item.content}}
                 <template slot="action">
                     <li>
@@ -85,7 +90,17 @@
                     post.forEach(value => {
                         this.fetchUserProfile(value)
                     })
-                    this.posts = post;
+                    let pinned = post.filter(item => item.is_pinned);
+                    let pinnedId = [];
+                    for (let index = 0; index < pinned.length; index++) {
+                        pinnedId[pinned[index].id] = true;
+                    }
+                    let left = [];
+                    for (let index = 0; index < post.length; index++) {
+                        if (!pinnedId[post[index].id])
+                            left.push(post[index])
+                    }
+                    this.posts = pinned.concat(left);
                     this.$nextTick(() => {
                         this.onLoading = true;
                         setTimeout(() => {

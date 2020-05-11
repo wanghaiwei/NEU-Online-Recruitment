@@ -2,7 +2,7 @@
     <layout class="index">
         <Content>
             <Row type="flex" justify="center" align="top" :gutter="24">
-                <Col span="20" offset="2">
+                <Col span="20">
                     <Card>
                         <keep-alive>
                             <router-view v-if="$route.meta.keepAlive"></router-view>

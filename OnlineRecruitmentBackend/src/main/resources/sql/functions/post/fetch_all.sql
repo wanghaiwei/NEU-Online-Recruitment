@@ -19,7 +19,7 @@ BEGIN
                          from post
                          where group_id = post_group_id
                          group by post.id
-                         order by timestamp;
+                         order by timestamp desc;
         else
             RAISE Exception 'Unknown sort method';
         end if;

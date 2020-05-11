@@ -4,7 +4,8 @@ import HistoryStack from '../utils/browser/historyStack'
 import auth from "./auth";
 import group from "./group";
 import position from "./position";
-import personal from "./user";
+import user from "./user";
+import admin from "./admin";
 
 Vue.use(Router);
 
@@ -35,7 +36,13 @@ let router = new Router({
                 keepAlive: true,
                 title: "首页",
             },
-        }, ...auth, ...position, ...group, ...personal, {
+        },
+        ...auth,
+        ...position,
+        ...group,
+        ...user,
+        ...admin,
+        {
             path: '*',
             redirect: '/404',
         }, {
