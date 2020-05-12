@@ -47,24 +47,31 @@ public class PostRouter {
         router.post("/delete")
               .handler(AuthRouter::AuthToken)
               .handler(PostRouter::PostDelete);
-        router.post("/comment")
+        router.post("/comment/new")
               .handler(AuthRouter::AuthToken)
               .handler(AuthRouter::AuthIsBanned)
               .handler(PostRouter::PostComment);
-    
-        /* 未实现 */
-        router.post("/report")
+        router.post("/comment/list")
               .handler(AuthRouter::AuthToken)
-              .handler(MainRouter::UnImplementedRouter);
-        router.post("/update")
-              .handler(AuthRouter::AuthToken)
-              .handler(MainRouter::UnImplementedRouter);
+              .handler(PostRouter::AllComment);
         router.post("/favorite")
               .handler(AuthRouter::AuthToken)
-              .handler(MainRouter::UnImplementedRouter);
+              .handler(PostRouter::PostFavorite);
+        router.post("/update")
+              .handler(AuthRouter::AuthToken)
+              .handler(PostRouter::PostUpdate);
         router.post("/comment/reply")
               .handler(AuthRouter::AuthToken)
               .handler(AuthRouter::AuthIsBanned)
+              .handler(PostRouter::PostCommentReply);
+        router.post("/comment/reply/list")
+              .handler(AuthRouter::AuthToken)
+              .handler(AuthRouter::AuthIsBanned)
+              .handler(PostRouter::AllReply);
+        
+        /* 未实现 */
+        router.post("/report")
+              .handler(AuthRouter::AuthToken)
               .handler(MainRouter::UnImplementedRouter);
         router.post("/comment/report")
               .handler(AuthRouter::AuthToken)
@@ -89,7 +96,7 @@ public class PostRouter {
     }
     
     /**
-     * 创建圈子路由
+     * 获取动态路由
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void FetchAll(@NotNull RoutingContext context) {
@@ -102,7 +109,54 @@ public class PostRouter {
             
             return Single.just(new JsonObject().put("group_id", param.getInteger("group_id"))
                                                .put("sort_col", param.getString("sort_col")));
-        }).flatMap(PostHandler::DatabaseFetchAll).doOnError(err -> {
+        }).flatMap(PostHandler::DatabaseFetchAllPost).doOnError(err -> {
+            if (!context.response().ended()) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
+            }
+        }).flatMap(result -> {
+            JsonResponse.RespondSuccess(context, result);
+            return Single.just(result);
+        }).subscribe(res -> {
+            Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
+        }, failure -> {
+            Shared.getRouterLogger().error(failure.getMessage());
+        });
+    }
+    
+    /**
+     * 获取动态评论路由
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private static void AllComment(@NotNull RoutingContext context) {
+        getJsonObjectSingle(context).flatMap(param -> {
+            return Single.just(new JsonObject().put("post_id", param.getInteger("post_id")));
+        }).flatMap(PostHandler::DatabaseFetchAllComment).doOnError(err -> {
+            if (!context.response().ended()) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
+            }
+        }).flatMap(result -> {
+            JsonResponse.RespondSuccess(context, result);
+            return Single.just(result);
+        }).subscribe(res -> {
+            Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
+        }, failure -> {
+            Shared.getRouterLogger().error(failure.getMessage());
+        });
+    }
+    
+    /* TODO */
+    /**
+     * 获取动态评论路由
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private static void AllReply(@NotNull RoutingContext context) {
+        getJsonObjectSingle(context).flatMap(param -> {
+            return Single.just(new JsonObject().put("comment_id", param.getInteger("comment_id")));
+        }).flatMap(PostHandler::DatabaseFetchAllComment).doOnError(err -> {
             if (!context.response().ended()) {
                 JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
                 Shared.getRouterLogger()
@@ -205,6 +259,36 @@ public class PostRouter {
         });
     }
     
+    
+    /**
+     * 动态收藏路由
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private static void PostFavorite(@NotNull RoutingContext context) {
+        getJsonObjectSingle(context).flatMap(param -> {
+            Token token = context.session().get("token");
+            return Single.just(param.put("post_id", param.getInteger("post_id")).put("user_id", token.getId()));
+        }).flatMap(PostHandler::DatabaseFavoritePost).doOnError(err -> {
+            if (!context.response().ended()) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
+            }
+        }).flatMap(result -> {
+            if (result == -1) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+            }
+            JsonResponse.RespondSuccess(context, "Favorite post id: " + result + " success");
+            return Single.just(result);
+        }).subscribe(res -> {
+            Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
+        }, failure -> {
+            Shared.getRouterLogger().error(failure.getMessage());
+        });
+    }
+    
     /**
      * 动态评论路由
      */
@@ -226,6 +310,65 @@ public class PostRouter {
                       .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
             }
             JsonResponse.RespondSuccess(context, "Comment id: " + result + " success");
+            return Single.just(result);
+        }).subscribe(res -> {
+            Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
+        }, failure -> {
+            Shared.getRouterLogger().error(failure.getMessage());
+        });
+    }
+    
+    /**
+     * 动态更新路由
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private static void PostUpdate(@NotNull RoutingContext context) {
+        getJsonObjectSingle(context).flatMap(param -> {
+            Token token = context.session().get("token");
+            return Single.just(param.put("user_id", token.getId()));
+        }).flatMap(PostHandler::DatabaseUpdatePost).doOnError(err -> {
+            if (!context.response().ended()) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
+            }
+        }).flatMap(result -> {
+            if (result == -1) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+            }
+            JsonResponse.RespondSuccess(context, "Post new id: " + result + " success");
+            return Single.just(result);
+        }).subscribe(res -> {
+            Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");
+        }, failure -> {
+            Shared.getRouterLogger().error(failure.getMessage());
+        });
+    }
+    
+    /* TODO */
+    /**
+     * 动态评论回复路由
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private static void PostCommentReply(@NotNull RoutingContext context) {
+        getJsonObjectSingle(context).flatMap(param -> {
+            Token token = context.session().get("token");
+            return Single.just(param.put("user_id", token.getId()));
+        }).flatMap(PostHandler::DatabasePostCommentReply).doOnError(err -> {
+            if (!context.response().ended()) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_DATABASE);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_DATABASE.toString());
+            }
+        }).flatMap(result -> {
+            if (result == -1) {
+                JsonResponse.RespondPreset(context, PresetMessage.ERROR_FAILED);
+                Shared.getRouterLogger()
+                      .warn(context.normalisedPath() + " " + PresetMessage.ERROR_FAILED.toString());
+            }
+            JsonResponse.RespondSuccess(context, "Reply comment id: " + result + " success");
             return Single.just(result);
         }).subscribe(res -> {
             Shared.getRouterLogger().info("router path " + context.normalisedPath() + " processed successfully");

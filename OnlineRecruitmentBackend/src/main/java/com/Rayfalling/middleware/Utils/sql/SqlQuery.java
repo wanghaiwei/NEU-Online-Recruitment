@@ -49,7 +49,11 @@ public class SqlQuery {
         SqlMap.put("PostLikePost", "post/like.sql");
         SqlMap.put("PostComment", "post/comment.sql");
         SqlMap.put("PostDeletePost", "post/delete.sql");
+        SqlMap.put("PostUpdatePost", "post/update.sql");
         SqlMap.put("PostFetchAll", "post/fetch_all.sql");
+        SqlMap.put("PostFavoritePost", "post/favorite.sql");
+        SqlMap.put("PostCommentReply", "post/comment_reply.sql");
+        SqlMap.put("PostFetchComment", "post/fetch_comment.sql");
     
         /* Group Admin 相关Map */
         SqlMap.put("GroupAdminAuth", "group/admin/auth.sql");
