@@ -37,4 +37,3 @@ conf/
 #build generate
 build/
 out/
-/upload/*

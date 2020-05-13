@@ -223,6 +223,7 @@ public class UserRouter {
             TokenStorage.add(token);
             context.session().put("token", token);
             JsonResponse.RespondSuccess(context, new JsonObject().put("user_id", param.getInteger("id"))
+                                                                 .put("is_admin", identity.IsAdmin())
                                                                  .put("msg", "Login Success"));
             Shared.getRouterLogger()
                   .info(context.normalisedPath() + " " + param.getString("phone") + " Login");
