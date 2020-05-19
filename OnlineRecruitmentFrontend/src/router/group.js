@@ -12,11 +12,17 @@ let router = [
                 keepAlive: true,
                 title: "圈子",
             },
+        }, {
+            path: 'new',
+            components: {
+                main: () => import(/* webpackChunkName: "Index" */ '../components/Group/Create.vue'),
+                side: () => import(/* webpackChunkName: "Sidebar" */ '../components/Group/Sidebar.vue'),
+            },
+            meta: {
+                keepAlive: true,
+                title: "创建圈子",
+            },
         }],
-        meta: {
-            keepAlive: true,
-            title: "圈子",
-        },
     },
     {
         path: '/group/post',
@@ -28,12 +34,9 @@ let router = [
                 side: () => import(/* webpackChunkName: "Sidebar" */ '../components/Post/Sidebar.vue'),
             },
             meta: {
-                title: "圈子",
+                title: "动态",
             },
         }],
-        meta: {
-            title: "圈子",
-        },
     },
 ];
 export default router

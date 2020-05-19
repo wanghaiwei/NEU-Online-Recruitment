@@ -15,7 +15,7 @@
         <div class="header-user">
             <Avatar v-if="!isLogin" icon="ios-person" @click.native="$utils.browser.route.jump('/login')"/>
             <Dropdown v-else>
-                <Avatar src=""/>
+                <Avatar :src="$store.getters['auth/Avatar']"/>
                 <DropdownMenu slot="list">
                     <DropdownItem>个人中心</DropdownItem>
                     <DropdownItem @click.native="logout">退出</DropdownItem>

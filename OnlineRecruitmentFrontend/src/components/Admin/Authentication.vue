@@ -65,6 +65,38 @@
                     mail_can_verify: "已验证",
                     begin_time: new Date("2020-05-11"),
                     end_time: new Date("2020-07-11"),
+                }, {
+                    identity: "员工",
+                    company: "华为",
+                    position: "移动端研发",
+                    mail: "user@huawei.com",
+                    mail_can_verify: "未验证",
+                    begin_time: new Date("2020-05-04"),
+                    end_time: new Date("2020-07-04"),
+                }, {
+                    identity: "员工",
+                    company: "网易",
+                    position: "游戏客户端研发",
+                    mail: "user@163.com",
+                    mail_can_verify: "已验证",
+                    begin_time: new Date("2020-04-13"),
+                    end_time: new Date("2020-06-10"),
+                }, {
+                    identity: "HR",
+                    company: "牛客网",
+                    position: "前端研发",
+                    mail: "user@nowcode.com",
+                    mail_can_verify: "已验证",
+                    begin_time: new Date("2020-05-16"),
+                    end_time: new Date("2020-07-14"),
+                }, {
+                    identity: "HR",
+                    company: "腾讯",
+                    position: "数据库研发",
+                    mail: "user@tencent.cn",
+                    mail_can_verify: "已验证",
+                    begin_time: new Date("2020-05-22"),
+                    end_time: new Date("2020-07-20"),
                 }]
             }
         },

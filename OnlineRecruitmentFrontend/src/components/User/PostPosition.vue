@@ -40,7 +40,7 @@
                     </Option>
                 </Select>
             </FormItem>
-            <FormItem class="login-button">
+            <FormItem>
                 <Button type="success" size="large" long @click.native="login">提交</Button>
             </FormItem>
         </Form>

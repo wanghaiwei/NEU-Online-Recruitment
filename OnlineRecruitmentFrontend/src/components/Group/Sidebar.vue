@@ -2,7 +2,8 @@
 <template>
     <div class="side">
         <div>
-            <Button v-if="$store.getters['auth/LoginState']" type="info" icon="ios-add" long>创建圈子</Button>
+            <Button v-if="$store.getters['auth/LoginState']" type="info" icon="ios-add" long @click="create">创建圈子
+            </Button>
             <Button v-else type="info" long @click="$utils.browser.route.jump('/login')">登录</Button>
         </div>
         <Divider>分割线</Divider>
@@ -14,7 +15,12 @@
 
 <script>
     export default {
-        name: "Sidebar"
+        name: "Sidebar",
+        methods: {
+            create() {
+              this.$utils.browser.route.jump('/group/new')
+            }
+        },
     }
 </script>
 
