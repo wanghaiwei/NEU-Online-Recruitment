@@ -36,6 +36,15 @@ let router = [
             meta: {
                 title: "动态",
             },
+        }, {
+            path: 'comment',
+            components: {
+                main: () => import(/* webpackChunkName: "Comment" */ '../components/Post/Comment.vue'),
+                side: () => import(/* webpackChunkName: "Sidebar" */ '../components/Post/Sidebar.vue'),
+            },
+            meta: {
+                title: "动态",
+            },
         }],
     },
 ];
