@@ -1,0 +1,39 @@
+{
+  "database": {
+    "host": "127.0.0.1",
+    "port": 5432,
+    "database": "",
+    "username": "",
+    "password": "",
+    "pool_size": 10
+  },
+  "mainRouter": {
+    "logRequests": true,
+    "sessionKey": "",
+    "tokenSalt": "",
+    "expireTime": 300000
+  },
+  "server": {
+    "instance": 4,
+    "listen": {
+      "port": 8188,
+      "host": "0.0.0.0"
+    }
+  },
+  "sms": {
+    "accessKey": "",
+    "accessKeySecret": "",
+    "SignName": "0",
+    "expireTime": 0
+  },
+  "mail": {
+    "user": "",
+    "pass": "",
+    "host": "",
+    "port": 465,
+    "ssl": true
+  },
+  "timer": {
+    "delay": 3600000
+  }
+}
